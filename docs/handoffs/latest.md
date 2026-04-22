@@ -1,92 +1,103 @@
-# Handoff: Phase B Evidence Audit / Reclassification
+# Handoff: Phase B-R task_3 Checkpoint A
 
 Date: 2026-04-22
 
-## Scope
+## Executed Task
 
-This handoff records a Phase B evidence audit only.
+`task_3_checkpoint_A_duration_window_acceptance`
 
-No gameplay code was changed. No tests were run. No SC2 match was run. Phase C
-was not started.
+Status: completed.
 
-## Audit Result
+Decision: `accepted_continue`
 
-Confirmed issue: Phase B task `completed` status had been too easy to interpret
-as gameplay capability validated.
+Next allowed task: `task_4_real_duration_window_probe`
 
-Corrected interpretation:
+## Validation
 
-- task execution completed: the requested command/artifact/report step ran;
-- diagnostic completed: the evidence is useful for debugging or reporting;
-- gameplay capability validated: the real match reached a sufficient opportunity
-  window and demonstrated the target behavior.
+- Required level: L2
+- Achieved level: L2
+- Data source: dry-run / static config and test evidence
+- Real validation status: not applicable for this checkpoint
 
-Most post-Gateway Phase B tasks are not capability validated.
+No SC2 match was run. No gameplay code was changed. Phase C was not started.
+The next task was not executed.
 
-## Evidence Audit
+## Reviewed Tasks
 
-Audit report:
+- `task_1_duration_window_contract`
+- `task_2_runtime_window_parameterization`
 
-- `artifacts/reports/phase_b_playable_competitive_core/evidence_audit.md`
+## Checkpoint Findings
 
-Queue-level reclassification:
+Minimum gate: passed.
 
-- `docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml`
+- Opportunity-window rules exist.
+- `insufficient_duration` is defined as the required classification when
+  `actual_game_time < required_min_game_time`.
+- Runtime window is configurable through bot config.
+- Phase B-R duration probe uses `configs/bot/phase_b_revalidation_gameplay.yaml`
+  instead of `configs/bot/debug.yaml`.
 
-## Cutoff Diagnosis
+Target gate: passed.
 
-All audited Phase B probes and the 8-match small eval ended around
-`game_time=116.07`.
+- Phase B-R gameplay config sets `runtime.max_game_loop: 7200`.
+- The derived python-sc2 `game_time_limit` is 352 seconds.
+- `debug.yaml` remains a short-window config with `max_game_loop: 2600` and a
+  derived run-game limit of 147 seconds.
+- `run_match.py` derives python-sc2 `game_time_limit` from bot
+  `runtime.max_game_loop` instead of using fixed 120 seconds.
+- Successful real-match result payloads will record:
+  - `runtime_max_game_loop`
+  - `requested_game_time_limit_seconds`
 
-Cause:
+Stretch gate: partial.
 
-- primary cutoff: bot self-exit in `src/sc2bot/runtime/game_loop.py`;
-- controlling config: `configs/bot/debug.yaml`;
-- value: `runtime.max_game_loop: 2600`;
-- status in result files: `max_game_time_reached`.
+- Expected runtime window is visible in future real match result payloads.
+- No standalone metrics/report helper was added.
 
-This was not a launch failure, artifact failure, timeout, or SC2 process issue.
+## Evidence Paths
 
-## Reclassification Summary
+- `docs/plans/active/phase_b_revalidation_playable_core.md`
+- `docs/plans/active/phase_b_revalidation_task_queue.yaml`
+- `configs/bot/phase_b_revalidation_gameplay.yaml`
+- `configs/evaluation/phase_b_revalidation_duration_probe.yaml`
+- `evaluation/runner/run_match.py`
+- `tests/unit/test_config_loader.py`
+- `tests/integration/test_evaluation_config.py`
 
-- `task_4_real_gateway_probe`: partial. Gateway command telemetry appeared
-  (`gateway_build_attempt` and `gateway_build_success`), but Gateway-ready
-  capability is not validated because the match ended before the ready-window.
-- `task_6_real_cyber_core_probe`: not capability validated. Structured skip
-  only, primary failure `insufficient_duration`.
-- `task_8_real_combat_unit_production_probe`: not capability validated.
-  Structured skip only, primary failure `insufficient_duration`.
-- `task_10_real_attack_defend_probe`: not capability validated. No friendly
-  army existed, primary failure `missing_prerequisite`.
-- `task_12_real_combat_event_probe`: enemy-visible combat-signal telemetry is
-  diagnostic; friendly combat is not validated, primary failure
-  `combat_not_reached`.
-- `task_13_phase_b_small_eval`: valid multi-match diagnostic evidence, not
-  playable-baseline capability evidence.
-- `task_14_phase_b_report`: diagnostic report valid; source data does not
-  validate gameplay capability.
-- `task_15_phase_b_closeout`: diagnostic closeout valid; Phase B capability is
-  not accepted.
+## Verification
 
-## Current Decision
+- `python -m pytest tests/unit/test_config_loader.py tests/integration/test_evaluation_config.py`
+  - result: 18 passed
+- Queue YAML parse:
+  - result: `QUEUE_YAML_OK`
+- Runtime window dry check:
+  - `configs/bot/debug.yaml 2600 147`
+  - `configs/bot/phase_b_revalidation_gameplay.yaml 7200 352`
 
-Phase B is not accepted as a playable competitive core.
+## What This Proves
 
-Do not create Phase C yet.
+- Checkpoint A accepts the duration-window contract and runtime-window
+  parameterization.
+- It is now valid to proceed to the real duration-window probe in task 4.
 
-## Recommended Next Step
+## What This Does Not Prove
 
-Create a focused Phase B follow-up queue:
+- It does not prove a real SC2 match reaches 300s.
+- It does not prove Gateway ready, Cyber Core, combat-unit production,
+  attack/defend, friendly combat, Level 1, or ladder competitiveness.
+- It does not validate gameplay capability.
 
-1. Fix or parameterize the real-match duration window for Phase B capability
-   probes.
-2. Rerun Gateway-ready / Cyber Core / combat-unit production probes.
-3. Rerun attack/defend and combat probes only after real friendly army units
-   exist.
-4. Regenerate Phase B small eval and report.
-5. Reassess Level 1 playable baseline.
+## Blockers
 
-Fix order:
+None for checkpoint A.
 
-1. duration window first;
-2. then production logic if longer windows still do not produce units.
+The next task must provide real SC2 evidence that the new window reaches
+`actual_game_time >= 300s` or natural end.
+
+## Next Pending Task
+
+`task_4_real_duration_window_probe`
+
+Do not execute it until the user explicitly asks to continue the Phase B-R
+queue.

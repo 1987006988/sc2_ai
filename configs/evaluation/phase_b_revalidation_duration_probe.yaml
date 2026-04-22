@@ -1,0 +1,11 @@
+evaluation:
+  name: phase_b_revalidation_duration_probe
+  launch_mode: real_launch
+  bot_config: configs/bot/phase_b_revalidation_gameplay.yaml
+  maps_config: configs/maps/phase_b_small_eval_maps.yaml
+  opponents_config: configs/opponents/phase_b_small_eval_pool.yaml
+  repeats: 1
+  output_dir: data/logs/evaluation/phase_b_revalidation_duration_probe
+  run_id: phase_b_revalidation_duration_probe
+  isolate_runs: true
+  fail_on_crash: false

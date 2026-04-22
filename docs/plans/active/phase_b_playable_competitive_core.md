@@ -1,6 +1,8 @@
 # Phase B: Playable Competitive Core
 
-Status: planned.
+Status: not accepted. Original task queue exhausted, but objective not accepted.
+Superseded for revalidation by
+`docs/plans/active/phase_b_revalidation_playable_core.md`.
 
 Task queue: `docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml`
 
@@ -96,6 +98,14 @@ Phase B cannot close unless:
 ## Evidence Audit Reclassification
 
 Audit path: `artifacts/reports/phase_b_playable_competitive_core/evidence_audit.md`
+
+Original Phase B state after audit:
+
+- task queue exhausted;
+- objective not accepted;
+- playable baseline not reached;
+- Level 1 not reached;
+- Phase C blocked.
 
 The 2026-04-22 audit separates task execution, diagnostic evidence, and gameplay
 capability validation. Phase B task completion must not be read as capability

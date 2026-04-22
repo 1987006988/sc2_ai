@@ -4,7 +4,7 @@
 
 Phase 1D and Phase 1E foundation work is complete. Phase 1F demo packaging and standalone Phase L0 execution planning are paused.
 
-The active route is now `docs/plans/active/ladder_competitive_adaptive_sc2_bot_plan.md`. Phase A: Ladder Infrastructure & Scalable Real-Match Dataset has reached closeout. Phase B: Playable Competitive Core has completed its task queue as evidence-gathering, but the Level 1 playable baseline is not reached. A Phase B evidence audit now separates task completion from gameplay capability validation.
+The active route is now `docs/plans/active/ladder_competitive_adaptive_sc2_bot_plan.md`. Phase A: Ladder Infrastructure & Scalable Real-Match Dataset has reached closeout. Phase B: Playable Competitive Core has completed its task queue as evidence-gathering, but the Level 1 playable baseline is not reached. A Phase B evidence audit now separates task completion from gameplay capability validation. Phase B-R: Playable Competitive Core Revalidation is planned as the next active workstream.
 
 ## Mainline
 
@@ -47,12 +47,13 @@ Research directories are isolated and contain no production dependencies.
 
 ## Current Priority
 
-- treat Phase B as diagnostic evidence, not as an accepted playable-core
-  milestone;
+- treat original Phase B as diagnostic evidence, not as an accepted
+  playable-core milestone;
 - do not create Phase C yet;
-- insert a focused Phase B follow-up task queue to fix the real-match duration
-  window first, then rerun Gateway-ready, Cyber Core, combat-unit production,
-  attack/defend, combat, and small-eval probes;
+- execute Phase B-R task queue one task at a time, starting with duration-window
+  contract and runtime-window parameterization;
+- fix the real-match duration window first, then rerun Gateway-ready, Cyber
+  Core, combat-unit production, attack/defend, combat, and small-eval probes;
 - keep Phase A evidence as infrastructure/data foundation and Phase B evidence
   as build/order/combat-signal evidence, not bot-strength evidence.
 
@@ -146,6 +147,17 @@ Research directories are isolated and contain no production dependencies.
     gameplay capability validation;
   - Phase B is not accepted as a playable competitive core and should not enter
     Phase C until follow-up L3 probes rerun after the duration-window fix.
+- Phase B-R revalidation planning created on 2026-04-22:
+  - plan:
+    `docs/plans/active/phase_b_revalidation_playable_core.md`;
+  - task queue:
+    `docs/plans/active/phase_b_revalidation_task_queue.yaml`;
+  - manual trigger:
+    `docs/plans/active/phase_b_revalidation_manual_trigger.md`;
+  - checkpoints are mandatory every three tasks;
+  - each capability task has minimum, target, and stretch gates;
+  - Phase C remains blocked until Phase B-R final checkpoint accepts the
+    original playable-core objective.
 
 ## Blockers
 

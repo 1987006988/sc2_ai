@@ -70,3 +70,13 @@ def test_build_order_config_defaults_keep_existing_configs_compatible():
     assert config.build_order.attack_army_supply_threshold == 8
     assert config.build_order.attack_game_time_threshold == 360.0
     assert config.build_order.defend_radius == 30.0
+
+
+def test_phase_b_revalidation_gameplay_config_uses_long_runtime_window():
+    config = load_bot_config(Path("configs/bot/phase_b_revalidation_gameplay.yaml"))
+
+    assert config.bot.name == "sc2-ai-phase-b-revalidation"
+    assert config.runtime.max_game_loop == 7200
+    assert config.runtime.max_game_loop > load_bot_config(Path("configs/bot/debug.yaml")).runtime.max_game_loop
+    assert config.runtime.worker_production is True
+    assert config.runtime.supply_sustain is True

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 import traceback
@@ -13,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from sc2bot.config.loader import load_bot_config
-from sc2bot.config.schema import TelemetryConfig
+from sc2bot.config.schema import RuntimeConfig, TelemetryConfig
 from sc2bot.runtime.bot_app import BotApp
 from sc2bot.runtime.game_loop import build_python_sc2_local_bot
 from sc2bot.runtime.sc2_installation import (
@@ -24,6 +25,10 @@ from sc2bot.runtime.sc2_installation import (
 )
 
 from evaluation.metrics.schemas import MatchResult
+
+SC2_GAME_LOOPS_PER_SECOND = 22.4
+SC2_RUN_GAME_MIN_TIME_LIMIT_SECONDS = 120
+SC2_RUN_GAME_TIME_LIMIT_BUFFER_SECONDS = 30
 
 
 @dataclass(frozen=True)
@@ -41,6 +46,16 @@ class MatchRequest:
     opponent_tags: tuple[str, ...] = ()
     output_dir: str = "data/logs/evaluation"
     launch_mode: str = "dry_run"
+
+
+def _game_time_limit_seconds(runtime_config: RuntimeConfig) -> int:
+    """Convert bot runtime loop limit into python-sc2 run_game seconds."""
+
+    runtime_seconds = math.ceil(runtime_config.max_game_loop / SC2_GAME_LOOPS_PER_SECOND)
+    return max(
+        SC2_RUN_GAME_MIN_TIME_LIMIT_SECONDS,
+        runtime_seconds + SC2_RUN_GAME_TIME_LIMIT_BUFFER_SECONDS,
+    )
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -208,7 +223,7 @@ def _run_python_sc2_local_game(
         [bot_player, opponent_player],
         realtime=False,
         save_replay_as=str(replay_path),
-        game_time_limit=120,
+        game_time_limit=_game_time_limit_seconds(app.config.runtime),
     )
     return str(result)
 
@@ -493,6 +508,8 @@ def run_real_launch_match(request: MatchRequest) -> MatchResult:
             "completed_at": datetime.now(timezone.utc).isoformat(),
             "duration_seconds": _duration_seconds(started_at),
             "launch_message": "Real local match completed through python-sc2.",
+            "runtime_max_game_loop": app.config.runtime.max_game_loop,
+            "requested_game_time_limit_seconds": _game_time_limit_seconds(app.config.runtime),
         },
     )
     _write_json(

@@ -4,7 +4,8 @@ import json
 
 from evaluation.runner.collect_results import collect_results
 from evaluation.runner.run_batch import _bot_config_entries, load_batch_config
-from evaluation.runner.run_match import MatchRequest, run_local_dry_match, run_match
+from evaluation.runner.run_match import MatchRequest, _game_time_limit_seconds, run_local_dry_match, run_match
+from sc2bot.config.loader import load_bot_config
 
 
 def test_smoke_evaluation_config_loads():
@@ -101,6 +102,33 @@ def test_phase_a_baseline_chunk_3_config_is_eight_match_shape():
     assert {opponent["race"] for opponent in opponents} == {"zerg", "protoss"}
     assert {opponent["difficulty"] for opponent in opponents} == {"easy", "medium"}
     assert len(maps) * len(opponents) * evaluation["repeats"] == 8
+
+
+def test_phase_b_revalidation_duration_probe_config_uses_gameplay_runtime_window():
+    from evaluation.runner.run_batch import _enabled_entries
+
+    config = load_batch_config(Path("configs/evaluation/phase_b_revalidation_duration_probe.yaml"))
+    evaluation = config["evaluation"]
+    maps = _enabled_entries(evaluation["maps_config"], "maps")
+    opponents = _enabled_entries(evaluation["opponents_config"], "opponents")
+    bot_config = load_bot_config(evaluation["bot_config"])
+
+    assert evaluation["launch_mode"] == "real_launch"
+    assert evaluation["bot_config"] == "configs/bot/phase_b_revalidation_gameplay.yaml"
+    assert evaluation["bot_config"] != "configs/bot/debug.yaml"
+    assert evaluation["repeats"] == 1
+    assert len(maps) == 1
+    assert len(opponents) >= 1
+    assert bot_config.runtime.max_game_loop == 7200
+    assert _game_time_limit_seconds(bot_config.runtime) >= 300
+
+
+def test_run_game_time_limit_derives_from_runtime_max_game_loop():
+    debug_config = load_bot_config(Path("configs/bot/debug.yaml"))
+    gameplay_config = load_bot_config(Path("configs/bot/phase_b_revalidation_gameplay.yaml"))
+
+    assert _game_time_limit_seconds(debug_config.runtime) < 180
+    assert _game_time_limit_seconds(gameplay_config.runtime) >= 300
 
 
 def test_local_dry_match_persists_result(tmp_path):
@@ -206,6 +234,10 @@ def test_run_match_real_launch_uses_real_game_path(tmp_path, monkeypatch):
     assert payload["mode"] == "real_launch"
     assert payload["result"] == "Result.Defeat"
     assert payload["bot_config_id"] == "debug"
+    assert payload["runtime_max_game_loop"] == 2600
+    assert payload["requested_game_time_limit_seconds"] == _game_time_limit_seconds(
+        load_bot_config(Path("configs/bot/debug.yaml")).runtime
+    )
 
 
 def test_run_match_real_launch_missing_map_persists_reason(tmp_path, monkeypatch):

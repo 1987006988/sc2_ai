@@ -1,0 +1,811 @@
+phase: "Phase B-R: Playable Competitive Core Revalidation"
+status: planned
+created_at: "2026-04-22"
+plan: "docs/plans/active/phase_b_revalidation_playable_core.md"
+manual_trigger: "docs/plans/active/phase_b_revalidation_manual_trigger.md"
+supersedes_for_revalidation: "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+phase_b_original_state:
+  task_queue_exhausted: true
+  objective_accepted: false
+  playable_baseline_reached: false
+  level_1_reached: false
+  phase_c_blocked: true
+validation_levels:
+  L0: "static doc/config exists"
+  L1: "schema/unit/config validation"
+  L2: "dry-run / telemetry dry path / no real SC2"
+  L3: "real SC2 local match gameplay evidence"
+opportunity_windows:
+  gateway_command_seconds: 90
+  gateway_ready_seconds: 140
+  assimilator_cyber_core_seconds: 180
+  combat_unit_production_seconds: 220
+  friendly_army_order_seconds: 260
+  friendly_combat_seconds: 300
+  small_eval_playable_baseline_seconds: 300
+checkpoint_rule:
+  cadence: "Every third task is a mandatory checkpoint."
+  checkpoints:
+    - task_3_checkpoint_A_duration_window_acceptance
+    - task_6_checkpoint_B_build_chain_acceptance
+    - task_9_checkpoint_C_production_acceptance
+    - task_12_checkpoint_D_tactical_acceptance
+    - task_15_checkpoint_E_phase_b_acceptance
+  blocked_rule: "If checkpoint decision is not accepted_continue, later tasks must not run."
+global_rules:
+  - "One task per manual run."
+  - "Minimum gate is not the plan target."
+  - "Completed does not mean accepted."
+  - "Diagnostic completed does not mean capability validated."
+  - "Structured failure reason does not equal capability success unless explicitly accepted by checkpoint."
+  - "Capability tasks require real SC2 evidence."
+  - "If actual_game_time is below required_min_game_time, capability status must be insufficient_duration."
+  - "Do not enter Phase C until checkpoint E accepts Phase B-R."
+tasks:
+  - id: task_1_duration_window_contract
+    status: completed
+    group: "A: Duration Window And Validation Integrity"
+    checkpoint_id: null
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L1
+    actual_validation_level: L1
+    data_source: "static docs and synthetic validation"
+    real_validation_status: not_applicable
+    requires: []
+    goal: "Define strict minimum opportunity windows and validation semantics for Phase B-R."
+    scope:
+      - "Document required minimum game times for Gateway command, Gateway ready, Assimilator/Cyber Core, combat-unit production, friendly army order, friendly combat, and small eval."
+      - "Define insufficient_duration classification."
+      - "Add unit/static validation if a schema is introduced."
+    non_goals:
+      - "Do not change runtime limits."
+      - "Do not change gameplay logic."
+      - "Do not run SC2."
+    files_likely_to_change:
+      - "docs/plans/active/phase_b_revalidation_playable_core.md"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "evaluation/metrics/"
+      - "tests/unit/"
+    verification:
+      - "Static review of opportunity window definitions."
+      - "Run focused unit tests only if schema/code is added."
+    done_criteria:
+      - "Opportunity windows are explicit and referenced by later tasks."
+      - "Rule states that actual_game_time below required_min_game_time means insufficient_duration."
+    minimum_gate:
+      - "All required opportunity windows are defined."
+    target_gate:
+      - "Window definitions are machine-readable or clearly mapped into metrics/reporting."
+    stretch_gate:
+      - "Reusable validation helper or schema exists."
+    stop_conditions:
+      - "If this requires runtime changes, split before implementation."
+    rollback_notes: "Revert planning/schema changes."
+    evidence_paths:
+      - "docs/plans/active/phase_b_revalidation_playable_core.md"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    capability_validation_status: not_applicable_contract_only
+    minimum_gate_result:
+      passed: true
+      notes:
+        - "All required opportunity windows are defined in the plan and queue."
+        - "insufficient_duration semantics are defined."
+    target_gate_result:
+      passed: true
+      notes:
+        - "Window definitions are machine-readable in queue opportunity_windows and mapped to reporting semantics in the plan."
+    stretch_gate_status:
+      status: not_attempted
+      notes:
+        - "No reusable validation helper/schema was introduced in this task."
+
+  - id: task_2_runtime_window_parameterization
+    status: completed
+    group: "A: Duration Window And Validation Integrity"
+    checkpoint_id: null
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "config/unit/dry-run only"
+    real_validation_status: pending_task_4
+    requires:
+      - task_1_duration_window_contract
+    goal: "Parameterize Phase B gameplay probe runtime windows without changing build/production/combat logic."
+    scope:
+      - "Stop Phase B gameplay probes from using debug.yaml max_game_loop=2600."
+      - "Allow probe/eval configs to specify a longer gameplay validation window."
+      - "Keep short debug/smoke configs available."
+      - "Add dry/config tests."
+    non_goals:
+      - "Do not modify build order, production, tactical, or micro logic."
+      - "Do not run SC2."
+    files_likely_to_change:
+      - "configs/bot/"
+      - "configs/evaluation/"
+      - "src/sc2bot/config/"
+      - "evaluation/runner/"
+      - "tests/unit/"
+    verification:
+      - "Run focused config/runner tests."
+      - "Dry-run confirms selected config uses longer window."
+    done_criteria:
+      - "Gameplay probes can request >=300s window."
+      - "Debug/smoke short-window behavior remains available."
+    minimum_gate:
+      - "A Phase B gameplay probe config can specify a sufficient window."
+    target_gate:
+      - "Window selection is visible in config snapshots or match requests."
+    stretch_gate:
+      - "Report/metrics can read expected vs actual window."
+    stop_conditions:
+      - "If runtime launch behavior changes broadly, split task."
+    rollback_notes: "Revert config/runner parameterization."
+    evidence_paths:
+      - "configs/bot/phase_b_revalidation_gameplay.yaml"
+      - "configs/evaluation/phase_b_revalidation_duration_probe.yaml"
+      - "evaluation/runner/run_match.py"
+      - "tests/unit/test_config_loader.py"
+      - "tests/integration/test_evaluation_config.py"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    capability_validation_status: not_applicable_dry_parameterization_only
+    minimum_gate_result:
+      passed: true
+      notes:
+        - "Phase B-R gameplay bot config sets runtime.max_game_loop to 7200."
+        - "Phase B-R duration probe config uses configs/bot/phase_b_revalidation_gameplay.yaml instead of debug.yaml."
+    target_gate_result:
+      passed: true
+      notes:
+        - "run_match derives python-sc2 game_time_limit from bot runtime max_game_loop."
+        - "Real match result payload records runtime_max_game_loop and requested_game_time_limit_seconds."
+        - "debug.yaml remains a short-window config at max_game_loop 2600."
+    stretch_gate_status:
+      status: partial
+      notes:
+        - "Expected runtime window is visible in match_result payload after real launch."
+        - "No standalone reporting helper was added in this task."
+
+  - id: task_3_checkpoint_A_duration_window_acceptance
+    status: completed
+    group: "A: Duration Window And Validation Integrity"
+    checkpoint_id: checkpoint_A
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "plan/config/dry-run evidence"
+    real_validation_status: not_applicable
+    requires:
+      - task_1_duration_window_contract
+      - task_2_runtime_window_parameterization
+    goal: "Checkpoint A: verify duration-window rules and parameterization before real probes."
+    scope:
+      - "Review task_1 and task_2 outputs."
+      - "Confirm short debug and gameplay validation configs are not mixed."
+      - "Confirm insufficient-duration probes cannot pass capability validation."
+    non_goals:
+      - "Do not run SC2."
+      - "Do not change gameplay."
+    files_likely_to_change:
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Queue YAML parses."
+      - "Checkpoint fields are filled."
+    done_criteria:
+      - "decision is accepted_continue, rework_required, blocked, or split_required."
+    reviewed_tasks:
+      - task_1_duration_window_contract
+      - task_2_runtime_window_parameterization
+    original_goal_alignment: "Ensures original Phase B validation is fair before capability probes."
+    minimum_gate:
+      - "Opportunity-window rules exist."
+      - "Runtime window is configurable."
+    target_gate:
+      - "Gameplay probe config clearly requests sufficient window."
+    stretch_gate:
+      - "Expected and actual runtime windows are available to metrics."
+    stop_conditions:
+      - "If minimum gate fails, mark rework_required and do not continue to task_4."
+    rollback_notes: "Leave tasks pending and add repair task if checkpoint fails."
+    evidence_paths:
+      - "docs/plans/active/phase_b_revalidation_playable_core.md"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "configs/bot/phase_b_revalidation_gameplay.yaml"
+      - "configs/evaluation/phase_b_revalidation_duration_probe.yaml"
+      - "evaluation/runner/run_match.py"
+      - "tests/unit/test_config_loader.py"
+      - "tests/integration/test_evaluation_config.py"
+      - "docs/handoffs/latest.md"
+    real_match_evidence_paths: []
+    actual_game_time_sufficient: not_applicable_no_real_match
+    minimum_gate_passed: true
+    target_gate_passed: true
+    stretch_gate_status: partial
+    capability_validation_status: not_applicable_checkpoint_l2
+    failure_class: null
+    decision: accepted_continue
+    next_allowed_task: task_4_real_duration_window_probe
+    decision_notes:
+      - "task_1 defined opportunity-window and insufficient-duration semantics."
+      - "task_2 added a Phase B-R gameplay config with runtime.max_game_loop 7200."
+      - "task_2 added a duration probe config that uses the Phase B-R gameplay config, not debug.yaml."
+      - "run_match derives python-sc2 game_time_limit from runtime.max_game_loop."
+      - "debug.yaml remains a short-window config."
+      - "Next group may proceed to real duration probe, but no gameplay capability is validated yet."
+
+  - id: task_4_real_duration_window_probe
+    status: pending
+    group: "B: Gateway / Cyber Core / Production Chain"
+    checkpoint_id: null
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "new real match output"
+    real_validation_status: pending
+    requires:
+      - task_3_checkpoint_A_duration_window_acceptance
+    goal: "Run one real SC2 probe to prove the longer Phase B validation window works."
+    scope:
+      - "Run one real SC2 local match with the Phase B-R gameplay window."
+      - "Check result, replay, telemetry."
+      - "Record actual_game_time."
+    non_goals:
+      - "Do not tune build logic."
+      - "Do not treat Gateway/Cyber/production as validated yet."
+      - "Do not run batch evaluation."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect match_result.json and telemetry/events.jsonl."
+    done_criteria:
+      - "actual_game_time >= 300s unless natural end."
+      - "Result/replay/telemetry artifacts exist."
+    minimum_gate:
+      - "actual_game_time >= 300s or natural end."
+    target_gate:
+      - "actual_game_time and status/failure_reason are recorded structurally."
+    stretch_gate:
+      - "Config snapshot records requested runtime window."
+    stop_conditions:
+      - "If launch fails or actual duration is insufficient, block later capability probes."
+    rollback_notes: "Preserve evidence; update queue only."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_5_build_chain_revalidation_probe
+    status: pending
+    group: "B: Gateway / Cyber Core / Production Chain"
+    checkpoint_id: null
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "new real match output"
+    real_validation_status: pending
+    requires:
+      - task_4_real_duration_window_probe
+    goal: "Run a real SC2 probe validating Gateway ready/completion and early tech-chain opportunity."
+    scope:
+      - "Run one real match with sufficient duration."
+      - "Validate Gateway attempt and command success."
+      - "Look for Gateway ready/completion evidence or clear blocker."
+      - "Look for Assimilator or Cyber Core attempt."
+    non_goals:
+      - "Do not implement combat-unit production."
+      - "Do not tune tactical behavior."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect telemetry for Gateway and tech-chain events."
+    done_criteria:
+      - "Gateway command evidence exists."
+      - "actual_game_time reaches Gateway-ready window."
+      - "Gateway ready/completion or clear blocker is recorded."
+    minimum_gate:
+      - "Gateway attempt and command success appear."
+      - "actual_game_time >= 140s or natural end."
+    target_gate:
+      - "Gateway ready/completion evidence appears."
+      - "Assimilator or Cyber Core attempt appears."
+    stretch_gate:
+      - "Cyber Core command success appears."
+    stop_conditions:
+      - "If Gateway ready cannot be fairly evaluated, stop before production tasks."
+    rollback_notes: "Preserve evidence; update queue only."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_6_checkpoint_B_build_chain_acceptance
+    status: pending
+    group: "B: Gateway / Cyber Core / Production Chain"
+    checkpoint_id: checkpoint_B
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "prior real match output from tasks 4-5"
+    real_validation_status: pending
+    requires:
+      - task_4_real_duration_window_probe
+      - task_5_build_chain_revalidation_probe
+    goal: "Checkpoint B: decide whether duration blocker is resolved and build chain is ready for production validation."
+    scope:
+      - "Review task_4 and task_5 evidence."
+      - "Confirm duration blocker is resolved."
+      - "Confirm Gateway is not just command telemetry."
+      - "Decide if production validation may start."
+    non_goals:
+      - "Do not run new SC2."
+      - "Do not implement production repair here."
+    files_likely_to_change:
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Check evidence paths and telemetry summaries."
+    done_criteria:
+      - "decision is accepted_continue, rework_required, blocked, or split_required."
+    reviewed_tasks:
+      - task_4_real_duration_window_probe
+      - task_5_build_chain_revalidation_probe
+    original_goal_alignment: "Build progression must be real before production validation."
+    minimum_gate:
+      - "Duration blocker resolved."
+      - "Gateway ready/completion or clear fair blocker is established."
+    target_gate:
+      - "Gateway ready/completion and at least one tech-chain attempt are observed."
+    stretch_gate:
+      - "Cyber Core command success is observed."
+    stop_conditions:
+      - "If Gateway ready remains unvalidated, create build-chain repair task and stop."
+    rollback_notes: "Leave task_7 pending until accepted_continue."
+    evidence_paths: []
+    real_match_evidence_paths: []
+    actual_game_time_sufficient: null
+    minimum_gate_passed: null
+    target_gate_passed: null
+    stretch_gate_status: not_evaluated
+    capability_validation_status: not_started
+    failure_class: null
+    decision: null
+    next_allowed_task: task_7_combat_unit_production_repair_or_confirm
+
+  - id: task_7_combat_unit_production_repair_or_confirm
+    status: pending
+    group: "C: Combat Unit Production"
+    checkpoint_id: null
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: null
+    data_source: "unit/dry validation"
+    real_validation_status: pending_task_8
+    requires:
+      - task_6_checkpoint_B_build_chain_acceptance
+    goal: "Repair or confirm combat-unit production path without letting Stalker prerequisites block all units."
+    scope:
+      - "If build chain is available, implement or confirm Zealot-first fallback."
+      - "Gateway exists -> Zealot attempt is possible."
+      - "Cyber Core unlocks Stalker attempt as enhancement."
+      - "Record structured skip reasons."
+    non_goals:
+      - "Do not add complex army composition."
+      - "Do not add upgrades or expansion."
+      - "Do not run SC2."
+    files_likely_to_change:
+      - "src/sc2bot/managers/macro_manager.py"
+      - "src/sc2bot/runtime/game_loop.py"
+      - "src/sc2bot/domain/decisions.py"
+      - "tests/unit/"
+    verification:
+      - "Focused unit/dry telemetry tests."
+    done_criteria:
+      - "Zealot fallback cannot be blocked by missing Cyber Core."
+      - "Stalker path remains gated by Cyber Core."
+    minimum_gate:
+      - "Gateway-ready state can produce or attempt Zealot."
+    target_gate:
+      - "Unit/dry tests cover Zealot fallback and Stalker gating."
+    stretch_gate:
+      - "Production priority config is explicit."
+    stop_conditions:
+      - "If build chain from checkpoint B is not accepted, mark blocked."
+    rollback_notes: "Revert production changes and tests."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_8_real_combat_unit_production_batch
+    status: pending
+    group: "C: Combat Unit Production"
+    checkpoint_id: null
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "new real match batch"
+    real_validation_status: pending
+    requires:
+      - task_7_combat_unit_production_repair_or_confirm
+    goal: "Run a small real batch to validate friendly combat-unit production."
+    scope:
+      - "Run up to 4 real matches: 1 map, 2 opponents, 2 repeats."
+      - "Measure friendly army presence."
+      - "Record production attempt/success/skipped events."
+    non_goals:
+      - "Do not validate attack/defend yet."
+      - "Do not expand to larger evaluation."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect batch result, replays, and telemetry."
+    done_criteria:
+      - "At least one match has friendly combat unit or task is blocked with evidence."
+    minimum_gate:
+      - "At least one real match shows friendly combat unit."
+    target_gate:
+      - "friendly army presence rate >= 50%."
+    stretch_gate:
+      - "Zealot production succeeds more than once."
+      - "Stalker path has attempt or structured blocker."
+    stop_conditions:
+      - "If no friendly army appears, stop before tactical tasks."
+    rollback_notes: "Preserve evidence; update queue only."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_9_checkpoint_C_production_acceptance
+    status: pending
+    group: "C: Combat Unit Production"
+    checkpoint_id: checkpoint_C
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "prior real match batch from task_8"
+    real_validation_status: pending
+    requires:
+      - task_7_combat_unit_production_repair_or_confirm
+      - task_8_real_combat_unit_production_batch
+    goal: "Checkpoint C: accept or reject combat-unit production capability."
+    scope:
+      - "Review tasks 7 and 8."
+      - "Confirm Phase B-R is no longer no-friendly-army."
+      - "Decide whether tactical tasks may start."
+    non_goals:
+      - "Do not run new SC2."
+      - "Do not implement tactical logic."
+    files_likely_to_change:
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Check friendly army metrics and evidence paths."
+    done_criteria:
+      - "decision is accepted_continue, rework_required, blocked, or split_required."
+    reviewed_tasks:
+      - task_7_combat_unit_production_repair_or_confirm
+      - task_8_real_combat_unit_production_batch
+    original_goal_alignment: "Original Phase B requires combat units before tactical validation."
+    minimum_gate:
+      - "At least one real match has friendly combat unit."
+    target_gate:
+      - "friendly army presence rate >= 50%."
+    stretch_gate:
+      - "Zealot production succeeds repeatedly and Stalker path is evaluated."
+    stop_conditions:
+      - "If no friendly army exists, create production repair task and stop."
+    rollback_notes: "Leave task_10 pending until accepted_continue."
+    evidence_paths: []
+    real_match_evidence_paths: []
+    actual_game_time_sufficient: null
+    minimum_gate_passed: null
+    target_gate_passed: null
+    stretch_gate_status: not_evaluated
+    capability_validation_status: not_started
+    failure_class: null
+    decision: null
+    next_allowed_task: task_10_attack_defend_order_implementation_or_revalidation
+
+  - id: task_10_attack_defend_order_implementation_or_revalidation
+    status: pending
+    group: "D: Tactical Orders And Friendly Combat"
+    checkpoint_id: null
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: null
+    data_source: "unit/dry validation"
+    real_validation_status: pending_task_11
+    requires:
+      - task_9_checkpoint_C_production_acceptance
+    goal: "Implement or confirm army rally, defend, and attack order logic requiring own_army_count > 0."
+    scope:
+      - "Army rally point."
+      - "Enemy near base -> defend with existing army."
+      - "Enough army or time threshold -> attack known enemy base."
+      - "Telemetry records order reason."
+    non_goals:
+      - "Do not add complex micro."
+      - "Do not add opponent-adaptive strategy."
+      - "Do not run SC2."
+    files_likely_to_change:
+      - "src/sc2bot/managers/tactical_manager.py"
+      - "src/sc2bot/managers/micro_manager.py"
+      - "src/sc2bot/runtime/game_loop.py"
+      - "tests/unit/"
+    verification:
+      - "Focused unit/dry telemetry tests."
+    done_criteria:
+      - "Attack/defend orders require friendly army."
+      - "Order reasons are structured."
+    minimum_gate:
+      - "No empty army orders count as tactical success."
+    target_gate:
+      - "Unit tests cover rally, defend, and attack decisions."
+    stretch_gate:
+      - "Retreat/regroup remains minimal and covered if present."
+    stop_conditions:
+      - "If own army prerequisite is unclear, split task."
+    rollback_notes: "Revert tactical changes and tests."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_11_real_attack_defend_and_combat_probe
+    status: pending
+    group: "D: Tactical Orders And Friendly Combat"
+    checkpoint_id: null
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "new real match batch"
+    real_validation_status: pending
+    requires:
+      - task_10_attack_defend_order_implementation_or_revalidation
+    goal: "Run a real batch validating non-empty attack/defend orders and friendly combat opportunity."
+    scope:
+      - "Run small real batch."
+      - "Verify attack_order or defend_order with own_army_count > 0."
+      - "Look for friendly combat event or clear no-engagement reason after sufficient opportunity."
+    non_goals:
+      - "Do not expand to full eval."
+      - "Do not tune opponent model."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect telemetry and replay artifacts."
+    done_criteria:
+      - "Non-empty army order evidence exists or task is blocked with evidence."
+    minimum_gate:
+      - "attack_order or defend_order appears with own_army_count > 0."
+    target_gate:
+      - "At least one match has friendly combat event or clear no-engagement reason after sufficient opportunity."
+    stretch_gate:
+      - "Units lost/killed telemetry or derived metric is available."
+    stop_conditions:
+      - "If own_army_count remains zero, mark blocked and stop."
+    rollback_notes: "Preserve evidence; update queue only."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_12_checkpoint_D_tactical_acceptance
+    status: pending
+    group: "D: Tactical Orders And Friendly Combat"
+    checkpoint_id: checkpoint_D
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "prior real match batch from task_11"
+    real_validation_status: pending
+    requires:
+      - task_10_attack_defend_order_implementation_or_revalidation
+      - task_11_real_attack_defend_and_combat_probe
+    goal: "Checkpoint D: accept or reject tactical order and friendly combat readiness."
+    scope:
+      - "Review tasks 10 and 11."
+      - "Confirm orders are not empty orders."
+      - "Confirm combat telemetry distinguishes enemy-visible signal from friendly combat."
+    non_goals:
+      - "Do not run new SC2."
+      - "Do not generate final report."
+    files_likely_to_change:
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Check own_army_count, order, and combat telemetry summaries."
+    done_criteria:
+      - "decision is accepted_continue, rework_required, blocked, or split_required."
+    reviewed_tasks:
+      - task_10_attack_defend_order_implementation_or_revalidation
+      - task_11_real_attack_defend_and_combat_probe
+    original_goal_alignment: "Original Phase B requires real attack/defend and combat telemetry."
+    minimum_gate:
+      - "attack_order or defend_order with own_army_count > 0."
+    target_gate:
+      - "friendly combat event or clear no-engagement reason after sufficient opportunity."
+    stretch_gate:
+      - "Units lost/killed metric exists."
+    stop_conditions:
+      - "If orders are empty or army missing, create tactical repair task and stop."
+    rollback_notes: "Leave task_13 pending until accepted_continue."
+    evidence_paths: []
+    real_match_evidence_paths: []
+    actual_game_time_sufficient: null
+    minimum_gate_passed: null
+    target_gate_passed: null
+    stretch_gate_status: not_evaluated
+    capability_validation_status: not_started
+    failure_class: null
+    decision: null
+    next_allowed_task: task_13_phase_b_revalidation_small_eval
+
+  - id: task_13_phase_b_revalidation_small_eval
+    status: pending
+    group: "E: Phase B Real Evaluation And Closeout"
+    checkpoint_id: null
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "new real match batch"
+    real_validation_status: pending
+    requires:
+      - task_12_checkpoint_D_tactical_acceptance
+    goal: "Run Phase B-R real small evaluation on built-in Easy/Medium baseline opponents."
+    scope:
+      - "Run at least 6 real matches, chunking if necessary."
+      - "Prefer 2 maps and Easy Terran/Zerg/Protoss, with Medium Terran optional."
+      - "Collect build, army, order, combat, win/loss/status, crash/timeout, and artifact metrics."
+    non_goals:
+      - "Do not claim ladder competitiveness."
+      - "Do not start Phase C."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect batch summary and telemetry-derived metrics."
+    done_criteria:
+      - "Real batch evidence is complete enough for report generation."
+    minimum_gate:
+      - "At least 6 real matches."
+      - "Each match has result/replay/telemetry artifacts unless structured artifact failure is counted."
+      - "Some matches have friendly army."
+      - "Some matches have attack/defend order."
+    target_gate:
+      - "12+ real matches if quota permits."
+      - "Easy pool has wins or clear near-win build/combat indicators."
+      - "Build completion, army presence, and attack/defend coverage are reportable."
+    stretch_gate:
+      - "Medium opponent has valid records."
+      - "Initial win/loss matrix exists."
+    stop_conditions:
+      - "If artifacts are missing broadly or no friendly army appears, stop before report."
+    rollback_notes: "Preserve evidence; update queue only."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_14_phase_b_revalidation_report
+    status: pending
+    group: "E: Phase B Real Evaluation And Closeout"
+    checkpoint_id: null
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "prior real match batch from task_13"
+    real_validation_status: pending
+    requires:
+      - task_13_phase_b_revalidation_small_eval
+    goal: "Generate Phase B-R report from real data with explicit Level 1 decision."
+    scope:
+      - "Report build completion rate."
+      - "Report combat-unit production rate."
+      - "Report friendly army presence rate."
+      - "Report attack/defend counts."
+      - "Report friendly combat events."
+      - "Report win/loss/status and crash/timeout/missing artifacts."
+      - "State whether Level 1 is reached."
+    non_goals:
+      - "Do not run new SC2."
+      - "Do not claim ladder competitiveness."
+      - "Do not claim opponent-model impact."
+    files_likely_to_change:
+      - "evaluation/metrics/"
+      - "evaluation/reports/"
+      - "artifacts/reports/phase_b_revalidation/"
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Generate JSON summary and Markdown report."
+      - "Check report source paths are task_13 real outputs."
+    done_criteria:
+      - "Report distinguishes minimum, target, and stretch results."
+      - "Report states Level 1 reached or not reached."
+    minimum_gate:
+      - "Report uses real task_13 data."
+      - "Report includes required metrics."
+    target_gate:
+      - "Level 1 decision is evidence-backed."
+    stretch_gate:
+      - "Medium records and win/loss matrix are included if available."
+    stop_conditions:
+      - "If task_13 data is insufficient, mark report blocked."
+    rollback_notes: "Regenerate report after repaired data."
+    evidence_paths: []
+    capability_validation_status: not_started
+
+  - id: task_15_checkpoint_E_phase_b_acceptance
+    status: pending
+    group: "E: Phase B Real Evaluation And Closeout"
+    checkpoint_id: checkpoint_E
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: null
+    data_source: "prior real match batch and report from tasks 13-14"
+    real_validation_status: pending
+    requires:
+      - task_13_phase_b_revalidation_small_eval
+      - task_14_phase_b_revalidation_report
+    goal: "Final Phase B-R acceptance checkpoint."
+    scope:
+      - "Review task_13 and task_14."
+      - "Decide if Phase B is accepted, partially accepted with repair queue, or still blocked."
+      - "State whether Phase C planning is allowed."
+    non_goals:
+      - "Do not run new SC2."
+      - "Do not create Phase C unless explicitly requested after acceptance."
+      - "Do not alter gameplay."
+    files_likely_to_change:
+      - "docs/plans/active/phase_b_revalidation_task_queue.yaml"
+      - "docs/context/current_status.md"
+      - "docs/context/open_hypotheses.md"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Review report metrics and evidence paths."
+      - "Check minimum/target/stretch gates."
+    done_criteria:
+      - "Phase B-R acceptance decision is explicit."
+      - "Next action is repair queue, strengthening queue, or Phase C planning permission."
+    reviewed_tasks:
+      - task_13_phase_b_revalidation_small_eval
+      - task_14_phase_b_revalidation_report
+    original_goal_alignment: "Final decision against original Phase B goal and Level 1 target."
+    minimum_gate:
+      - "Duration blocker resolved."
+      - "Friendly army appears."
+      - "Attack/defend appears."
+      - "Small eval has real gameplay evidence."
+      - "Report uses real data."
+    target_gate:
+      - "Easy pool has repeated wins or explicitly quantified near-win indicators."
+      - "Level 1 decision is clear."
+    stretch_gate:
+      - "Medium has usable records."
+    stop_conditions:
+      - "If minimum fails, Phase B remains not accepted and Phase C remains blocked."
+    rollback_notes: "Keep Phase B-R active and create repair queue if needed."
+    evidence_paths: []
+    real_match_evidence_paths: []
+    actual_game_time_sufficient: null
+    minimum_gate_passed: null
+    target_gate_passed: null
+    stretch_gate_status: not_evaluated
+    capability_validation_status: not_started
+    failure_class: null
+    decision: null
+    next_allowed_task: null

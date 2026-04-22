@@ -91,10 +91,12 @@ Current evidence:
   baseline win target has been validated yet.
 
 Next validation:
-- insert a focused Phase B follow-up to fix or parameterize the real-match
-  duration window first, then rerun Gateway-ready, Cyber Core,
-  combat-unit production, attack/defend, combat, and small-eval probes before
-  creating Phase C.
+- execute Phase B-R:
+  `docs/plans/active/phase_b_revalidation_playable_core.md`;
+- first fix or parameterize the real-match duration window, then rerun
+  Gateway-ready, Cyber Core, combat-unit production, attack/defend, combat, and
+  small-eval probes before creating Phase C;
+- each checkpoint must distinguish minimum, target, and stretch gates.
 
 ## H5: Opponent modeling can improve real behavior metrics once a playable core exists
 
@@ -137,6 +139,6 @@ Current evidence:
   duration.
 
 Next validation:
-- carry the reclassification fields into the Phase B follow-up queue, where
-  gameplay capability claims must require both real matches and a satisfied
-  minimum opportunity window.
+- carry the reclassification fields into Phase B-R, where gameplay capability
+  claims must require both real matches and a satisfied minimum opportunity
+  window, and every third task must checkpoint whether continuing is allowed.
