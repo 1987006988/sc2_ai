@@ -1,0 +1,25 @@
+opponents:
+  - id: builtin_easy_protoss
+    type: computer
+    race: protoss
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_2
+      - protoss
+      - easy
+    enabled: true
+    notes: Phase A baseline V0 chunk 2a opponent.
+  - id: builtin_medium_protoss
+    type: computer
+    race: protoss
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_2
+      - protoss
+      - medium
+    enabled: true
+    notes: Phase A baseline V0 chunk 2a opponent.

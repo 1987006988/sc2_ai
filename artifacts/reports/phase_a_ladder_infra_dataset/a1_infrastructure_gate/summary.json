@@ -1,0 +1,51 @@
+{
+  "run_id": "phase_a_a1_infrastructure_gate",
+  "evidence_type": "real_infrastructure_gate",
+  "probe": {
+    "manifest_path": "data/logs/evaluation/phase_a_task4_single_probe/dataset_manifest.json",
+    "match_count": 1,
+    "status_counts": {
+      "max_game_time_reached": 1
+    },
+    "evidence_paths": [
+      "data/logs/evaluation/phase_a_task4_single_probe/reallaunch-433f2e15/match_result.json",
+      "data/logs/evaluation/phase_a_task4_single_probe/reallaunch-433f2e15/match.SC2Replay",
+      "data/logs/evaluation/phase_a_task4_single_probe/reallaunch-433f2e15/telemetry/events.jsonl"
+    ]
+  },
+  "smoke": {
+    "manifest_path": "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/dataset_manifest.json",
+    "failure_accounting_path": "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/failure_accounting_summary.json",
+    "total_matches": 4,
+    "status_counts": {
+      "max_game_time_reached": 4
+    },
+    "crash_rate": 0.0,
+    "timeout_rate": 0.0,
+    "artifact_completeness_rate": 1.0,
+    "missing_replay_count": 0,
+    "missing_telemetry_count": 0,
+    "evidence_paths": [
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-1ab58542/match_result.json",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-1ab58542/match.SC2Replay",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-1ab58542/telemetry/events.jsonl",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-2eb263cb/match_result.json",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-2eb263cb/match.SC2Replay",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-2eb263cb/telemetry/events.jsonl",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-7c1cb0cb/match_result.json",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-7c1cb0cb/match.SC2Replay",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-7c1cb0cb/telemetry/events.jsonl",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-b2a2e4aa/match_result.json",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-b2a2e4aa/match.SC2Replay",
+      "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-b2a2e4aa/telemetry/events.jsonl"
+    ]
+  },
+  "limitations": [
+    "infrastructure gate only",
+    "one probe plus four smoke matches are not a baseline dataset",
+    "does not prove bot strength",
+    "does not prove ladder competitiveness",
+    "does not prove gameplay quality",
+    "Phase A2 baseline dataset is still required before Phase A closeout"
+  ]
+}

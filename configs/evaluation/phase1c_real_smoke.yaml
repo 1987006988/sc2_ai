@@ -1,0 +1,9 @@
+evaluation:
+  name: phase1c_real_smoke
+  launch_mode: real_launch
+  bot_config: configs/bot/debug.yaml
+  maps_config: configs/maps/phase1c_smoke_maps.yaml
+  opponents_config: configs/opponents/local_pool.yaml
+  repeats: 1
+  output_dir: data/logs/evaluation/phase1c_real_smoke
+  fail_on_crash: false

@@ -1,0 +1,553 @@
+{
+  "run_timestamp": "2026-04-21T15:19:29.071951+00:00",
+  "run_id": "20260421T145911Z",
+  "evaluation_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z",
+  "output_scope": "evaluation_dir",
+  "selected_match_dirs": [
+    "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-1c3ccc7d",
+    "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-5b92e21b",
+    "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-a904a421",
+    "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-ad89d057",
+    "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-b5b1667b",
+    "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-d38f69a3"
+  ],
+  "historical_match_count_excluded": 0,
+  "historical_match_dirs": [],
+  "match_count": 6,
+  "map_list": [
+    "incorporeal_aie_v4"
+  ],
+  "opponent_list": [
+    "builtin_easy_terran",
+    "builtin_easy_zerg"
+  ],
+  "bot_config_list": [
+    "minimal_behavior",
+    "null",
+    "rule_based_prediction_only"
+  ],
+  "status_counts": {
+    "max_game_time_reached": 6
+  },
+  "by_opponent_model_mode": {
+    "rule_based": {
+      "match_count": 4,
+      "status_counts": {
+        "max_game_time_reached": 4
+      },
+      "first_enemy_seen_time_avg": 40.179,
+      "observation_rush_signal_matches": 4,
+      "observation_tech_signal_matches": 4,
+      "possible_rush_signal_matches": 4,
+      "possible_tech_signal_matches": 4,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.65,
+      "prediction_signals_non_empty_count": 1642,
+      "prediction_recommended_response_tags_count": 3433,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 6
+    },
+    "null": {
+      "match_count": 2,
+      "status_counts": {
+        "max_game_time_reached": 2
+      },
+      "first_enemy_seen_time_avg": 40.179,
+      "observation_rush_signal_matches": 1,
+      "observation_tech_signal_matches": 2,
+      "possible_rush_signal_matches": 1,
+      "possible_tech_signal_matches": 2,
+      "prediction_rush_risk_max": 0.0,
+      "prediction_tech_risk_max": 0.0,
+      "prediction_confidence_max": 0.0,
+      "prediction_signals_non_empty_count": 0,
+      "prediction_recommended_response_tags_count": 0,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 6
+    }
+  },
+  "rule_based_non_empty_prediction_signal_sample": {
+    "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-1c3ccc7d",
+    "opening_type": "production_seen",
+    "rush_risk": 0.1,
+    "tech_risk": 0.05,
+    "confidence": 0.5,
+    "prediction_mode": "prediction_only",
+    "signals": [
+      "production_structure"
+    ],
+    "recommended_response_tags": [
+      "prediction_only"
+    ]
+  },
+  "features": [
+    {
+      "match_id": "reallaunch-1c3ccc7d",
+      "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-1c3ccc7d",
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "builtin_easy_zerg",
+      "opponent_race": "zerg",
+      "opponent_difficulty": "easy",
+      "bot_config_id": "minimal_behavior",
+      "opponent_model_mode": "rule_based",
+      "intervention_mode": "minimal_behavior",
+      "match_status": "max_game_time_reached",
+      "match_duration": 123.359865,
+      "first_enemy_seen_time": 40.17857142857143,
+      "first_combat_unit_seen_time": 105.89285714285715,
+      "first_enemy_structure_seen_time": 40.714285714285715,
+      "first_production_structure_seen_time": 42.32142857142858,
+      "first_tech_structure_seen_time": 94.82142857142858,
+      "observation_rush_signal_seen": true,
+      "observation_tech_signal_seen": true,
+      "possible_rush_signal_seen": true,
+      "possible_tech_signal_seen": true,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.65,
+      "prediction_signals_non_empty_count": 414,
+      "prediction_recommended_response_tags_count": 829,
+      "prediction_signal_sample": {
+        "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-1c3ccc7d",
+        "opening_type": "production_seen",
+        "rush_risk": 0.1,
+        "tech_risk": 0.05,
+        "confidence": 0.5,
+        "prediction_mode": "prediction_only",
+        "signals": [
+          "production_structure"
+        ],
+        "recommended_response_tags": [
+          "prediction_only"
+        ]
+      },
+      "selected_response_tag_count": 348,
+      "strategy_switch_count": 4,
+      "defensive_posture_count": 58,
+      "continue_scouting_count": 228,
+      "tech_alert_count": 62,
+      "minimal_behavior_intervention_count": 879,
+      "minimal_behavior_active_count": 228,
+      "minimal_behavior_skipped_count": 651,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 5,
+      "replay_path": "data\\logs\\evaluation\\phase1e_strategy_intervention_ablation\\20260421T145911Z\\reallaunch-1c3ccc7d\\match.SC2Replay"
+    },
+    {
+      "match_id": "reallaunch-5b92e21b",
+      "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-5b92e21b",
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "builtin_easy_zerg",
+      "opponent_race": "zerg",
+      "opponent_difficulty": "easy",
+      "bot_config_id": "rule_based_prediction_only",
+      "opponent_model_mode": "rule_based",
+      "intervention_mode": "none",
+      "match_status": "max_game_time_reached",
+      "match_duration": 31.68808,
+      "first_enemy_seen_time": 39.285714285714285,
+      "first_combat_unit_seen_time": 107.32142857142858,
+      "first_enemy_structure_seen_time": 40.35714285714286,
+      "first_production_structure_seen_time": 43.214285714285715,
+      "first_tech_structure_seen_time": 96.07142857142858,
+      "observation_rush_signal_seen": true,
+      "observation_tech_signal_seen": true,
+      "possible_rush_signal_seen": true,
+      "possible_tech_signal_seen": true,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.65,
+      "prediction_signals_non_empty_count": 409,
+      "prediction_recommended_response_tags_count": 814,
+      "prediction_signal_sample": {
+        "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-5b92e21b",
+        "opening_type": "production_seen",
+        "rush_risk": 0.1,
+        "tech_risk": 0.05,
+        "confidence": 0.5,
+        "prediction_mode": "prediction_only",
+        "signals": [
+          "production_structure"
+        ],
+        "recommended_response_tags": [
+          "prediction_only"
+        ]
+      },
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "defensive_posture_count": 0,
+      "continue_scouting_count": 0,
+      "tech_alert_count": 0,
+      "minimal_behavior_intervention_count": 0,
+      "minimal_behavior_active_count": 0,
+      "minimal_behavior_skipped_count": 0,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 4,
+      "replay_path": "data\\logs\\evaluation\\phase1e_strategy_intervention_ablation\\20260421T145911Z\\reallaunch-5b92e21b\\match.SC2Replay"
+    },
+    {
+      "match_id": "reallaunch-a904a421",
+      "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-a904a421",
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "builtin_easy_zerg",
+      "opponent_race": "zerg",
+      "opponent_difficulty": "easy",
+      "bot_config_id": "null",
+      "opponent_model_mode": "null",
+      "intervention_mode": "none",
+      "match_status": "max_game_time_reached",
+      "match_duration": 31.213255,
+      "first_enemy_seen_time": 39.642857142857146,
+      "first_combat_unit_seen_time": 107.32142857142858,
+      "first_enemy_structure_seen_time": 40.714285714285715,
+      "first_production_structure_seen_time": 43.214285714285715,
+      "first_tech_structure_seen_time": 98.39285714285715,
+      "observation_rush_signal_seen": true,
+      "observation_tech_signal_seen": true,
+      "possible_rush_signal_seen": true,
+      "possible_tech_signal_seen": true,
+      "prediction_rush_risk_max": 0.0,
+      "prediction_tech_risk_max": 0.0,
+      "prediction_confidence_max": 0.0,
+      "prediction_signals_non_empty_count": 0,
+      "prediction_recommended_response_tags_count": 0,
+      "prediction_signal_sample": null,
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "defensive_posture_count": 0,
+      "continue_scouting_count": 0,
+      "tech_alert_count": 0,
+      "minimal_behavior_intervention_count": 0,
+      "minimal_behavior_active_count": 0,
+      "minimal_behavior_skipped_count": 0,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 5,
+      "replay_path": "data\\logs\\evaluation\\phase1e_strategy_intervention_ablation\\20260421T145911Z\\reallaunch-a904a421\\match.SC2Replay"
+    },
+    {
+      "match_id": "reallaunch-ad89d057",
+      "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-ad89d057",
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "builtin_easy_terran",
+      "opponent_race": "terran",
+      "opponent_difficulty": "easy",
+      "bot_config_id": "minimal_behavior",
+      "opponent_model_mode": "rule_based",
+      "intervention_mode": "minimal_behavior",
+      "match_status": "max_game_time_reached",
+      "match_duration": 35.836438,
+      "first_enemy_seen_time": 40.53571428571429,
+      "first_combat_unit_seen_time": 108.75,
+      "first_enemy_structure_seen_time": 40.714285714285715,
+      "first_production_structure_seen_time": 43.214285714285715,
+      "first_tech_structure_seen_time": 81.07142857142858,
+      "observation_rush_signal_seen": true,
+      "observation_tech_signal_seen": true,
+      "possible_rush_signal_seen": true,
+      "possible_tech_signal_seen": true,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.6,
+      "prediction_signals_non_empty_count": 409,
+      "prediction_recommended_response_tags_count": 890,
+      "prediction_signal_sample": {
+        "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-ad89d057",
+        "opening_type": "production_seen",
+        "rush_risk": 0.1,
+        "tech_risk": 0.05,
+        "confidence": 0.45,
+        "prediction_mode": "prediction_only",
+        "signals": [
+          "production_structure"
+        ],
+        "recommended_response_tags": [
+          "prediction_only"
+        ]
+      },
+      "selected_response_tag_count": 425,
+      "strategy_switch_count": 4,
+      "defensive_posture_count": 42,
+      "continue_scouting_count": 228,
+      "tech_alert_count": 155,
+      "minimal_behavior_intervention_count": 879,
+      "minimal_behavior_active_count": 228,
+      "minimal_behavior_skipped_count": 651,
+      "visible_enemy_units_max": 16,
+      "visible_enemy_structures_max": 6,
+      "replay_path": "data\\logs\\evaluation\\phase1e_strategy_intervention_ablation\\20260421T145911Z\\reallaunch-ad89d057\\match.SC2Replay"
+    },
+    {
+      "match_id": "reallaunch-b5b1667b",
+      "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-b5b1667b",
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "builtin_easy_terran",
+      "opponent_race": "terran",
+      "opponent_difficulty": "easy",
+      "bot_config_id": "rule_based_prediction_only",
+      "opponent_model_mode": "rule_based",
+      "intervention_mode": "none",
+      "match_status": "max_game_time_reached",
+      "match_duration": 31.935043,
+      "first_enemy_seen_time": 40.714285714285715,
+      "first_combat_unit_seen_time": 107.32142857142858,
+      "first_enemy_structure_seen_time": 40.714285714285715,
+      "first_production_structure_seen_time": 43.03571428571429,
+      "first_tech_structure_seen_time": 80.71428571428572,
+      "observation_rush_signal_seen": true,
+      "observation_tech_signal_seen": true,
+      "possible_rush_signal_seen": true,
+      "possible_tech_signal_seen": true,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.55,
+      "prediction_signals_non_empty_count": 410,
+      "prediction_recommended_response_tags_count": 900,
+      "prediction_signal_sample": {
+        "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-b5b1667b",
+        "opening_type": "production_seen",
+        "rush_risk": 0.1,
+        "tech_risk": 0.05,
+        "confidence": 0.45,
+        "prediction_mode": "prediction_only",
+        "signals": [
+          "production_structure"
+        ],
+        "recommended_response_tags": [
+          "prediction_only"
+        ]
+      },
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "defensive_posture_count": 0,
+      "continue_scouting_count": 0,
+      "tech_alert_count": 0,
+      "minimal_behavior_intervention_count": 0,
+      "minimal_behavior_active_count": 0,
+      "minimal_behavior_skipped_count": 0,
+      "visible_enemy_units_max": 16,
+      "visible_enemy_structures_max": 5,
+      "replay_path": "data\\logs\\evaluation\\phase1e_strategy_intervention_ablation\\20260421T145911Z\\reallaunch-b5b1667b\\match.SC2Replay"
+    },
+    {
+      "match_id": "reallaunch-d38f69a3",
+      "match_dir": "data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-d38f69a3",
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "builtin_easy_terran",
+      "opponent_race": "terran",
+      "opponent_difficulty": "easy",
+      "bot_config_id": "null",
+      "opponent_model_mode": "null",
+      "intervention_mode": "none",
+      "match_status": "max_game_time_reached",
+      "match_duration": 36.973112,
+      "first_enemy_seen_time": 40.714285714285715,
+      "first_combat_unit_seen_time": null,
+      "first_enemy_structure_seen_time": 40.714285714285715,
+      "first_production_structure_seen_time": 42.5,
+      "first_tech_structure_seen_time": 80.71428571428572,
+      "observation_rush_signal_seen": false,
+      "observation_tech_signal_seen": true,
+      "possible_rush_signal_seen": false,
+      "possible_tech_signal_seen": true,
+      "prediction_rush_risk_max": 0.0,
+      "prediction_tech_risk_max": 0.0,
+      "prediction_confidence_max": 0.0,
+      "prediction_signals_non_empty_count": 0,
+      "prediction_recommended_response_tags_count": 0,
+      "prediction_signal_sample": null,
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "defensive_posture_count": 0,
+      "continue_scouting_count": 0,
+      "tech_alert_count": 0,
+      "minimal_behavior_intervention_count": 0,
+      "minimal_behavior_active_count": 0,
+      "minimal_behavior_skipped_count": 0,
+      "visible_enemy_units_max": 16,
+      "visible_enemy_structures_max": 6,
+      "replay_path": "data\\logs\\evaluation\\phase1e_strategy_intervention_ablation\\20260421T145911Z\\reallaunch-d38f69a3\\match.SC2Replay"
+    }
+  ],
+  "known_limitations": [
+    "This is a minimal intervention telemetry ablation.",
+    "The intervention is intentionally thin and config-gated.",
+    "This report does not prove win-rate improvement.",
+    "This report does not prove gameplay quality improvement.",
+    "Response tags and intervention counts show that code paths executed, not that decisions are strategically optimal."
+  ],
+  "next_experiment_recommendation": "Review response-tag and intervention telemetry before deciding whether any minimal behavior should be retained for a demo freeze.",
+  "report_type": "phase1e_strategy_intervention",
+  "by_bot_config": {
+    "minimal_behavior": {
+      "match_count": 2,
+      "status_counts": {
+        "max_game_time_reached": 2
+      },
+      "first_enemy_seen_time_avg": 40.357,
+      "observation_rush_signal_matches": 2,
+      "observation_tech_signal_matches": 2,
+      "possible_rush_signal_matches": 2,
+      "possible_tech_signal_matches": 2,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.65,
+      "prediction_signals_non_empty_count": 823,
+      "prediction_recommended_response_tags_count": 1719,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 6,
+      "opponent_model_modes": [
+        "rule_based"
+      ],
+      "intervention_modes": [
+        "minimal_behavior"
+      ],
+      "selected_response_tag_count": 773,
+      "strategy_switch_count": 8,
+      "defensive_posture_count": 100,
+      "continue_scouting_count": 456,
+      "tech_alert_count": 217,
+      "minimal_behavior_intervention_count": 1758,
+      "minimal_behavior_active_count": 456,
+      "minimal_behavior_skipped_count": 1302
+    },
+    "rule_based_prediction_only": {
+      "match_count": 2,
+      "status_counts": {
+        "max_game_time_reached": 2
+      },
+      "first_enemy_seen_time_avg": 40.0,
+      "observation_rush_signal_matches": 2,
+      "observation_tech_signal_matches": 2,
+      "possible_rush_signal_matches": 2,
+      "possible_tech_signal_matches": 2,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.65,
+      "prediction_signals_non_empty_count": 819,
+      "prediction_recommended_response_tags_count": 1714,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 5,
+      "opponent_model_modes": [
+        "rule_based"
+      ],
+      "intervention_modes": [
+        "none"
+      ],
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 2,
+      "defensive_posture_count": 0,
+      "continue_scouting_count": 0,
+      "tech_alert_count": 0,
+      "minimal_behavior_intervention_count": 0,
+      "minimal_behavior_active_count": 0,
+      "minimal_behavior_skipped_count": 0
+    },
+    "null": {
+      "match_count": 2,
+      "status_counts": {
+        "max_game_time_reached": 2
+      },
+      "first_enemy_seen_time_avg": 40.179,
+      "observation_rush_signal_matches": 1,
+      "observation_tech_signal_matches": 2,
+      "possible_rush_signal_matches": 1,
+      "possible_tech_signal_matches": 2,
+      "prediction_rush_risk_max": 0.0,
+      "prediction_tech_risk_max": 0.0,
+      "prediction_confidence_max": 0.0,
+      "prediction_signals_non_empty_count": 0,
+      "prediction_recommended_response_tags_count": 0,
+      "visible_enemy_units_max": 22,
+      "visible_enemy_structures_max": 6,
+      "opponent_model_modes": [
+        "null"
+      ],
+      "intervention_modes": [
+        "none"
+      ],
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 2,
+      "defensive_posture_count": 0,
+      "continue_scouting_count": 0,
+      "tech_alert_count": 0,
+      "minimal_behavior_intervention_count": 0,
+      "minimal_behavior_active_count": 0,
+      "minimal_behavior_skipped_count": 0
+    }
+  },
+  "prediction_timeline_summary": [
+    {
+      "match_id": "reallaunch-ad89d057",
+      "bot_config_id": "minimal_behavior",
+      "opponent_id": "builtin_easy_terran",
+      "first_enemy_seen_time": 40.53571428571429,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.6,
+      "selected_response_tag_count": 425,
+      "strategy_switch_count": 4,
+      "minimal_behavior_intervention_count": 879
+    },
+    {
+      "match_id": "reallaunch-1c3ccc7d",
+      "bot_config_id": "minimal_behavior",
+      "opponent_id": "builtin_easy_zerg",
+      "first_enemy_seen_time": 40.17857142857143,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.65,
+      "selected_response_tag_count": 348,
+      "strategy_switch_count": 4,
+      "minimal_behavior_intervention_count": 879
+    },
+    {
+      "match_id": "reallaunch-d38f69a3",
+      "bot_config_id": "null",
+      "opponent_id": "builtin_easy_terran",
+      "first_enemy_seen_time": 40.714285714285715,
+      "prediction_rush_risk_max": 0.0,
+      "prediction_tech_risk_max": 0.0,
+      "prediction_confidence_max": 0.0,
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "minimal_behavior_intervention_count": 0
+    },
+    {
+      "match_id": "reallaunch-a904a421",
+      "bot_config_id": "null",
+      "opponent_id": "builtin_easy_zerg",
+      "first_enemy_seen_time": 39.642857142857146,
+      "prediction_rush_risk_max": 0.0,
+      "prediction_tech_risk_max": 0.0,
+      "prediction_confidence_max": 0.0,
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "minimal_behavior_intervention_count": 0
+    },
+    {
+      "match_id": "reallaunch-b5b1667b",
+      "bot_config_id": "rule_based_prediction_only",
+      "opponent_id": "builtin_easy_terran",
+      "first_enemy_seen_time": 40.714285714285715,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.55,
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "minimal_behavior_intervention_count": 0
+    },
+    {
+      "match_id": "reallaunch-5b92e21b",
+      "bot_config_id": "rule_based_prediction_only",
+      "opponent_id": "builtin_easy_zerg",
+      "first_enemy_seen_time": 39.285714285714285,
+      "prediction_rush_risk_max": 0.55,
+      "prediction_tech_risk_max": 0.5,
+      "prediction_confidence_max": 0.65,
+      "selected_response_tag_count": 0,
+      "strategy_switch_count": 1,
+      "minimal_behavior_intervention_count": 0
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+evaluation:
+  name: phase_b_small_eval
+  launch_mode: real_launch
+  bot_config: configs/bot/debug.yaml
+  maps_config: configs/maps/phase_b_small_eval_maps.yaml
+  opponents_config: configs/opponents/phase_b_small_eval_pool.yaml
+  repeats: 2
+  output_dir: data/logs/evaluation/phase_b_small_eval
+  run_id: phase_b_small_eval_20260422
+  isolate_runs: true
+  fail_on_crash: false

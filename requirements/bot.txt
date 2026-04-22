@@ -1,0 +1,4 @@
+-r base.txt
+# Phase-1 target base: bare python-sc2 (BurnySC2).
+burnysc2==7.2.1
+# Ares-sc2 remains optional later and is not a phase-1 prerequisite.

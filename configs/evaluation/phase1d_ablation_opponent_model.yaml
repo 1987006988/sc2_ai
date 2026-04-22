@@ -1,0 +1,21 @@
+evaluation:
+  name: phase1d_ablation_opponent_model
+  launch_mode: real_launch
+  bot_configs:
+    - id: "null"
+      path: configs/bot/opponent_model_null.yaml
+      tags:
+        - without_opponent_model
+        - prediction_only
+    - id: rule_based
+      path: configs/bot/opponent_model_rule_based.yaml
+      tags:
+        - with_rule_based_opponent_model
+        - prediction_only
+  maps_config: configs/maps/phase1c_smoke_maps.yaml
+  opponents_config: configs/opponents/phase1d_ablation_pool.yaml
+  repeats: 1
+  output_dir: data/logs/evaluation/phase1d_ablation_opponent_model
+  isolate_runs: true
+  fail_on_crash: false
+  report_output_dir: artifacts/reports/phase1d_ablation_opponent_model

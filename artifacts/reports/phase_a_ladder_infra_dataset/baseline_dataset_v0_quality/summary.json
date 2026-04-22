@@ -1,0 +1,157 @@
+{
+  "run_id": "phase_a_baseline_v0",
+  "evidence_type": "real_match_baseline_dataset",
+  "data_source": "data/logs/evaluation/phase_a_baseline_v0/dataset_manifest.json",
+  "output_scope": "merged_phase_a_baseline_v0_manifest_only",
+  "historical_match_count_excluded": null,
+  "match_count": 24,
+  "maps": [
+    "incorporeal_aie_v4",
+    "leylines_aie_v3"
+  ],
+  "opponents": {
+    "builtin_easy_protoss": 4,
+    "builtin_easy_terran": 4,
+    "builtin_easy_zerg": 4,
+    "builtin_medium_protoss": 4,
+    "builtin_medium_terran": 4,
+    "builtin_medium_zerg": 4
+  },
+  "opponent_races": {
+    "protoss": 8,
+    "terran": 8,
+    "zerg": 8
+  },
+  "opponent_difficulties": {
+    "easy": 12,
+    "medium": 12
+  },
+  "bot_configs": [
+    "default"
+  ],
+  "status_counts": {
+    "max_game_time_reached": 24
+  },
+  "crash_rate": 0.0,
+  "timeout_rate": 0.0,
+  "artifact_completeness": {
+    "match_result_count": 24,
+    "replay_count": 24,
+    "telemetry_count": 24,
+    "missing_match_result_count": 0,
+    "missing_replay_count": 0,
+    "missing_telemetry_count": 0,
+    "missing_match_result_count_observed": 0,
+    "missing_replay_count_observed": 0,
+    "missing_telemetry_count_observed": 0
+  },
+  "replay_availability": 1.0,
+  "telemetry_availability": 1.0,
+  "match_duration_seconds": {
+    "min": 26.464161,
+    "max": 29.871431,
+    "avg": 28.201297583333332
+  },
+  "first_enemy_seen_time_seconds": {
+    "min": 39.10714285714286,
+    "max": 41.964285714285715,
+    "avg": 40.50548748824611
+  },
+  "first_scout_time_seconds": {
+    "min": null,
+    "max": null,
+    "avg": null,
+    "reason": "worker_scout_dispatched telemetry currently has no game_time field"
+  },
+  "scout_dispatch_event_count": 24,
+  "telemetry_event_coverage": {
+    "match_started": {
+      "matches_with_event": 24,
+      "match_coverage_rate": 1.0,
+      "event_count": 24
+    },
+    "sc2_match_started": {
+      "matches_with_event": 24,
+      "match_coverage_rate": 1.0,
+      "event_count": 24
+    },
+    "game_state": {
+      "matches_with_event": 24,
+      "match_coverage_rate": 1.0,
+      "event_count": 15624
+    },
+    "scouting_observation": {
+      "matches_with_event": 24,
+      "match_coverage_rate": 1.0,
+      "event_count": 15624
+    },
+    "opponent_prediction": {
+      "matches_with_event": 24,
+      "match_coverage_rate": 1.0,
+      "event_count": 15624
+    },
+    "strategy_response": {
+      "matches_with_event": 24,
+      "match_coverage_rate": 1.0,
+      "event_count": 15624
+    },
+    "sc2_match_exit_requested": {
+      "matches_with_event": 24,
+      "match_coverage_rate": 1.0,
+      "event_count": 24
+    }
+  },
+  "observed_non_core_event_types": [
+    "strategy_decision",
+    "strategy_switch",
+    "supply_sustain_attempt",
+    "supply_sustain_skipped",
+    "supply_sustain_success",
+    "worker_scout_dispatched"
+  ],
+  "source_manifests": [
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/dataset_manifest.json",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2/dataset_manifest.json",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/dataset_manifest.json"
+  ],
+  "included_match_dirs": [
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-318750bc",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-3da62ab6",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-56570d76",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-5d045c5a",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-ad495afd",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-b6d890d3",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-caf91b96",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-ef90a636",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-209ba17f",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-2797c44f",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-3838d109",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-729e6c23",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-2695741d",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-33bcb2b3",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-72802f06",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-94f8dad4",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-0114db2f",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-61225c95",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-6ce5df40",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-9ac07d38",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-b2da718c",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-d12d6ff5",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-d8db51f2",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-fea3acf5"
+  ],
+  "excluded_historical_dirs": [],
+  "evidence_paths": [
+    "data/logs/evaluation/phase_a_baseline_v0/dataset_manifest.json",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/dataset_manifest.json",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2/dataset_manifest.json",
+    "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/dataset_manifest.json"
+  ],
+  "current_bot_behavior_limitations": [
+    "Baseline dataset is collected from the current survival/opponent-model scaffold, not a playable competitive core.",
+    "All 24 matches ended with max_game_time_reached, so this dataset does not measure wins or losses as a strength claim.",
+    "Current telemetry has scout dispatch events but no game_time on those events, so first_scout_time is unknown.",
+    "Combat and build progression quality are not established by this report.",
+    "This report does not prove bot strength, ladder competitiveness, or gameplay improvement."
+  ]
+}

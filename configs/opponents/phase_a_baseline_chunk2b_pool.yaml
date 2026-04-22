@@ -1,0 +1,25 @@
+opponents:
+  - id: builtin_easy_terran
+    type: computer
+    race: terran
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_2
+      - terran
+      - easy
+    enabled: true
+    notes: Phase A baseline V0 chunk 2b opponent.
+  - id: builtin_medium_terran
+    type: computer
+    race: terran
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_2
+      - terran
+      - medium
+    enabled: true
+    notes: Phase A baseline V0 chunk 2b opponent.

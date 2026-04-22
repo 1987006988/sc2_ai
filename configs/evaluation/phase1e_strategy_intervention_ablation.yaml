@@ -1,0 +1,26 @@
+evaluation:
+  name: phase1e_strategy_intervention_ablation
+  launch_mode: real_launch
+  bot_configs:
+    - id: "null"
+      path: configs/bot/opponent_model_null.yaml
+      tags:
+        - without_opponent_model
+        - prediction_only
+    - id: rule_based_prediction_only
+      path: configs/bot/opponent_model_rule_based.yaml
+      tags:
+        - with_rule_based_opponent_model
+        - prediction_only
+    - id: minimal_behavior
+      path: configs/bot/opponent_model_minimal_behavior.yaml
+      tags:
+        - with_rule_based_opponent_model
+        - minimal_behavior
+  maps_config: configs/maps/phase1c_smoke_maps.yaml
+  opponents_config: configs/opponents/phase1d_ablation_pool.yaml
+  repeats: 1
+  output_dir: data/logs/evaluation/phase1e_strategy_intervention_ablation
+  isolate_runs: true
+  fail_on_crash: false
+  report_output_dir: artifacts/reports/phase1e_strategy_intervention

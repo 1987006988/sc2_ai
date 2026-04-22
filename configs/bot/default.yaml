@@ -1,0 +1,47 @@
+bot:
+  name: sc2-ai-skeleton
+  race: protoss
+  strategy: protoss_timing_stub
+
+managers:
+  macro: true
+  scouting: true
+  strategy: true
+  tactical: true
+  micro: true
+
+opponent_model:
+  mode: null
+  intervention_mode: none
+  rush_risk_threshold: 0.5
+  tech_risk_threshold: 0.5
+  low_information_confidence_threshold: 0.25
+  low_information_game_time_threshold: 90.0
+
+runtime:
+  max_game_loop: 2600
+  max_steps:
+  worker_production: true
+  worker_gather: true
+  worker_scout: true
+  supply_sustain: true
+  supply_sustain_threshold: 2
+  supply_structure_name: pylon
+  army_defense: true
+
+build_order:
+  target_probe_count: 22
+  pylon_supply_buffer: 2
+  gateway_min_probe_count: 16
+  gateway_min_game_time: 90.0
+  assimilator_enabled: true
+  cybernetics_core_enabled: true
+  zealot_production_priority: 10
+  stalker_production_priority: 20
+  attack_army_supply_threshold: 8
+  attack_game_time_threshold: 360.0
+  defend_radius: 30.0
+
+telemetry:
+  enabled: true
+  output_dir: data/logs/telemetry

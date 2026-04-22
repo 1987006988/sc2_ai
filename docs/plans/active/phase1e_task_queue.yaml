@@ -1,0 +1,555 @@
+queue:
+  name: phase1e_minimal_strategy_intervention_v0
+  execution_mode: manual_trigger_only
+  validation_levels:
+    L0: "static/code check: files, interfaces, and configs exist"
+    L1: "unit test: synthetic input or fake observation verifies code logic"
+    L2: "dry telemetry: dry path can write telemetry"
+    L3: "real telemetry: real SC2 local match contains target telemetry"
+  quota_policy:
+    expected_codex_window: one_plus_window
+    one_task_per_trigger: true
+    avoid_scope_expansion: true
+    run_only_task_verification: true
+    scheduler_available: false
+  forbidden_scope:
+    - complex build order
+    - gateway production
+    - gas or tech progression
+    - full army production
+    - expansion
+    - SMAC
+    - LLM
+    - world-model-lite
+    - replay imitation learning
+    - importing research code into src/sc2bot
+    - claiming win-rate improvement without evidence
+  trigger_rules:
+    - Read this queue.
+    - "Find the first task with `status: in_progress`; otherwise find the first task with `status: pending` whose `requires` entries are completed."
+    - Execute only that one task.
+    - Run only that task's verification.
+    - Update this queue status and validation fields.
+    - Update `docs/handoffs/latest.md`.
+    - Stop.
+  tasks:
+    - id: task_0_create_phase1e_plan_and_queue
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      validation_level_required: L0
+      actual_validation_level: L0
+      data_source: static/code only
+      real_validation_status: not_required
+      evidence_paths:
+        - docs/plans/active/phase1e_minimal_strategy_intervention_v0.md
+        - docs/plans/active/phase1e_task_queue.yaml
+        - docs/plans/active/phase1e_manual_trigger.md
+        - docs/handoffs/latest.md
+      requires: []
+      goal: Create the Phase 1E plan, quota-safe task queue, and manual trigger instructions.
+      scope:
+        - Define Phase 1E goals, scope, non-goals, validation levels, and task sequence.
+        - Create the manual-trigger queue.
+        - Update handoff with the next pending task.
+      non_goals:
+        - Do not implement strategy response code.
+        - Do not modify runtime or StrategyManager.
+        - Do not run tests.
+        - Do not run SC2.
+      files_likely_to_change:
+        - docs/plans/active/phase1e_minimal_strategy_intervention_v0.md
+        - docs/plans/active/phase1e_task_queue.yaml
+        - docs/plans/active/phase1e_manual_trigger.md
+        - docs/handoffs/latest.md
+      verification:
+        - Confirm plan, queue, and manual trigger files exist.
+        - Confirm next pending task is `task_1_strategy_response_dataclass`.
+      done_criteria:
+        - Phase 1E plan files exist.
+        - Queue is split into quota-safe manual tasks.
+        - Handoff states Phase 1E planning is created and implementation has not started.
+      stop_conditions:
+        - Queue cannot be written or parsed.
+        - Scope starts requiring implementation changes.
+      rollback_notes:
+        - Remove the Phase 1E planning files and restore the previous handoff.
+
+    - id: task_1_strategy_response_dataclass
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test
+      real_validation_status: not_required
+      evidence_paths:
+        - src/sc2bot/domain/decisions.py
+        - tests/unit/test_strategy_manager.py
+      requires:
+        - task_0_create_phase1e_plan_and_queue
+      goal: Define the minimal StrategyResponse data shape.
+      scope:
+        - Add `StrategyResponse` with `selected_response_tag`, `strategy_switch_reason`, and prediction reference fields.
+        - Add serialization helpers if needed for telemetry.
+        - Add synthetic unit tests.
+      non_goals:
+        - Do not integrate with runtime.
+        - Do not change gameplay behavior.
+        - Do not run SC2.
+      files_likely_to_change:
+        - src/sc2bot/domain/decisions.py
+        - tests/unit/test_strategy_manager.py
+        - docs/handoffs/latest.md
+        - docs/plans/active/phase1e_task_queue.yaml
+      verification:
+        - python -m pytest tests/unit/test_strategy_manager.py
+      done_criteria:
+        - StrategyResponse serializes cleanly.
+        - Default response is safe and no-op.
+      stop_conditions:
+        - Requires broad domain model refactor.
+      rollback_notes:
+        - Remove the new dataclass and tests.
+
+    - id: task_2_intervention_config_schema
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test
+      real_validation_status: not_required
+      evidence_paths:
+        - src/sc2bot/config/schema.py
+        - src/sc2bot/config/loader.py
+        - configs/bot/default.yaml
+        - configs/bot/opponent_model_null.yaml
+        - configs/bot/opponent_model_rule_based.yaml
+        - configs/bot/opponent_model_tag_only.yaml
+        - tests/unit/test_config_loader.py
+      requires:
+        - task_1_strategy_response_dataclass
+      goal: Add config schema for opponent-model intervention modes and thresholds.
+      scope:
+        - Add `intervention_mode: none | tag_only | minimal_behavior`.
+        - Add rush, tech, and low-information thresholds.
+        - Add or update bot configs for Phase 1E modes.
+        - Keep Phase 1D configs backward compatible.
+      non_goals:
+        - Do not change StrategyManager behavior.
+        - Do not change runtime behavior.
+        - Do not run SC2.
+      files_likely_to_change:
+        - src/sc2bot/config/schema.py
+        - src/sc2bot/config/loader.py
+        - configs/bot/opponent_model_rule_based.yaml
+        - configs/bot/opponent_model_null.yaml
+        - configs/bot/opponent_model_tag_only.yaml
+        - tests/unit/test_config_loader.py
+      verification:
+        - python -m pytest tests/unit/test_config_loader.py
+      done_criteria:
+        - Existing bot configs still load.
+        - New intervention-mode configs load.
+      stop_conditions:
+        - Config loader needs a larger rewrite.
+      rollback_notes:
+        - Revert schema/config additions.
+
+    - id: task_3_strategy_manager_tag_only
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test
+      real_validation_status: not_required
+      evidence_paths:
+        - src/sc2bot/managers/strategy_manager.py
+        - tests/unit/test_strategy_manager.py
+      requires:
+        - task_2_intervention_config_schema
+      goal: Let StrategyManager produce selected response tags in tag_only mode.
+      scope:
+        - Consume synthetic opponent prediction input.
+        - Select `continue_scouting`, `defensive_posture`, or `tech_alert`.
+        - Produce `strategy_switch_reason`.
+        - Add unit tests for low information, rush risk, and tech risk.
+      non_goals:
+        - Do not alter gameplay.
+        - Do not emit runtime telemetry yet.
+        - Do not run SC2.
+      files_likely_to_change:
+        - src/sc2bot/managers/strategy_manager.py
+        - src/sc2bot/domain/decisions.py
+        - tests/unit/test_strategy_manager.py
+        - docs/handoffs/latest.md
+        - docs/plans/active/phase1e_task_queue.yaml
+      verification:
+        - python -m pytest tests/unit/test_strategy_manager.py
+      done_criteria:
+        - Tag-only response selection works from synthetic predictions.
+        - No gameplay behavior changes are introduced.
+      stop_conditions:
+        - StrategyManager currently lacks a stable integration point and needs splitting.
+      rollback_notes:
+        - Revert StrategyManager tag selection and tests.
+
+    - id: task_4_strategy_response_telemetry_dry_path
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L2
+      actual_validation_level: L2
+      data_source: dry-path telemetry unit test
+      real_validation_status: pending
+      evidence_paths:
+        - src/sc2bot/runtime/game_loop.py
+        - src/sc2bot/runtime/dependency_container.py
+        - tests/unit/test_telemetry_schema.py
+        - tests/unit/test_game_loop.py
+      requires:
+        - task_3_strategy_manager_tag_only
+      goal: Record strategy response telemetry on a dry path.
+      scope:
+        - Add `strategy_response` telemetry payload.
+        - Add `strategy_switch` telemetry payload when selected tag or reason changes.
+        - Verify dry telemetry includes selected tag, reason, mode, and prediction-derived fields.
+      non_goals:
+        - Do not run real SC2.
+        - Do not add behavior intervention.
+        - Do not generate reports.
+      files_likely_to_change:
+        - src/sc2bot/runtime/game_loop.py
+        - src/sc2bot/telemetry/schema.py
+        - tests/unit/test_telemetry_schema.py
+        - tests/unit/test_game_loop.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_telemetry_schema.py tests/unit/test_game_loop.py
+      done_criteria:
+        - Dry telemetry records strategy response and switch fields.
+        - Queue records L2 evidence path or test evidence.
+      stop_conditions:
+        - Runtime integration requires behavior intervention.
+      rollback_notes:
+        - Remove strategy telemetry integration while keeping StrategyResponse definitions.
+
+    - id: task_5_real_strategy_response_telemetry_probe
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: new real match telemetry
+      real_validation_status: validated
+      evidence_paths:
+        - data/logs/evaluation/phase1e_task5_tag_only_probe/reallaunch-350f1ad9/
+        - data/logs/evaluation/phase1e_task5_tag_only_probe/reallaunch-350f1ad9/match_result.json
+        - data/logs/evaluation/phase1e_task5_tag_only_probe/reallaunch-350f1ad9/match.SC2Replay
+        - data/logs/evaluation/phase1e_task5_tag_only_probe/reallaunch-350f1ad9/telemetry/events.jsonl
+      requires:
+        - task_4_strategy_response_telemetry_dry_path
+      goal: Prove real SC2 telemetry contains opponent prediction and strategy response events.
+      scope:
+        - Run one short real local match in rule_based tag_only mode.
+        - Confirm telemetry contains `opponent_prediction`.
+        - Confirm telemetry contains `strategy_response`.
+        - Confirm telemetry contains `selected_response_tag` and `strategy_switch_reason`.
+        - Record output directory.
+      non_goals:
+        - Do not change gameplay.
+        - Do not run batch.
+        - Do not generate reports.
+      files_likely_to_change:
+        - data/logs/evaluation/
+        - docs/plans/active/phase1e_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - Run one real local match.
+        - Inspect `telemetry/events.jsonl` for required events and fields.
+      done_criteria:
+        - L3 real match evidence path is recorded.
+        - Required telemetry events and fields are present.
+      stop_conditions:
+        - SC2 launch fails repeatedly.
+        - Telemetry lacks strategy response fields.
+      rollback_notes:
+        - Keep code unchanged; record failure and rerun this task later.
+
+    - id: task_6_minimal_behavior_intervention_scaffold
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L2
+      actual_validation_level: L2
+      data_source: synthetic unit test; dry telemetry unit test
+      real_validation_status: pending
+      evidence_paths:
+        - src/sc2bot/runtime/game_loop.py
+        - src/sc2bot/managers/strategy_manager.py
+        - tests/unit/test_game_loop.py
+        - tests/unit/test_strategy_manager.py
+      requires:
+        - task_5_real_strategy_response_telemetry_probe
+      goal: Add the minimal behavior-intervention entry point.
+      scope:
+        - Gate behavior with `intervention_mode: minimal_behavior`.
+        - Let `defensive_posture` influence army-defense target preference.
+        - Let `continue_scouting` influence scout persistence.
+        - Keep `tech_alert` telemetry-only unless a tiny non-production response is already available.
+        - Add unit and/or dry telemetry tests.
+      non_goals:
+        - Do not add build order.
+        - Do not add gateway, gas, army production, or expansion.
+        - Do not tune for win rate.
+        - Do not run real SC2 in this task.
+      files_likely_to_change:
+        - src/sc2bot/runtime/game_loop.py
+        - src/sc2bot/managers/strategy_manager.py
+        - src/sc2bot/managers/scouting_manager.py
+        - src/sc2bot/managers/tactical_manager.py
+        - tests/unit/test_game_loop.py
+        - tests/unit/test_strategy_manager.py
+      verification:
+        - python -m pytest tests/unit/test_game_loop.py tests/unit/test_strategy_manager.py
+      done_criteria:
+        - Minimal behavior hooks are config-gated.
+        - Dry telemetry records intervention action or skipped reason.
+      stop_conditions:
+        - Requires complex unit control or production logic.
+        - More than thin target preference/scout persistence is needed.
+      rollback_notes:
+        - Disable `minimal_behavior` config or revert intervention hook changes.
+
+    - id: task_7_real_minimal_behavior_probe
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: new real match telemetry
+      real_validation_status: validated
+      evidence_paths:
+        - configs/bot/opponent_model_minimal_behavior.yaml
+        - data/logs/evaluation/phase1e_task7_minimal_behavior_probe/reallaunch-0997c3b4/
+        - data/logs/evaluation/phase1e_task7_minimal_behavior_probe/reallaunch-0997c3b4/match_result.json
+        - data/logs/evaluation/phase1e_task7_minimal_behavior_probe/reallaunch-0997c3b4/match.SC2Replay
+        - data/logs/evaluation/phase1e_task7_minimal_behavior_probe/reallaunch-0997c3b4/telemetry/events.jsonl
+      requires:
+        - task_6_minimal_behavior_intervention_scaffold
+      goal: Prove minimal_behavior intervention telemetry appears in a real SC2 match.
+      scope:
+        - Run one short real local match in rule_based minimal_behavior mode.
+        - Confirm `strategy_response` telemetry.
+        - Confirm intervention telemetry or structured skipped reason.
+        - Record real output directory.
+      non_goals:
+        - Do not run batch.
+        - Do not tune behavior.
+        - Do not claim gameplay improvement.
+      files_likely_to_change:
+        - data/logs/evaluation/
+        - docs/plans/active/phase1e_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - Run one real local match.
+        - Inspect telemetry for minimal_behavior strategy response and intervention evidence.
+      done_criteria:
+        - L3 evidence path is recorded.
+        - Real telemetry proves the intervention path is exercised or safely skipped.
+      stop_conditions:
+        - Real SC2 launch fails repeatedly.
+        - Intervention telemetry is absent.
+      rollback_notes:
+        - Keep implementation unchanged; record failure and retry this task later.
+
+    - id: task_8_phase1e_feature_extractor_update
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: existing task 7 real match telemetry
+      real_validation_status: validated
+      evidence_paths:
+        - evaluation/metrics/feature_extractor.py
+        - tests/unit/test_feature_extractor.py
+        - data/logs/evaluation/phase1e_task7_minimal_behavior_probe/reallaunch-0997c3b4/
+        - data/logs/evaluation/phase1e_task7_minimal_behavior_probe/reallaunch-0997c3b4/telemetry/events.jsonl
+      requires:
+        - task_7_real_minimal_behavior_probe
+      goal: Extend feature extraction for strategy response and intervention metrics.
+      scope:
+        - Extract `intervention_mode`.
+        - Extract `selected_response_tag_count`.
+        - Extract `strategy_switch_count`.
+        - Extract `defensive_posture_count`.
+        - Extract `continue_scouting_count`.
+        - Extract `tech_alert_count`.
+        - Use task 5 or task 7 real match output as acceptance input.
+      non_goals:
+        - Do not run SC2.
+        - Do not change gameplay.
+        - Do not generate the final report.
+      files_likely_to_change:
+        - evaluation/metrics/feature_extractor.py
+        - tests/unit/test_feature_extractor.py
+        - docs/plans/active/phase1e_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_feature_extractor.py
+        - Exercise extractor against task 5 or task 7 real output.
+      done_criteria:
+        - Feature extractor returns Phase 1E fields from real telemetry.
+        - Queue records the real data source.
+      stop_conditions:
+        - Required real telemetry evidence is missing.
+      rollback_notes:
+        - Revert Phase 1E extractor fields and tests.
+
+    - id: task_9_phase1e_small_ablation
+      status: completed
+      quota_risk: high
+      expected_codex_window: one_plus_window
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: new real match telemetry batch
+      real_validation_status: validated
+      evidence_paths:
+        - configs/evaluation/phase1e_strategy_intervention_ablation.yaml
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/summary.json
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-d38f69a3/
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-a904a421/
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-b5b1667b/
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-5b92e21b/
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-ad89d057/
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/reallaunch-1c3ccc7d/
+      requires:
+        - task_8_phase1e_feature_extractor_update
+      goal: Run the smallest real null vs prediction-only vs intervention comparison.
+      scope:
+        - Run 1 map x 2 opponents x 3 configs.
+        - Configs: null, rule_based prediction-only, rule_based tag_only or minimal_behavior.
+        - Use run-id isolated output directory.
+        - Confirm every match has independent result, replay, and telemetry files.
+      non_goals:
+        - Do not expand opponent pool.
+        - Do not tune behavior based on results.
+        - Do not claim win-rate improvement.
+        - Do not generate final report in this task.
+      files_likely_to_change:
+        - configs/evaluation/phase1e_strategy_intervention_ablation.yaml
+        - data/logs/evaluation/
+        - docs/plans/active/phase1e_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - Run the Phase 1E small real ablation config.
+        - Inspect batch summary and telemetry fields.
+      done_criteria:
+        - At least 6 real match result directories exist for the isolated run.
+        - Batch summary records map, opponent, config, status, replay, and telemetry paths.
+      stop_conditions:
+        - SC2 launch fails repeatedly.
+        - Batch exceeds the current quota window.
+        - Required telemetry is missing.
+      rollback_notes:
+        - Keep code unchanged; ignore partial generated output and rerun later.
+
+    - id: task_10_phase1e_report
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: task 9 real ablation output
+      real_validation_status: validated
+      evidence_paths:
+        - evaluation/metrics/opponent_model_metrics.py
+        - evaluation/reports/run_strategy_intervention_report.py
+        - artifacts/reports/phase1e_strategy_intervention/summary.json
+        - artifacts/reports/phase1e_strategy_intervention/report.md
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/summary.json
+      requires:
+        - task_9_phase1e_small_ablation
+      goal: Generate Phase 1E report artifacts from real ablation outputs.
+      scope:
+        - Add report fields for prediction timeline or summary.
+        - Add response tag summary.
+        - Add intervention count summary.
+        - Include known limitations.
+        - Explicitly state no win-rate improvement claim unless evidence supports it.
+      non_goals:
+        - Do not rerun SC2.
+        - Do not add charts unless already trivial.
+        - Do not tune gameplay.
+      files_likely_to_change:
+        - evaluation/metrics/opponent_model_metrics.py
+        - evaluation/reports/run_strategy_intervention_report.py
+        - artifacts/reports/phase1e_strategy_intervention/
+        - tests/unit/test_feature_extractor.py
+        - docs/handoffs/latest.md
+      verification:
+        - Generate report from task 9 real outputs.
+        - Confirm report includes limitations and does not overclaim.
+      done_criteria:
+        - "`summary.json` and `report.md` exist for Phase 1E."
+        - Report clearly distinguishes prediction and intervention.
+      stop_conditions:
+        - Required real ablation output is missing.
+        - Report wording implies unsupported performance improvement.
+      rollback_notes:
+        - Remove generated report artifacts and revert report generator changes.
+
+    - id: task_11_phase1e_closeout
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: full test suite; task 9 real ablation output; task 10 report artifacts
+      real_validation_status: validated
+      evidence_paths:
+        - docs/context/current_status.md
+        - docs/context/validated_findings.md
+        - docs/context/open_hypotheses.md
+        - docs/commands/common_commands.md
+        - docs/commands/verification_matrix.md
+        - docs/plans/active/phase1e_minimal_strategy_intervention_v0.md
+        - artifacts/reports/phase1e_strategy_intervention/summary.json
+        - artifacts/reports/phase1e_strategy_intervention/report.md
+        - data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/
+      requires:
+        - task_10_phase1e_report
+      goal: Close Phase 1E and decide whether Phase 1F demo report work can start.
+      scope:
+        - Confirm all Phase 1E tasks are completed or explicitly scoped out.
+        - Update current status, validated findings, open hypotheses, handoff, common commands, and verification matrix.
+        - Record whether Phase 1E proves intervention telemetry only or any gameplay effect.
+        - Recommend whether to proceed to Phase 1F.
+      non_goals:
+        - Do not implement new features.
+        - Do not rerun SC2 unless needed to verify a closeout claim.
+      files_likely_to_change:
+        - docs/context/current_status.md
+        - docs/context/validated_findings.md
+        - docs/context/open_hypotheses.md
+        - docs/commands/common_commands.md
+        - docs/commands/verification_matrix.md
+        - docs/handoffs/latest.md
+        - docs/plans/active/phase1e_task_queue.yaml
+      verification:
+        - python -m pytest tests
+        - Confirm Phase 1E report artifacts exist.
+        - Confirm L3 evidence paths are recorded for tasks 5, 7, 9, and 10.
+      done_criteria:
+        - Project memory accurately reflects Phase 1E completion.
+        - Next recommended work is Phase 1F or a blocked follow-up is documented.
+      stop_conditions:
+        - Any required Phase 1E L3 evidence is missing.
+        - Any previous task is pending, in_progress, or blocked.
+      rollback_notes:
+        - Revert closeout docs only; do not revert completed implementation tasks.

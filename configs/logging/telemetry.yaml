@@ -1,0 +1,9 @@
+telemetry:
+  schema_version: 1
+  output_dir: data/logs/telemetry
+  events:
+    - match_started
+    - scouting_observation
+    - opponent_model_prediction
+    - strategy_decision
+    - match_finished

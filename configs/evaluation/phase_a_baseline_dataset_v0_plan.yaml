@@ -1,0 +1,96 @@
+evaluation_plan:
+  id: phase_a_baseline_dataset_v0
+  purpose: baseline_real_match_dataset_v0_sampling_plan
+  execution_status: plan_only
+  canonical_run_id: phase_a_baseline_v0
+  target_match_count_min: 24
+  target_match_count_preferred_max: 48
+  default_chunk_match_count: 8
+  bot_config: configs/bot/debug.yaml
+  historical_run_policy:
+    include_historical_by_default: false
+    require_explicit_excluded_historical_dirs: true
+    require_run_id_scoped_outputs: true
+  maps:
+    - id: incorporeal_aie_v4
+      name: IncorporealAIE_v4
+      file: IncorporealAIE_v4.SC2Map
+    - id: leylines_aie_v3
+      name: LeyLinesAIE_v3
+      file: LeyLinesAIE_v3.SC2Map
+  opponents:
+    - id: builtin_easy_terran
+      type: computer
+      race: terran
+      difficulty: easy
+    - id: builtin_medium_terran
+      type: computer
+      race: terran
+      difficulty: medium
+    - id: builtin_easy_zerg
+      type: computer
+      race: zerg
+      difficulty: easy
+    - id: builtin_medium_zerg
+      type: computer
+      race: zerg
+      difficulty: medium
+    - id: builtin_easy_protoss
+      type: computer
+      race: protoss
+      difficulty: easy
+    - id: builtin_medium_protoss
+      type: computer
+      race: protoss
+      difficulty: medium
+  chunks:
+    - id: chunk_1
+      run_id: phase_a_baseline_v0_chunk_1
+      map_id: incorporeal_aie_v4
+      matchups:
+        - opponent_id: builtin_easy_terran
+          repeats: 2
+        - opponent_id: builtin_medium_terran
+          repeats: 2
+        - opponent_id: builtin_easy_zerg
+          repeats: 2
+        - opponent_id: builtin_medium_zerg
+          repeats: 2
+      planned_match_count: 8
+    - id: chunk_2
+      run_id: phase_a_baseline_v0_chunk_2
+      matchups:
+        - map_id: incorporeal_aie_v4
+          opponent_id: builtin_easy_protoss
+          repeats: 2
+        - map_id: incorporeal_aie_v4
+          opponent_id: builtin_medium_protoss
+          repeats: 2
+        - map_id: leylines_aie_v3
+          opponent_id: builtin_easy_terran
+          repeats: 2
+        - map_id: leylines_aie_v3
+          opponent_id: builtin_medium_terran
+          repeats: 2
+      planned_match_count: 8
+    - id: chunk_3
+      run_id: phase_a_baseline_v0_chunk_3
+      map_id: leylines_aie_v3
+      optional: false
+      matchups:
+        - opponent_id: builtin_easy_zerg
+          repeats: 2
+        - opponent_id: builtin_medium_zerg
+          repeats: 2
+        - opponent_id: builtin_easy_protoss
+          repeats: 2
+        - opponent_id: builtin_medium_protoss
+          repeats: 2
+      planned_match_count: 8
+  closeout_gate:
+    min_real_match_attempts: 24
+    require_dataset_manifest: true
+    require_dataset_quality_report: true
+    require_scoped_run_id: true
+    require_historical_exclusion_record: true
+    no_strength_claims: true

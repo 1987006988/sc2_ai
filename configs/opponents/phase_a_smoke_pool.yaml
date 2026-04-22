@@ -1,0 +1,23 @@
+opponents:
+  - id: builtin_easy_terran
+    type: computer
+    race: terran
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_smoke
+      - terran
+      - easy
+    enabled: true
+    notes: Phase A real multi-match smoke opponent.
+  - id: builtin_medium_terran
+    type: computer
+    race: terran
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_smoke
+      - terran
+      - medium
+    enabled: true
+    notes: Phase A real multi-match smoke opponent.

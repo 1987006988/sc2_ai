@@ -1,0 +1,6 @@
+maps:
+  - id: leylines_aie_v3
+    name: LeyLinesAIE_v3
+    file: LeyLinesAIE_v3.SC2Map
+    enabled: true
+    notes: Phase A baseline V0 chunk 2b map.

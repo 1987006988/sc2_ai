@@ -1,0 +1,179 @@
+{
+  "phase": "Phase B: Playable Competitive Core",
+  "generated_at": "2026-04-22T21:40:00+08:00",
+  "data_source": "real match evidence from task_13_phase_b_small_eval",
+  "source_run_id": "phase_b_small_eval_20260422",
+  "source_output_dir": "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422",
+  "source_summary_path": "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/summary.json",
+  "source_metrics_path": "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/phase_b_small_eval_metrics.json",
+  "validation_level": "L3",
+  "real_match_first_note": "This report uses real SC2 local match output from task_13. It does not use synthetic or dry-run data as gameplay evidence.",
+  "match_count": 8,
+  "maps": [
+    "incorporeal_aie_v4"
+  ],
+  "opponents": {
+    "builtin_easy_terran": 2,
+    "builtin_easy_zerg": 2,
+    "builtin_easy_protoss": 2,
+    "builtin_medium_terran": 2
+  },
+  "status_counts": {
+    "max_game_time_reached": 8
+  },
+  "result_counts": {
+    "Result.Defeat": 8
+  },
+  "artifact_metrics": {
+    "missing_result_count": 0,
+    "missing_replay_count": 0,
+    "missing_telemetry_count": 0,
+    "crash_count": 0,
+    "timeout_count": 0
+  },
+  "phase_b_metrics": {
+    "gateway_build_success_count": 8,
+    "combat_unit_production_success_count": 0,
+    "army_order_count": 5208,
+    "attack_order_count": 0,
+    "defend_order_count": 3388,
+    "combat_event_detected_count": 3388,
+    "enemy_combat_unit_nearby_count": 3388,
+    "own_army_positive_event_count": 0
+  },
+  "level_1_playable_baseline_reached": false,
+  "level_1_blockers": [
+    "No combat-unit production succeeded in the 8-match real eval.",
+    "No telemetry event reported own_army_count > 0.",
+    "No attack_order appeared in the 8-match real eval.",
+    "All matches ended as Result.Defeat."
+  ],
+  "can_prove": [
+    "The bot can run an 8-match real local small evaluation against built-in Easy/Medium opponents.",
+    "Every match persisted match_result, replay, and telemetry artifacts.",
+    "Gateway build commands were issued successfully in every match.",
+    "Army-order and combat-signal telemetry are present in real match output.",
+    "Crash, timeout, and missing-artifact metrics can be computed from the run."
+  ],
+  "cannot_prove": [
+    "The bot can produce combat units in real gameplay.",
+    "The bot can issue effective attack orders with friendly army units.",
+    "The bot can win against built-in Easy or Medium opponents.",
+    "The bot has gameplay quality or ladder competitiveness.",
+    "Opponent modeling improves match outcomes."
+  ],
+  "matches": [
+    {
+      "match_id": "reallaunch-10664474",
+      "opponent_id": "builtin_medium_terran",
+      "opponent_race": "terran",
+      "opponent_difficulty": "medium",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 420,
+      "combat_event_detected_count": 420,
+      "own_army_positive_event_count": 0
+    },
+    {
+      "match_id": "reallaunch-14c326a9",
+      "opponent_id": "builtin_medium_terran",
+      "opponent_race": "terran",
+      "opponent_difficulty": "medium",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 420,
+      "combat_event_detected_count": 420,
+      "own_army_positive_event_count": 0
+    },
+    {
+      "match_id": "reallaunch-3eff43ce",
+      "opponent_id": "builtin_easy_protoss",
+      "opponent_race": "protoss",
+      "opponent_difficulty": "easy",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 428,
+      "combat_event_detected_count": 428,
+      "own_army_positive_event_count": 0
+    },
+    {
+      "match_id": "reallaunch-45bf067f",
+      "opponent_id": "builtin_easy_terran",
+      "opponent_race": "terran",
+      "opponent_difficulty": "easy",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 423,
+      "combat_event_detected_count": 423,
+      "own_army_positive_event_count": 0
+    },
+    {
+      "match_id": "reallaunch-8c5c2c21",
+      "opponent_id": "builtin_easy_zerg",
+      "opponent_race": "zerg",
+      "opponent_difficulty": "easy",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 420,
+      "combat_event_detected_count": 420,
+      "own_army_positive_event_count": 0
+    },
+    {
+      "match_id": "reallaunch-a6c20d4f",
+      "opponent_id": "builtin_easy_protoss",
+      "opponent_race": "protoss",
+      "opponent_difficulty": "easy",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 429,
+      "combat_event_detected_count": 429,
+      "own_army_positive_event_count": 0
+    },
+    {
+      "match_id": "reallaunch-b39e71ee",
+      "opponent_id": "builtin_easy_zerg",
+      "opponent_race": "zerg",
+      "opponent_difficulty": "easy",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 422,
+      "combat_event_detected_count": 422,
+      "own_army_positive_event_count": 0
+    },
+    {
+      "match_id": "reallaunch-cce7b902",
+      "opponent_id": "builtin_easy_terran",
+      "opponent_race": "terran",
+      "opponent_difficulty": "easy",
+      "status": "max_game_time_reached",
+      "result": "Result.Defeat",
+      "gateway_build_success": 1,
+      "combat_unit_production_success": 0,
+      "attack_order_count": 0,
+      "defend_order_count": 426,
+      "combat_event_detected_count": 426,
+      "own_army_positive_event_count": 0
+    }
+  ]
+}

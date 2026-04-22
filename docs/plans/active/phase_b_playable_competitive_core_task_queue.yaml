@@ -1,0 +1,930 @@
+phase: "Phase B: Playable Competitive Core"
+status: active
+created_at: "2026-04-22"
+manual_trigger: "docs/plans/active/phase_b_manual_trigger.md"
+plan: "docs/plans/active/phase_b_playable_competitive_core.md"
+validation_levels:
+  L0: "static doc/config exists"
+  L1: "schema/unit/config validation"
+  L2: "dry-run / telemetry dry path / no real SC2"
+  L3: "real SC2 local match gameplay evidence"
+real_match_first_rules:
+  - "Unit tests only prove code logic."
+  - "Dry-run only proves orchestration flow."
+  - "Real matches are required to prove gameplay behavior."
+  - "Every gameplay feature must have a real SC2 probe before it can be treated as validated."
+  - "Multi-match batches are required to prove stability."
+  - "Reports must distinguish synthetic, dry, and real evidence."
+  - "Dry-run or unit-test evidence must not be packaged as real capability claims."
+  - "Every L3 task must output evidence_paths."
+  - "Every task must fit one Plus 5-hour quota window; if scope expands, mark split_required."
+phase_b_non_goals:
+  - "No expansion."
+  - "No advanced tech."
+  - "No upgrades."
+  - "No complex army composition."
+  - "No SMAC."
+  - "No LLM."
+  - "No replay learning."
+  - "No learned opponent model."
+  - "No combat predictor."
+  - "No league/self-play."
+  - "No ladder competitiveness claim."
+  - "No opponent-model win-rate claim."
+closeout_gate:
+  - "Gateway real probe completes at L3."
+  - "Assimilator/Cybernetics Core real probe completes at L3."
+  - "Combat-unit production real probe completes at L3."
+  - "Attack/defend order real probe completes at L3."
+  - "Combat event real probe completes at L3, or records a clear structured reason for no combat."
+  - "Phase B small real evaluation completes at L3."
+  - "Phase B report uses real match data."
+  - "Report states whether current data shows wins against built-in Easy/Medium."
+  - "Report does not claim ladder competitiveness."
+capability_validation_audit:
+  audit_date: "2026-04-22"
+  audit_path: "artifacts/reports/phase_b_playable_competitive_core/evidence_audit.md"
+  task_completion_is_not_capability_validation: true
+  phase_b_capability_accepted: false
+  phase_c_entry_recommended: false
+  cutoff_diagnosis:
+    actual_game_time: 116.07
+    status: "max_game_time_reached"
+    primary_cutoff_source: "bot self-exit in src/sc2bot/runtime/game_loop.py"
+    controlling_config: "configs/bot/debug.yaml"
+    controlling_value: "runtime.max_game_loop: 2600"
+    failure_class: "insufficient_duration"
+  interpretation:
+    - "Completed tasks collected artifacts or diagnostics."
+    - "Diagnostics are useful but do not validate gameplay capability when the match ends before the minimum opportunity window."
+    - "Structured failure reasons are not equivalent to capability success."
+    - "Phase B is not accepted as a playable competitive core."
+  audited_tasks:
+    task_4_real_gateway_probe:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: partial_command_telemetry_only
+      minimum_opportunity_window_met: partial
+      actual_game_time: 116.07
+      required_min_game_time: "90 for command telemetry; 140 for ready Gateway"
+      primary_failure_class: insufficient_duration
+      evidence_quality: "real L3 artifact evidence; Gateway command attempt/success only"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-05627d9a/"
+    task_6_real_cyber_core_probe:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: not_validated
+      minimum_opportunity_window_met: false
+      actual_game_time: 116.07
+      required_min_game_time: 180
+      primary_failure_class: insufficient_duration
+      evidence_quality: "real L3 artifact evidence; structured skip only"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "data/logs/evaluation/phase_b_task6_cyber_core_probe/reallaunch-619366ed/"
+    task_8_real_combat_unit_production_probe:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: not_validated
+      minimum_opportunity_window_met: false
+      actual_game_time: 116.07
+      required_min_game_time: 200
+      primary_failure_class: insufficient_duration
+      evidence_quality: "real L3 artifact evidence; structured skip only"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "data/logs/evaluation/phase_b_task8_combat_unit_probe/reallaunch-1aaf5fc8/"
+    task_10_real_attack_defend_probe:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: not_validated
+      minimum_opportunity_window_met: false
+      actual_game_time: 116.07
+      required_min_game_time: 220
+      primary_failure_class: missing_prerequisite
+      evidence_quality: "real L3 artifact evidence; no friendly army"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "data/logs/evaluation/phase_b_task10_attack_defend_probe/reallaunch-fe78a347/"
+    task_12_real_combat_event_probe:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: telemetry_diagnostic_validated_friendly_combat_not_validated
+      minimum_opportunity_window_met: false
+      actual_game_time: 116.07
+      required_min_game_time: 240
+      primary_failure_class: combat_not_reached
+      evidence_quality: "real L3 artifact evidence; enemy-visible combat signal only"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "data/logs/evaluation/phase_b_task12_combat_event_probe/reallaunch-e73a3d90/"
+    task_13_phase_b_small_eval:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: not_validated
+      minimum_opportunity_window_met: false
+      actual_game_time: 116.07
+      required_min_game_time: 240
+      primary_failure_class: insufficient_duration
+      evidence_quality: "real multi-match artifact evidence; no playable army"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/"
+    task_14_phase_b_report:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: diagnostic_report_validated_gameplay_capability_not_validated
+      minimum_opportunity_window_met: false
+      actual_game_time: 116.07
+      required_min_game_time: 240
+      primary_failure_class: insufficient_duration
+      evidence_quality: "report correctly states Level 1 not reached"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "artifacts/reports/phase_b_playable_competitive_core/report.md"
+    task_15_phase_b_closeout:
+      task_status: completed
+      diagnostic_status: completed
+      capability_validation_status: diagnostic_closeout_validated_phase_b_capability_not_accepted
+      minimum_opportunity_window_met: false
+      actual_game_time: 116.07
+      required_min_game_time: 240
+      primary_failure_class: insufficient_duration
+      evidence_quality: "closeout correctly blocks Phase C after audit reclassification"
+      needs_rerun_after_window_fix: true
+      evidence_paths:
+        - "docs/handoffs/latest.md"
+tasks:
+  - id: task_0_create_phase_b_queue
+    status: completed
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L0
+    actual_validation_level: L0
+    data_source: "static doc/config exists"
+    real_validation_status: not_applicable
+    requires: []
+    goal: "Create the Phase B quota-safe task queue and manual trigger instructions."
+    scope:
+      - "Create Phase B queue."
+      - "Create Phase B manual trigger."
+      - "Update Phase B plan with Real-Match-First and closeout gate."
+      - "Update handoff."
+    non_goals:
+      - "Do not implement gameplay."
+      - "Do not run tests."
+      - "Do not run SC2."
+      - "Do not execute task_1."
+    files_likely_to_change:
+      - "docs/plans/active/phase_b_playable_competitive_core.md"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/plans/active/phase_b_manual_trigger.md"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Queue YAML is readable."
+      - "All tasks include required fields."
+      - "No functional code changed."
+    done_criteria:
+      - "Phase B queue exists."
+      - "Phase B manual trigger exists."
+      - "Next pending task is task_1_build_progression_contract."
+    stop_conditions:
+      - "If task scope expands into implementation, stop."
+    rollback_notes:
+      - "Revert Phase B planning files if rejected."
+    evidence_paths:
+      - "docs/plans/active/phase_b_playable_competitive_core.md"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/plans/active/phase_b_manual_trigger.md"
+
+  - id: task_1_build_progression_contract
+    status: completed
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L1
+    actual_validation_level: L1
+    data_source: "synthetic unit/config validation"
+    real_validation_status: not_applicable
+    requires:
+      - task_0_create_phase_b_queue
+    goal: "Define the Phase B build progression and combat capability contract."
+    scope:
+      - "Define contract fields for probe_production, pylon, gateway, assimilator, cybernetics_core, zealot, stalker, army_rally, attack_order, defend_order, and combat_event."
+      - "Add unit tests for serialization/validation."
+      - "Do not connect runtime behavior yet."
+    non_goals:
+      - "Do not implement build logic."
+      - "Do not run SC2."
+      - "Do not add advanced strategy."
+    files_likely_to_change:
+      - "src/sc2bot/domain/"
+      - "tests/unit/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused unit tests for the contract."
+    done_criteria:
+      - "Contract exists and validates required Phase B feature names."
+      - "Unit tests pass."
+    stop_conditions:
+      - "If contract affects runtime modules, split task."
+    rollback_notes:
+      - "Revert contract and tests."
+    evidence_paths:
+      - "src/sc2bot/domain/build_progression.py"
+      - "tests/unit/test_build_progression_contract.py"
+      - "python -m pytest tests/unit/test_build_progression_contract.py -> 4 passed"
+
+  - id: task_2_build_order_config_schema
+    status: completed
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L1
+    actual_validation_level: L1
+    data_source: "synthetic config validation"
+    real_validation_status: not_applicable
+    requires:
+      - task_1_build_progression_contract
+    goal: "Add minimal Phase B build-order and production config schema."
+    scope:
+      - "Add target_probe_count, pylon timing, gateway timing, assimilator enable, cyber core enable, zealot/stalker production priority, attack timing threshold, and defend radius."
+      - "Add default/debug config values."
+      - "Add config loader tests."
+    non_goals:
+      - "Do not change gameplay behavior."
+      - "Do not run SC2."
+    files_likely_to_change:
+      - "configs/bot/"
+      - "src/sc2bot/config/"
+      - "tests/unit/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused config schema/loader tests."
+    done_criteria:
+      - "Config fields load with defaults."
+      - "Existing configs stay backward compatible."
+    stop_conditions:
+      - "If config changes require runtime rewiring, split task."
+    rollback_notes:
+      - "Revert schema/config edits."
+    evidence_paths:
+      - "src/sc2bot/config/schema.py"
+      - "src/sc2bot/config/loader.py"
+      - "configs/bot/default.yaml"
+      - "configs/bot/debug.yaml"
+      - "tests/unit/test_config_loader.py"
+      - "python -m pytest tests/unit/test_config_loader.py -> 4 passed"
+
+  - id: task_3_gateway_build_implementation
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "unit and dry telemetry evidence"
+    real_validation_status: pending_task_4
+    requires:
+      - task_2_build_order_config_schema
+    goal: "Implement minimal Gateway build logic with structured telemetry."
+    scope:
+      - "Attempt Gateway build when configured conditions are met."
+      - "Handle placement failure, no worker, no minerals, and pending Gateway without crashing."
+      - "Record gateway_build_attempt, gateway_build_success, gateway_build_skipped, or gateway_build_failed telemetry."
+    non_goals:
+      - "Do not implement Cybernetics Core."
+      - "Do not implement zealot/stalker production."
+      - "Do not run SC2 in this task."
+    files_likely_to_change:
+      - "src/sc2bot/managers/macro_manager.py"
+      - "src/sc2bot/runtime/game_loop.py"
+      - "src/sc2bot/domain/decisions.py"
+      - "tests/unit/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused unit/dry telemetry tests."
+    done_criteria:
+      - "Gateway logic is covered by unit/dry tests."
+      - "Failure reasons are structured."
+    stop_conditions:
+      - "If building placement becomes unstable or broad, split placement task."
+    rollback_notes:
+      - "Revert Gateway implementation and tests."
+    evidence_paths:
+      - "src/sc2bot/runtime/game_loop.py"
+      - "evaluation/runner/run_match.py"
+      - "tests/unit/test_game_loop.py"
+      - "tests/unit/test_telemetry_schema.py"
+      - "python -m pytest tests/unit/test_game_loop.py tests/unit/test_telemetry_schema.py -> 11 passed"
+
+  - id: task_4_real_gateway_probe
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match gameplay evidence"
+    real_validation_status: completed_gateway_success
+    requires:
+      - task_3_gateway_build_implementation
+    goal: "Run a real match probe validating Gateway build telemetry and artifact persistence."
+    scope:
+      - "Run one short real SC2 local match."
+      - "Confirm Gateway build attempt appears."
+      - "Confirm Gateway success or structured failure reason appears."
+      - "Record match result, replay, telemetry evidence paths."
+    non_goals:
+      - "Do not implement new gameplay."
+      - "Do not tune Gateway logic."
+      - "Do not run batch evaluation."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect real telemetry/events.jsonl for Gateway events."
+      - "Confirm match_result.json, replay, and telemetry exist."
+    done_criteria:
+      - "L3 evidence path is recorded."
+      - "Gateway behavior is visible as success or structured failure."
+    stop_conditions:
+      - "If SC2 launch fails repeatedly, mark blocked."
+    rollback_notes:
+      - "Preserve real evidence; revert only docs/queue if needed."
+    evidence_paths:
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-2d9c19b7/"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-2d9c19b7/match_result.json"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-2d9c19b7/preflight.json"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-2d9c19b7/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-3caaaeaa/"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-3caaaeaa/match_result.json"
+      - "blocked: repeated launch_error before gameplay; latest failure_reason='Real local match launch failed: [WinError 2] 系统找不到指定的文件。'; no replay and no gateway_build telemetry"
+      - "unblocked by task_4a launch path fix; task_4 must be rerun for Gateway-specific L3 evidence"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-05627d9a/"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-05627d9a/match_result.json"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-05627d9a/preflight.json"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-05627d9a/launch_path_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-05627d9a/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_task4_gateway_probe/reallaunch-05627d9a/match.SC2Replay"
+      - "gateway telemetry counts: gateway_build_attempt=1, gateway_build_success=1, gateway_build_skipped=650"
+      - "gateway_build_attempt event: line 3252, reason=gateway_conditions_met, game_time=90.0"
+      - "gateway_build_success event: line 3253, reason=build_command_issued, game_time=90.0"
+
+  - id: task_4a_unblock_real_launch_path_regression
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match launch evidence"
+    real_validation_status: completed_launch_restored
+    requires:
+      - task_3_gateway_build_implementation
+    goal: "Diagnose and unblock the real SC2 local match launch path regression that blocked task_4."
+    scope:
+      - "Compare Phase A successful real launch command/path with the failed Phase B task_4 launch."
+      - "Record Windows Python executable, command style, working directory, SC2PATH, map path, replay output path, repo cwd, and python-sc2 version."
+      - "Add minimal launch diagnostics if needed."
+      - "Fix only path conversion, working-directory, or launch diagnostic issues needed to restore real launch."
+      - "Run one minimal real SC2 launch probe to verify launch restoration."
+    non_goals:
+      - "Do not execute task_5."
+      - "Do not implement Assimilator or Cybernetics Core."
+      - "Do not change strategy, tactical, micro, or build gameplay logic."
+      - "Do not claim task_4 Gateway L3 success unless Gateway evidence is separately verified."
+      - "Do not treat preflight success as gameplay success."
+    files_likely_to_change:
+      - "evaluation/runner/run_match.py"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+      - "data/logs/evaluation/"
+    verification:
+      - "Run one minimal real SC2 launch probe."
+      - "Confirm match_result.json and telemetry/events.jsonl exist."
+      - "Confirm replay exists if launch reaches gameplay."
+      - "If launch still fails, record exact command, cwd, env, diagnostic payload, and failure_reason."
+    done_criteria:
+      - "Root cause is identified or narrowed with recorded launch diagnostics."
+      - "A real launch probe either reaches gameplay with replay or records actionable exact failure diagnostics."
+      - "task_4 remains blocked unless Gateway-specific L3 evidence is rerun and verified."
+    stop_conditions:
+      - "If diagnosing requires gameplay implementation changes, stop and mark blocked."
+      - "If real launch still fails after one focused fix/probe, record blocker and stop."
+    rollback_notes:
+      - "Revert only launch diagnostics/path fix and queue/handoff edits if rejected; preserve evidence outputs."
+    evidence_paths:
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/launch_invocation_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-b0980430/launch_error_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-b0980430/match_result.json"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-ac2e827e/"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-ac2e827e/match_result.json"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-ac2e827e/preflight.json"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-ac2e827e/launch_path_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-ac2e827e/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_task4a_launch_probe/reallaunch-ac2e827e/match.SC2Replay"
+      - "root_cause: BurnySC2 selected D:\\games\\StarCraft II\\Versions\\Base96516\\SC2_x64.exe, but that executable was missing; fallback selected existing Base95841\\SC2_x64.exe"
+      - "PYTHONPATH=src:. python -m py_compile evaluation/runner/run_match.py -> passed"
+
+  - id: task_5_assimilator_and_cyber_core_implementation
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "unit and dry telemetry evidence"
+    real_validation_status: pending_task_6
+    requires:
+      - task_4_real_gateway_probe
+    goal: "Implement minimal Assimilator and Cybernetics Core logic after Gateway condition."
+    scope:
+      - "Attempt Assimilator when enabled and Gateway condition is met."
+      - "Attempt Cybernetics Core after Gateway condition and required resources."
+      - "Record structured attempt/success/skipped/failed telemetry."
+    non_goals:
+      - "Do not implement stalker production."
+      - "Do not add advanced tech."
+      - "Do not run SC2 in this task."
+    files_likely_to_change:
+      - "src/sc2bot/managers/macro_manager.py"
+      - "src/sc2bot/runtime/game_loop.py"
+      - "tests/unit/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused unit/dry telemetry tests."
+    done_criteria:
+      - "Assimilator and Cyber Core logic has structured failure handling."
+    stop_conditions:
+      - "If gas placement or tech prerequisites need broader handling, split task."
+    rollback_notes:
+      - "Revert implementation and tests."
+    evidence_paths:
+      - "src/sc2bot/runtime/game_loop.py"
+      - "tests/unit/test_game_loop.py"
+      - "PYTHONPATH=src:. python -m pytest tests/unit/test_game_loop.py tests/unit/test_telemetry_schema.py -> 15 passed"
+      - "Windows Python UnitTypeId check -> ASSIMILATOR and CYBERNETICSCORE exist"
+
+  - id: task_6_real_cyber_core_probe
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match gameplay evidence"
+    real_validation_status: completed_structured_prerequisite_skip
+    requires:
+      - task_5_assimilator_and_cyber_core_implementation
+    goal: "Run a real match probe validating Assimilator and Cybernetics Core telemetry."
+    scope:
+      - "Run one real SC2 local match."
+      - "Confirm Assimilator attempt/success or structured failure reason."
+      - "Confirm Cyber Core attempt/success or structured failure reason."
+      - "Record artifact evidence paths."
+    non_goals:
+      - "Do not implement stalker production."
+      - "Do not run batch evaluation."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect real telemetry for Assimilator and Cyber Core events."
+    done_criteria:
+      - "L3 evidence path is recorded."
+    stop_conditions:
+      - "If real match cannot reach prerequisites, record blocker or split."
+    rollback_notes:
+      - "Preserve real evidence; revert only docs/queue if needed."
+    evidence_paths:
+      - "data/logs/evaluation/phase_b_task6_cyber_core_probe/reallaunch-619366ed/"
+      - "data/logs/evaluation/phase_b_task6_cyber_core_probe/reallaunch-619366ed/match_result.json"
+      - "data/logs/evaluation/phase_b_task6_cyber_core_probe/reallaunch-619366ed/preflight.json"
+      - "data/logs/evaluation/phase_b_task6_cyber_core_probe/reallaunch-619366ed/launch_path_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task6_cyber_core_probe/reallaunch-619366ed/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_task6_cyber_core_probe/reallaunch-619366ed/match.SC2Replay"
+      - "assimilator telemetry counts: assimilator_build_skipped=651; first and last reason=gateway_not_ready"
+      - "cybernetics core telemetry counts: cybernetics_core_build_skipped=651; first and last reason=gateway_not_ready"
+      - "gateway telemetry in same match: gateway_build_attempt=1, gateway_build_success=1; Gateway command issued at game_time=90.0 but not ready before max_game_time_reached at game_time=116.07"
+
+  - id: task_7_basic_combat_unit_production
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "unit and dry telemetry evidence"
+    real_validation_status: pending_task_8
+    requires:
+      - task_6_real_cyber_core_probe
+    goal: "Implement minimal zealot/stalker production logic."
+    scope:
+      - "Produce zealot after Gateway when affordable."
+      - "Produce stalker after Cyber Core when affordable and gas exists."
+      - "Record combat_unit_production attempt/success/skipped telemetry."
+      - "Handle no resources, no Gateway, and no Cyber Core safely."
+    non_goals:
+      - "Do not implement complex army composition."
+      - "Do not implement upgrades."
+      - "Do not run SC2 in this task."
+    files_likely_to_change:
+      - "src/sc2bot/managers/macro_manager.py"
+      - "src/sc2bot/domain/decisions.py"
+      - "tests/unit/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused unit/dry telemetry tests."
+    done_criteria:
+      - "Production paths and skip reasons are tested."
+    stop_conditions:
+      - "If production requires broader build-order work, split task."
+    rollback_notes:
+      - "Revert production implementation and tests."
+    evidence_paths:
+      - "src/sc2bot/runtime/game_loop.py"
+      - "tests/unit/test_game_loop.py"
+      - "tests/unit/test_telemetry_schema.py"
+      - "PYTHONPATH=src:. python -m pytest tests/unit/test_game_loop.py tests/unit/test_telemetry_schema.py -> 19 passed"
+
+  - id: task_8_real_combat_unit_production_probe
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match gameplay evidence"
+    real_validation_status: completed_structured_prerequisite_skip
+    requires:
+      - task_7_basic_combat_unit_production
+    goal: "Run a real match probe validating combat-unit production chain."
+    scope:
+      - "Run one real SC2 local match."
+      - "Confirm at least one combat unit is produced or a structured failure reason explains why not."
+      - "Confirm replay/result/telemetry exist."
+    non_goals:
+      - "Do not tune production."
+      - "Do not add army orders."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect telemetry for combat_unit_production."
+    done_criteria:
+      - "L3 production evidence is recorded."
+    stop_conditions:
+      - "If production chain cannot progress, record structured blocker."
+    rollback_notes:
+      - "Preserve real evidence; revert only docs/queue if needed."
+    evidence_paths:
+      - "data/logs/evaluation/phase_b_task8_combat_unit_probe/reallaunch-1aaf5fc8/"
+      - "data/logs/evaluation/phase_b_task8_combat_unit_probe/reallaunch-1aaf5fc8/match_result.json"
+      - "data/logs/evaluation/phase_b_task8_combat_unit_probe/reallaunch-1aaf5fc8/preflight.json"
+      - "data/logs/evaluation/phase_b_task8_combat_unit_probe/reallaunch-1aaf5fc8/launch_path_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task8_combat_unit_probe/reallaunch-1aaf5fc8/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_task8_combat_unit_probe/reallaunch-1aaf5fc8/match.SC2Replay"
+      - "match status: max_game_time_reached; result=Result.Defeat; failure_reason=null"
+      - "combat_unit_production_skipped count: 651; first and last reason=gateway_not_ready"
+      - "combat_unit_production_attempt count: 0"
+      - "combat_unit_production_success count: 0"
+      - "combat_unit_production_failed count: 0"
+      - "gateway telemetry in same match: gateway_build_attempt=1, gateway_build_success=1 at game_time=90.0; Gateway was not ready by max_game_time_reached at game_time=116.07"
+
+  - id: task_9_army_rally_and_basic_orders
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "unit and dry telemetry evidence"
+    real_validation_status: pending_task_10
+    requires:
+      - task_8_real_combat_unit_production_probe
+    goal: "Implement minimal army rally, defend, and attack order logic."
+    scope:
+      - "Set an army rally point."
+      - "Issue defend_order when enemy is near own base."
+      - "Issue attack_order when army/time threshold is met."
+      - "Record army_order telemetry."
+    non_goals:
+      - "Do not implement complex micro."
+      - "Do not implement expansion or advanced strategy."
+      - "Do not run SC2 in this task."
+    files_likely_to_change:
+      - "src/sc2bot/managers/tactical_manager.py"
+      - "src/sc2bot/managers/micro_manager.py"
+      - "src/sc2bot/domain/decisions.py"
+      - "tests/unit/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused unit/dry telemetry tests."
+    done_criteria:
+      - "Rally/defend/attack order selection is tested."
+    stop_conditions:
+      - "If micro behavior becomes broad, split task."
+    rollback_notes:
+      - "Revert order logic and tests."
+    evidence_paths:
+      - "src/sc2bot/domain/decisions.py"
+      - "src/sc2bot/managers/tactical_manager.py"
+      - "src/sc2bot/runtime/dependency_container.py"
+      - "src/sc2bot/runtime/game_loop.py"
+      - "tests/unit/test_tactical_manager.py"
+      - "tests/unit/test_game_loop.py"
+      - "tests/unit/test_telemetry_schema.py"
+      - "PYTHONPATH=src:. python -m pytest tests/unit/test_tactical_manager.py tests/unit/test_game_loop.py tests/unit/test_telemetry_schema.py -> 24 passed"
+
+  - id: task_10_real_attack_defend_probe
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match gameplay evidence"
+    real_validation_status: completed_structured_no_army
+    requires:
+      - task_9_army_rally_and_basic_orders
+    goal: "Run a real match probe validating attack/defend order telemetry with army units."
+    scope:
+      - "Run one real SC2 local match."
+      - "Confirm attack_order_issued or defend_order_issued."
+      - "Confirm army unit count > 0 or structured reason why no army exists."
+      - "Record replay/result/telemetry."
+    non_goals:
+      - "Do not tune combat."
+      - "Do not run batch evaluation."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect real telemetry for order events and army count."
+    done_criteria:
+      - "L3 order evidence is recorded."
+    stop_conditions:
+      - "If no army can be produced, block and return to production task."
+    rollback_notes:
+      - "Preserve real evidence; revert only docs/queue if needed."
+    evidence_paths:
+      - "data/logs/evaluation/phase_b_task10_attack_defend_probe/reallaunch-fe78a347/"
+      - "data/logs/evaluation/phase_b_task10_attack_defend_probe/reallaunch-fe78a347/match_result.json"
+      - "data/logs/evaluation/phase_b_task10_attack_defend_probe/reallaunch-fe78a347/preflight.json"
+      - "data/logs/evaluation/phase_b_task10_attack_defend_probe/reallaunch-fe78a347/launch_path_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task10_attack_defend_probe/reallaunch-fe78a347/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_task10_attack_defend_probe/reallaunch-fe78a347/match.SC2Replay"
+      - "match status: max_game_time_reached; result=Result.Defeat; failure_reason=null"
+      - "army_order count: 651"
+      - "defend_order payload count: 429"
+      - "attack_order payload count: 0"
+      - "own_army_count > 0 event count: 0"
+      - "structured no-army reason: combat_unit_production_skipped reason=gateway_not_ready; Gateway command issued but not ready before max_game_time_reached"
+
+  - id: task_11_combat_event_telemetry
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "unit and dry telemetry evidence"
+    real_validation_status: pending_task_12
+    requires:
+      - task_10_real_attack_defend_probe
+    goal: "Implement minimal combat event detection telemetry."
+    scope:
+      - "Detect enemy_combat_unit_nearby."
+      - "Detect own_army_near_enemy."
+      - "Detect attack_order_near_enemy."
+      - "Optionally record own_unit_lost/enemy_unit_destroyed if available."
+    non_goals:
+      - "Do not implement combat predictor."
+      - "Do not implement learned micro."
+      - "Do not run SC2 in this task."
+    files_likely_to_change:
+      - "src/sc2bot/managers/tactical_manager.py"
+      - "src/sc2bot/managers/micro_manager.py"
+      - "src/sc2bot/runtime/game_loop.py"
+      - "tests/unit/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused unit/dry telemetry tests."
+    done_criteria:
+      - "Combat event telemetry serializes and has structured no-combat reasons."
+    stop_conditions:
+      - "If death/killed tracking requires broader event plumbing, split optional fields."
+    rollback_notes:
+      - "Revert combat telemetry implementation and tests."
+    evidence_paths:
+      - "src/sc2bot/managers/tactical_manager.py"
+      - "src/sc2bot/runtime/game_loop.py"
+      - "tests/unit/test_tactical_manager.py"
+      - "tests/unit/test_game_loop.py"
+      - "tests/unit/test_telemetry_schema.py"
+      - "PYTHONPATH=src:. python -m pytest tests/unit/test_tactical_manager.py tests/unit/test_game_loop.py tests/unit/test_telemetry_schema.py -> 27 passed"
+
+  - id: task_12_real_combat_event_probe
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match gameplay evidence"
+    real_validation_status: completed_enemy_combat_signal_detected
+    requires:
+      - task_11_combat_event_telemetry
+    goal: "Run a real match probe validating combat event telemetry or structured no-combat reason."
+    scope:
+      - "Run one real SC2 local match."
+      - "Confirm combat_event_detected appears or structured reason explains no combat."
+      - "Record replay/result/telemetry evidence."
+    non_goals:
+      - "Do not tune combat."
+      - "Do not run small eval."
+    files_likely_to_change:
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Inspect real telemetry for combat events or structured no-combat reason."
+    done_criteria:
+      - "L3 combat telemetry evidence is recorded."
+    stop_conditions:
+      - "If no combat evidence is possible due to missing army behavior, block rather than overclaim."
+    rollback_notes:
+      - "Preserve real evidence; revert only docs/queue if needed."
+    evidence_paths:
+      - "data/logs/evaluation/phase_b_task12_combat_event_probe/reallaunch-e73a3d90/"
+      - "data/logs/evaluation/phase_b_task12_combat_event_probe/reallaunch-e73a3d90/match_result.json"
+      - "data/logs/evaluation/phase_b_task12_combat_event_probe/reallaunch-e73a3d90/preflight.json"
+      - "data/logs/evaluation/phase_b_task12_combat_event_probe/reallaunch-e73a3d90/launch_path_diagnostics.json"
+      - "data/logs/evaluation/phase_b_task12_combat_event_probe/reallaunch-e73a3d90/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_task12_combat_event_probe/reallaunch-e73a3d90/match.SC2Replay"
+      - "match status: max_game_time_reached; result=Result.Defeat; failure_reason=null"
+      - "combat_event_detected count: 423"
+      - "combat_event_skipped count: 228"
+      - "enemy_combat_unit_nearby=true count: 423"
+      - "attack_order_near_enemy=true count: 0"
+      - "own_army_count > 0 event count: 0"
+
+  - id: task_13_phase_b_small_eval
+    status: completed
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real multi-match gameplay evidence"
+    real_validation_status: completed_with_limitations
+    requires:
+      - task_12_real_combat_event_probe
+    goal: "Run a small real Phase B evaluation against built-in Easy/Medium opponents."
+    scope:
+      - "Run 1-2 maps."
+      - "Run built-in Easy Terran/Zerg/Protoss and optionally Medium Terran."
+      - "Use 2 repeats per matchup where feasible."
+      - "Collect build, production, order, combat, win/loss/status, crash/timeout, and artifact metrics."
+    non_goals:
+      - "Do not run a large ladder opponent pool."
+      - "Do not tune gameplay mid-eval."
+      - "Do not claim ladder competitiveness."
+    files_likely_to_change:
+      - "configs/evaluation/"
+      - "configs/opponents/"
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run bounded real evaluation."
+      - "Confirm artifacts for every match."
+      - "Summarize required metrics."
+    done_criteria:
+      - "Small eval L3 evidence is recorded."
+      - "Crash/timeout/missing artifact statistics are recorded."
+    stop_conditions:
+      - "If eval exceeds quota window, stop and preserve partial evidence."
+      - "If artifacts are missing, record blocker."
+    rollback_notes:
+      - "Preserve real evidence; revert only config/docs if needed."
+    evidence_paths:
+      - "configs/evaluation/phase_b_small_eval.yaml"
+      - "configs/maps/phase_b_small_eval_maps.yaml"
+      - "configs/opponents/phase_b_small_eval_pool.yaml"
+      - "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/"
+      - "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/summary.json"
+      - "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/phase_b_small_eval_metrics.json"
+      - "match dirs: reallaunch-45bf067f, reallaunch-8c5c2c21, reallaunch-a6c20d4f, reallaunch-10664474, reallaunch-cce7b902, reallaunch-b39e71ee, reallaunch-3eff43ce, reallaunch-14c326a9"
+      - "match_count: 8"
+      - "status_counts: max_game_time_reached=8"
+      - "missing_replay_count: 0"
+      - "missing_telemetry_count: 0"
+      - "gateway_build_success_count: 8"
+      - "combat_unit_production_success_count: 0"
+      - "attack_order_count: 0"
+      - "defend_order_count: 3388"
+      - "combat_event_detected_count: 3388"
+      - "own_army_positive_event_count: 0"
+
+  - id: task_14_phase_b_report
+    status: completed
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "real match evidence from task_13"
+    real_validation_status: completed_report_generated
+    requires:
+      - task_13_phase_b_small_eval
+    goal: "Generate Phase B report from real small-eval data."
+    scope:
+      - "Report build_completion_rate."
+      - "Report combat_unit_production_count."
+      - "Report attack_order_count and defend_order_count."
+      - "Report combat_event_count."
+      - "Report win/loss/status and crash/timeout/missing artifact metrics."
+      - "State whether Level 1 playable baseline is reached."
+    non_goals:
+      - "Do not run new SC2 matches."
+      - "Do not claim ladder competitiveness."
+      - "Do not claim opponent model improvement."
+    files_likely_to_change:
+      - "evaluation/metrics/"
+      - "evaluation/reports/"
+      - "artifacts/reports/phase_b_playable_competitive_core/"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Generate report from task_13 real data."
+      - "Confirm limitations are explicit."
+    done_criteria:
+      - "summary.json and report.md exist."
+      - "Report uses real data and avoids overclaiming."
+    stop_conditions:
+      - "If task_13 data is incomplete, report limitations or block."
+    rollback_notes:
+      - "Revert generated report; preserve source data."
+    evidence_paths:
+      - "artifacts/reports/phase_b_playable_competitive_core/summary.json"
+      - "artifacts/reports/phase_b_playable_competitive_core/report.md"
+      - "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/summary.json"
+      - "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/phase_b_small_eval_metrics.json"
+      - "python -m json.tool artifacts/reports/phase_b_playable_competitive_core/summary.json -> passed"
+      - "report states Level 1 playable baseline is not reached"
+      - "report states it does not prove ladder competitiveness"
+      - "report states it does not prove wins against built-in Easy/Medium"
+
+  - id: task_15_phase_b_closeout
+    status: completed
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "real Phase B probes, eval, and report"
+    real_validation_status: completed_with_level_1_not_reached
+    requires:
+      - task_14_phase_b_report
+    goal: "Close out Phase B only if gameplay and reporting gates are satisfied."
+    scope:
+      - "Update current_status."
+      - "Update validated_findings."
+      - "Update open_hypotheses."
+      - "Update common_commands."
+      - "Update verification_matrix."
+      - "Update handoff."
+      - "Recommend whether to create Phase C task queue."
+    non_goals:
+      - "Do not run new SC2 matches."
+      - "Do not implement gameplay."
+      - "Do not enter Phase C."
+    files_likely_to_change:
+      - "docs/context/current_status.md"
+      - "docs/context/validated_findings.md"
+      - "docs/context/open_hypotheses.md"
+      - "docs/commands/common_commands.md"
+      - "docs/commands/verification_matrix.md"
+      - "docs/handoffs/latest.md"
+      - "docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml"
+    verification:
+      - "Confirm all Phase B closeout gates are satisfied."
+      - "Confirm report evidence paths exist."
+    done_criteria:
+      - "Phase B closeout docs updated."
+      - "Queue statuses reflect completed or blocked tasks."
+      - "Next recommendation is explicit."
+    stop_conditions:
+      - "If required L3 evidence is missing, do not close Phase B."
+    rollback_notes:
+      - "Revert closeout doc updates if evidence is rejected."
+    evidence_paths:
+      - "docs/context/current_status.md"
+      - "docs/context/validated_findings.md"
+      - "docs/context/open_hypotheses.md"
+      - "docs/commands/common_commands.md"
+      - "docs/commands/verification_matrix.md"
+      - "docs/handoffs/latest.md"
+      - "artifacts/reports/phase_b_playable_competitive_core/summary.json"
+      - "artifacts/reports/phase_b_playable_competitive_core/report.md"
+      - "data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/"
+      - "closeout decision: do not create Phase C task queue yet; add focused Phase B follow-up for real combat-unit production"

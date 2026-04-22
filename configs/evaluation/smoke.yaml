@@ -1,0 +1,9 @@
+evaluation:
+  name: smoke
+  launch_mode: dry_run
+  bot_config: configs/bot/debug.yaml
+  maps_config: configs/maps/local_test_maps.yaml
+  opponents_config: configs/opponents/local_pool.yaml
+  repeats: 1
+  output_dir: data/logs/evaluation/smoke
+  fail_on_crash: true

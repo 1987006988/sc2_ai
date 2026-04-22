@@ -1,0 +1,67 @@
+opponents:
+  - id: builtin_easy_terran
+    type: computer
+    race: terran
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_collection
+      - terran
+      - easy
+    enabled: true
+    notes: Phase A reusable collection opponent.
+  - id: builtin_medium_terran
+    type: computer
+    race: terran
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_collection
+      - terran
+      - medium
+    enabled: true
+    notes: Phase A reusable collection opponent.
+  - id: builtin_easy_zerg
+    type: computer
+    race: zerg
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_collection
+      - zerg
+      - easy
+    enabled: true
+    notes: Phase A reusable collection opponent.
+  - id: builtin_medium_zerg
+    type: computer
+    race: zerg
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_collection
+      - zerg
+      - medium
+    enabled: true
+    notes: Phase A reusable collection opponent.
+  - id: builtin_easy_protoss
+    type: computer
+    race: protoss
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_collection
+      - protoss
+      - easy
+    enabled: true
+    notes: Phase A reusable collection opponent.
+  - id: builtin_medium_protoss
+    type: computer
+    race: protoss
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_collection
+      - protoss
+      - medium
+    enabled: true
+    notes: Phase A reusable collection opponent.

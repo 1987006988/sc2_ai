@@ -1,0 +1,37 @@
+collection_levels:
+  smoke:
+    description: "4-match infrastructure smoke."
+    maps_config: configs/maps/phase_a_smoke_maps.yaml
+    opponents_config: configs/opponents/phase_a_smoke_pool.yaml
+    repeats: 2
+    expected_match_count: 4
+    output_dir: data/logs/evaluation/phase_a_collections/smoke
+  baseline:
+    description: "24-match baseline dataset collection level."
+    maps_config: configs/maps/local_test_maps.yaml
+    opponents_config: configs/opponents/phase_a_builtin_easy_medium_pool.yaml
+    repeats: 2
+    expected_match_count: 24
+    output_dir: data/logs/evaluation/phase_a_collections/baseline
+  evaluation:
+    description: "60-match evaluation collection level for later capability evaluation."
+    maps_config: configs/maps/local_test_maps.yaml
+    opponents_config: configs/opponents/phase_a_builtin_easy_medium_pool.yaml
+    repeats: 5
+    expected_match_count: 60
+    output_dir: data/logs/evaluation/phase_a_collections/evaluation
+  regression:
+    description: "Configurable regression collection level; repeats can be overridden."
+    maps_config: configs/maps/local_test_maps.yaml
+    opponents_config: configs/opponents/phase_a_builtin_easy_medium_pool.yaml
+    repeats: 1
+    expected_match_count: 12
+    output_dir: data/logs/evaluation/phase_a_collections/regression
+defaults:
+  bot_config: configs/bot/debug.yaml
+  launch_mode: dry_run
+  isolate_runs: true
+  fail_on_crash: false
+  include_historical_by_default: false
+  require_run_id: true
+  large_real_match_threshold: 50

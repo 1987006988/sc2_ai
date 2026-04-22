@@ -1,0 +1,6 @@
+maps:
+  - id: incorporeal_aie_v4
+    name: IncorporealAIE_v4
+    file: IncorporealAIE_v4.SC2Map
+    enabled: true
+    notes: Phase A smoke map; installed from the AI Arena 2025PS2 map pack.

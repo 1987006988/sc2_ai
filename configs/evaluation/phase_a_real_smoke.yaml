@@ -1,0 +1,11 @@
+evaluation:
+  name: phase_a_real_smoke
+  launch_mode: real_launch
+  bot_config: configs/bot/debug.yaml
+  maps_config: configs/maps/phase_a_smoke_maps.yaml
+  opponents_config: configs/opponents/phase_a_smoke_pool.yaml
+  repeats: 2
+  isolate_runs: true
+  run_id: phase_a_task5_real_smoke
+  output_dir: data/logs/evaluation/phase_a_real_smoke
+  fail_on_crash: false

@@ -1,0 +1,49 @@
+opponents:
+  - id: builtin_easy_terran
+    type: computer
+    race: terran
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_1
+      - terran
+      - easy
+    enabled: true
+    notes: Phase A baseline V0 chunk 1 opponent.
+  - id: builtin_medium_terran
+    type: computer
+    race: terran
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_1
+      - terran
+      - medium
+    enabled: true
+    notes: Phase A baseline V0 chunk 1 opponent.
+  - id: builtin_easy_zerg
+    type: computer
+    race: zerg
+    difficulty: easy
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_1
+      - zerg
+      - easy
+    enabled: true
+    notes: Phase A baseline V0 chunk 1 opponent.
+  - id: builtin_medium_zerg
+    type: computer
+    race: zerg
+    difficulty: medium
+    tags:
+      - builtin
+      - phase_a_baseline_v0
+      - chunk_1
+      - zerg
+      - medium
+    enabled: true
+    notes: Phase A baseline V0 chunk 1 opponent.

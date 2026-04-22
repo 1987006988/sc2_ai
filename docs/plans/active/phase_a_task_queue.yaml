@@ -1,0 +1,920 @@
+phase: "Phase A: Ladder Infrastructure & Scalable Real-Match Dataset"
+status: active
+created_at: "2026-04-22"
+manual_trigger: "docs/plans/active/phase_a_manual_trigger.md"
+parent_plan: "docs/plans/active/phase_a_ladder_infra_dataset.md"
+roadmap: "docs/plans/active/ladder_competitive_adaptive_sc2_bot_plan.md"
+
+validation_levels:
+  L0: "static doc/config exists"
+  L1: "schema/unit/config validation"
+  L2: "dry-run / package dry-run / no real SC2"
+  L3: "real SC2 local match evidence"
+
+phase_layers:
+  A1_infrastructure_gate:
+    purpose: "Prove runner, artifact contract, manifest, package dry-run, real single-match probe, real 4-match smoke, and failure accounting work."
+    note: "A1 is an infrastructure gate only. It is not a baseline dataset and cannot close Phase A."
+  A2_baseline_real_match_dataset_v0:
+    purpose: "Collect a versioned baseline real-match dataset large enough to support future Phase B/C/D iteration."
+    target_size: "24-48 real matches"
+    note: "A2 establishes the reusable data collection loop. It does not prove bot strength by itself."
+
+data_scale_strategy:
+  probe: "1 match; validates single-match chain only."
+  smoke: "4 matches; validates multi-match runner stability only."
+  baseline_v0: "24-48 matches; establishes the baseline real-match dataset."
+  evaluation_v1: "50-100 matches; supports capability evaluation."
+  opponent_pool_eval: "100+ matches; supports showcase and research comparisons."
+  training_learning_dataset: "Hundreds to thousands of matches; future input for learned opponent model, combat predictor, and imitation modules."
+
+real_match_first_rules:
+  - "Unit tests only prove code logic."
+  - "Dry-run only proves orchestration flow."
+  - "A real match is required to prove gameplay behavior."
+  - "Multi-match batch runs are required to prove stability."
+  - "Opponent-pool evaluation is required for meaningful showcase value."
+  - "Reports must separate synthetic evidence, dry evidence, and real match evidence."
+  - "Dry-run conclusions must not be packaged as real capability claims."
+  - "Every real match task must output evidence paths."
+  - "Every task must fit one Plus 5-hour quota window; if scope expands, mark split_required."
+
+phase_a_closeout_requirements:
+  - "A1 infrastructure gate is completed: tasks 1-7 are completed or documented with accepted blockers."
+  - "task_4_real_single_match_probe reaches L3."
+  - "task_5_real_multi_match_smoke reaches L3."
+  - "task_6_failure_accounting_summary uses task_5 real match output as L3 data source."
+  - "A2 baseline dataset plan is completed."
+  - "Baseline dataset contains at least 24 real matches, or a documented exception explains why the current dataset is below 24."
+  - "task_8e_merge_baseline_dataset_manifest uses real baseline chunk outputs."
+  - "task_8f_dataset_quality_report uses real baseline dataset outputs."
+  - "task_8g_scalable_collection_command is completed."
+  - "Reports state that Phase A does not prove bot strength."
+
+tasks:
+  - id: task_0_create_phase_a_queue
+    status: completed
+    phase_layer: planning
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L0
+    actual_validation_level: L0
+    data_source: "static doc/config exists"
+    real_validation_status: not_applicable
+    requires: []
+    goal: "Create the initial quota-safe Phase A task queue and manual trigger instructions."
+    scope:
+      - "Create or update docs/plans/active/phase_a_task_queue.yaml."
+      - "Create or update docs/plans/active/phase_a_manual_trigger.md."
+      - "Update Phase A plan with queue/manual-trigger references."
+      - "Update docs/handoffs/latest.md."
+    non_goals:
+      - "Do not execute task_1."
+      - "Do not write functional code."
+      - "Do not run tests."
+      - "Do not run SC2."
+      - "Do not enter Phase B."
+    files_likely_to_change:
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/plans/active/phase_a_manual_trigger.md"
+      - "docs/plans/active/phase_a_ladder_infra_dataset.md"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Confirm queue file exists and parses as YAML."
+      - "Confirm manual trigger file exists."
+      - "No SC2 validation in this task."
+    done_criteria:
+      - "Queue YAML exists."
+      - "Manual trigger instructions exist."
+      - "Next pending task is task_1_real_match_artifact_contract."
+    stop_conditions:
+      - "If queue structure becomes ambiguous, stop and keep this task in_progress."
+      - "If implementation work appears necessary, stop without doing it."
+    rollback_notes:
+      - "Remove queue/manual-trigger changes and revert handoff if rejected."
+    evidence_paths:
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/plans/active/phase_a_manual_trigger.md"
+
+  - id: task_1_real_match_artifact_contract
+    status: completed
+    phase_layer: A1_infrastructure_gate
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L1
+    actual_validation_level: L1
+    data_source: "synthetic unit test"
+    real_validation_status: not_applicable
+    requires:
+      - task_0_create_phase_a_queue
+    goal: "Define the real match artifact contract used by Phase A datasets and reports."
+    scope:
+      - "Define fields: run_id, match_id, map_id, opponent_id, opponent_race, opponent_difficulty, bot_config_id."
+      - "Define timing/status fields: start_time, end_time, status, failure_reason."
+      - "Define artifact fields: replay_path, telemetry_path, match_result_path."
+      - "Define config_snapshot or config_reference."
+      - "Define sc2_version if available and git_commit if available."
+      - "Add lightweight validation or schema tests if an existing pattern supports it."
+    non_goals:
+      - "Do not run SC2."
+      - "Do not implement dataset manifest generation."
+      - "Do not implement package dry-run."
+      - "Do not change bot gameplay."
+    files_likely_to_change:
+      - "evaluation/metrics/schemas.py"
+      - "evaluation/runner/run_match.py"
+      - "tests/unit/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run only focused schema/unit validation if added."
+      - "Confirm the contract can represent existing real match outputs without requiring new SC2 runs."
+    done_criteria:
+      - "Artifact contract exists in code or documented schema."
+      - "Required fields are represented."
+      - "Missing optional fields are handled explicitly."
+      - "Queue and handoff are updated."
+    stop_conditions:
+      - "If contract touches runner behavior deeply, mark split_required."
+      - "If existing artifact formats conflict, stop and document the conflict."
+    rollback_notes:
+      - "Revert schema/contract additions and focused tests from this task."
+    evidence_paths:
+      - "evaluation/metrics/schemas.py"
+      - "tests/unit/test_match_artifact_contract.py"
+      - "python -m pytest tests/unit/test_match_artifact_contract.py -> 3 passed"
+
+  - id: task_2_dataset_manifest_schema
+    status: completed
+    phase_layer: A1_infrastructure_gate
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L1
+    actual_validation_level: L1
+    data_source: "synthetic unit test"
+    real_validation_status: not_applicable
+    requires:
+      - task_1_real_match_artifact_contract
+    goal: "Define the Phase A dataset manifest schema."
+    scope:
+      - "Define fields: run_id, created_at, purpose, included_match_dirs, excluded_historical_dirs."
+      - "Define pools/config fields: map_pool, opponent_pool, bot_configs, config_snapshot."
+      - "Define summary fields: match_count, status_counts, artifact_completeness, evidence_paths."
+      - "Support chunked baseline datasets and manifest merge inputs."
+    non_goals:
+      - "Do not run SC2."
+      - "Do not generate a real dataset manifest yet."
+      - "Do not implement failure-accounting summary."
+      - "Do not change bot gameplay."
+    files_likely_to_change:
+      - "evaluation/metrics/schemas.py"
+      - "evaluation/metrics/dataset_manifest.py"
+      - "tests/unit/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run focused schema/unit validation if added."
+      - "Confirm schema can represent multiple match directories, chunk runs, and historical exclusions."
+    done_criteria:
+      - "Dataset manifest schema exists."
+      - "Required fields are represented."
+      - "Historical directory exclusion is explicit."
+      - "Chunked baseline dataset support is represented."
+      - "Queue and handoff are updated."
+    stop_conditions:
+      - "If manifest generation requires runner changes, stop and split."
+      - "If schema duplicates an existing report schema, adapt instead of adding incompatible structures."
+    rollback_notes:
+      - "Revert manifest schema additions and focused tests from this task."
+    evidence_paths:
+      - "evaluation/metrics/schemas.py"
+      - "tests/unit/test_dataset_manifest_schema.py"
+      - "python -m pytest tests/unit/test_dataset_manifest_schema.py tests/unit/test_match_artifact_contract.py -> 6 passed"
+
+  - id: task_3_package_dry_run_check
+    status: completed
+    phase_layer: A1_infrastructure_gate
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "dry evidence"
+    real_validation_status: not_applicable
+    requires:
+      - task_2_dataset_manifest_schema
+    goal: "Implement or complete a package/upload dry-run check without uploading or launching SC2."
+    scope:
+      - "Check bot entrypoint."
+      - "Check requirements."
+      - "Check configs."
+      - "Check map references."
+      - "Check scripts."
+      - "Ensure data/logs/artifacts large generated files are excluded."
+      - "Produce or validate a package manifest."
+    non_goals:
+      - "Do not upload."
+      - "Do not run SC2."
+      - "Do not change bot gameplay."
+      - "Do not create a real match dataset."
+    files_likely_to_change:
+      - "scripts/"
+      - "evaluation/runner/"
+      - "configs/evaluation/"
+      - "docs/commands/common_commands.md"
+      - "tests/unit/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run the package dry-run command."
+      - "Confirm output distinguishes dry evidence from real match evidence."
+      - "Confirm generated package manifest excludes large data/logs/artifacts."
+    done_criteria:
+      - "Package dry-run command exists and completes."
+      - "Package manifest or check output is produced."
+      - "Generated/log/artifact exclusions are represented."
+      - "Queue and handoff are updated."
+    stop_conditions:
+      - "If upload format requirements are unknown, stop with a checklist and mark blocked."
+      - "If package check requires broad repo restructuring, mark split_required."
+    rollback_notes:
+      - "Revert dry-run script/check additions and documentation for this task."
+    evidence_paths:
+      - "evaluation/runner/package_dry_run.py"
+      - "tests/unit/test_package_dry_run.py"
+      - "docs/commands/common_commands.md"
+      - "/tmp/phase_a_package_dry_run_manifest.json"
+      - "python -m pytest tests/unit/test_package_dry_run.py -> 3 passed"
+      - "python -m evaluation.runner.package_dry_run --output /tmp/phase_a_package_dry_run_manifest.json -> status ok"
+
+  - id: task_4_real_single_match_probe
+    status: completed
+    phase_layer: A1_infrastructure_gate
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match evidence"
+    real_validation_status: completed
+    requires:
+      - task_3_package_dry_run_check
+    goal: "Run one real SC2 local match and validate the artifact contract with real output."
+    scope:
+      - "Run one short real local match."
+      - "Verify match_result.json exists."
+      - "Verify replay exists."
+      - "Verify telemetry/events.jsonl exists."
+      - "Record config snapshot or config reference."
+      - "Write or update a dataset manifest entry for the match."
+      - "Record evidence path in queue and handoff."
+    non_goals:
+      - "Do not run multi-match smoke."
+      - "Do not tune gameplay."
+      - "Do not implement Phase B behavior."
+      - "Do not claim bot strength."
+    files_likely_to_change:
+      - "evaluation/runner/"
+      - "evaluation/metrics/dataset_manifest.py"
+      - "configs/evaluation/"
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run one real local SC2 match."
+      - "Inspect artifact paths."
+      - "Confirm manifest entry references the real match directory."
+    done_criteria:
+      - "Real match output directory exists."
+      - "match_result.json exists."
+      - "Replay exists."
+      - "telemetry/events.jsonl exists."
+      - "Manifest entry exists for the real match."
+      - "Evidence path is recorded."
+    stop_conditions:
+      - "If SC2 launch fails, mark blocked with failure_reason and stop."
+      - "If artifacts are missing, do not proceed to task_5."
+      - "If output format differs from contract, stop and update contract in a separate task."
+    rollback_notes:
+      - "Do not delete real match evidence unless explicitly requested; revert only code/docs from this task if needed."
+    evidence_paths:
+      - "data/logs/evaluation/phase_a_task4_single_probe/reallaunch-433f2e15/"
+      - "data/logs/evaluation/phase_a_task4_single_probe/reallaunch-433f2e15/match_result.json"
+      - "data/logs/evaluation/phase_a_task4_single_probe/reallaunch-433f2e15/match.SC2Replay"
+      - "data/logs/evaluation/phase_a_task4_single_probe/reallaunch-433f2e15/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_a_task4_single_probe/dataset_manifest.json"
+      - "status=max_game_time_reached"
+      - "contract validation_errors=[]"
+
+  - id: task_5_real_multi_match_smoke
+    status: completed
+    phase_layer: A1_infrastructure_gate
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real multi-match evidence"
+    real_validation_status: completed
+    requires:
+      - task_4_real_single_match_probe
+    goal: "Run a small real multi-match smoke batch and collect independent match outputs."
+    scope:
+      - "Run no more than 4 real matches by default: 1 map x 2 opponents x 2 repeats."
+      - "Ensure each match writes an independent output directory."
+      - "Ensure each match enters the dataset manifest."
+      - "Verify result, replay, and telemetry for each match or record structured missing-artifact status."
+      - "Generate or update a smoke summary with status and artifact completeness."
+    non_goals:
+      - "Do not expand opponent pool beyond smoke size."
+      - "Do not treat smoke as the Phase A baseline dataset."
+      - "Do not tune gameplay."
+      - "Do not generate final Phase A report."
+      - "Do not enter Phase B."
+    files_likely_to_change:
+      - "evaluation/runner/run_batch.py"
+      - "evaluation/metrics/dataset_manifest.py"
+      - "configs/evaluation/"
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run the small real multi-match smoke."
+      - "Inspect each match output directory."
+      - "Inspect manifest and smoke summary."
+    done_criteria:
+      - "Real multi-match smoke output root exists."
+      - "All smoke match directories are represented in manifest."
+      - "Status and artifact completeness are summarized."
+      - "Evidence paths are recorded."
+      - "Output is labeled smoke, not baseline dataset."
+    stop_conditions:
+      - "If the batch exceeds the quota window, stop and preserve partial output."
+      - "If one match blocks the whole run, record failure and stop rather than increasing scope."
+      - "If runner changes become broad, mark split_required."
+    rollback_notes:
+      - "Do not delete real match evidence unless explicitly requested; revert only code/docs from this task if needed."
+    evidence_paths:
+      - "configs/evaluation/phase_a_real_smoke.yaml"
+      - "configs/maps/phase_a_smoke_maps.yaml"
+      - "configs/opponents/phase_a_smoke_pool.yaml"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/summary.json"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/smoke_artifact_summary.json"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-7c1cb0cb/"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-2eb263cb/"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-b2a2e4aa/"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/reallaunch-1ab58542/"
+      - "real smoke result: 4 matches, status_counts={'max_game_time_reached': 4}, replay_count=4, telemetry_count=4"
+
+  - id: task_6_failure_accounting_summary
+    status: completed
+    phase_layer: A1_infrastructure_gate
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "real match evidence from task_5 smoke"
+    real_validation_status: completed_from_task_5_data
+    requires:
+      - task_5_real_multi_match_smoke
+    goal: "Compute A1 smoke failure and artifact accounting from task_5 real outputs."
+    scope:
+      - "Use task_5 real multi-match smoke output."
+      - "Compute total_matches."
+      - "Compute completed_count, crashed_count, timeout_count, max_game_time_reached_count."
+      - "Compute missing_replay_count and missing_telemetry_count."
+      - "Compute crash_rate, timeout_rate, artifact_completeness_rate."
+      - "Write machine-readable smoke summary."
+    non_goals:
+      - "Do not run new SC2 matches."
+      - "Do not generate baseline dataset report."
+      - "Do not change gameplay."
+      - "Do not reinterpret dry-run output as real evidence."
+      - "Do not treat 4-match smoke as Phase A closeout data."
+    files_likely_to_change:
+      - "evaluation/metrics/"
+      - "evaluation/reports/"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run summary generation on task_5 real output root."
+      - "Confirm counts and rates are present."
+      - "Confirm summary references task_5 evidence paths."
+    done_criteria:
+      - "A1 smoke failure accounting summary exists."
+      - "Summary uses task_5 real evidence."
+      - "Counts and rates are populated."
+      - "Queue and handoff are updated."
+    stop_conditions:
+      - "If task_5 data is missing or incomplete, block this task rather than using dry data."
+      - "If statuses are ambiguous, record unknown separately."
+    rollback_notes:
+      - "Revert summary code/report output from this task; preserve source real match evidence."
+    evidence_paths:
+      - "evaluation/metrics/failure_accounting.py"
+      - "tests/unit/test_failure_accounting.py"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/failure_accounting_summary.json"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/"
+      - "python -m pytest tests/unit/test_failure_accounting.py -> 2 passed"
+      - "python -m evaluation.metrics.failure_accounting --input-dir data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke --output data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/failure_accounting_summary.json --run-id phase_a_task5_real_smoke -> total_matches=4, crash_rate=0.0, timeout_rate=0.0, artifact_completeness_rate=1.0"
+
+  - id: task_7_a1_infrastructure_gate_report
+    status: completed
+    phase_layer: A1_infrastructure_gate
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "real match evidence from task_4 and task_5"
+    real_validation_status: completed_from_task_4_task_5_task_6_data
+    requires:
+      - task_6_failure_accounting_summary
+    goal: "Generate an A1 infrastructure gate report that explicitly labels probe/smoke evidence as infrastructure-only."
+    scope:
+      - "Use task_4 single probe and task_5 smoke outputs."
+      - "Summarize runner, artifact, manifest, package dry-run, and smoke failure accounting."
+      - "State that 1 probe and 4 smoke matches do not constitute a baseline dataset."
+      - "State that A2 baseline dataset is still required before Phase A closeout."
+    non_goals:
+      - "Do not run new SC2 matches."
+      - "Do not generate baseline dataset quality report."
+      - "Do not claim bot strength."
+      - "Do not enter Phase B."
+    files_likely_to_change:
+      - "evaluation/reports/"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Generate A1 gate report from task_4/task_5/task_6 real outputs."
+      - "Confirm report separates probe, smoke, and future baseline dataset evidence."
+    done_criteria:
+      - "A1 infrastructure gate report exists."
+      - "Report states A1 is not Phase A closeout."
+      - "Report cites real evidence paths."
+    stop_conditions:
+      - "If real A1 data is unavailable, block this task."
+      - "If report would overclaim strength, stop and revise."
+    rollback_notes:
+      - "Revert A1 report output/generator from this task; preserve source real match evidence."
+    evidence_paths:
+      - "evaluation/reports/run_phase_a_a1_report.py"
+      - "tests/unit/test_phase_a_a1_report.py"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/a1_infrastructure_gate/summary.json"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/a1_infrastructure_gate/report.md"
+      - "data/logs/evaluation/phase_a_task4_single_probe/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke/failure_accounting_summary.json"
+      - "python -m pytest tests/unit/test_phase_a_a1_report.py -> 1 passed"
+      - "python -m evaluation.reports.run_phase_a_a1_report --probe-dir data/logs/evaluation/phase_a_task4_single_probe --smoke-dir data/logs/evaluation/phase_a_real_smoke/phase_a_task5_real_smoke --output-dir artifacts/reports/phase_a_ladder_infra_dataset/a1_infrastructure_gate --run-id phase_a_a1_infrastructure_gate -> 4 smoke matches"
+
+  - id: task_8a_baseline_dataset_plan
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L0
+    actual_validation_level: L0
+    data_source: "static plan"
+    real_validation_status: not_applicable
+    requires:
+      - task_7_a1_infrastructure_gate_report
+    goal: "Define the Baseline Real-Match Dataset V0 sampling plan."
+    scope:
+      - "Plan 24-48 real matches."
+      - "Use 1-2 maps."
+      - "Use built-in Terran, Zerg, and Protoss opponents."
+      - "Use Easy and Medium difficulties."
+      - "Use 2-4 repeats per matchup where feasible."
+      - "Define run_id scoping and historical-run exclusions."
+      - "Define chunk boundaries for quota-safe collection."
+    non_goals:
+      - "Do not run SC2."
+      - "Do not implement collection command."
+      - "Do not tune gameplay."
+      - "Do not claim strength."
+    files_likely_to_change:
+      - "configs/evaluation/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Review that planned coverage can reach at least 24 matches."
+      - "Confirm run_id scoping and historical exclusions are explicit."
+    done_criteria:
+      - "Baseline V0 sampling plan exists."
+      - "Target size is 24-48 matches."
+      - "Chunks are small enough for one Plus 5-hour quota window each."
+      - "Queue and handoff are updated."
+    stop_conditions:
+      - "If target size cannot fit available maps/opponents, document the reduced plan and blocker."
+      - "If task starts needing runner changes, stop and split."
+    rollback_notes:
+      - "Revert baseline plan/config changes from this task."
+    evidence_paths:
+      - "docs/plans/active/phase_a_baseline_dataset_v0_sampling_plan.md"
+      - "configs/evaluation/phase_a_baseline_dataset_v0_plan.yaml"
+      - "static coverage check -> planned_match_count=24, maps=2, races=3, difficulties=2, chunk_sizes=[8,8,8]"
+
+  - id: task_8b_baseline_dataset_chunk_1
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match evidence"
+    real_validation_status: completed
+    requires:
+      - task_8a_baseline_dataset_plan
+    goal: "Collect the first baseline dataset chunk with 8-12 real matches."
+    scope:
+      - "Run the first 8-12 real matches from the baseline V0 plan."
+      - "Use a scoped run_id or documented chunk run_id."
+      - "Write manifest entries."
+      - "Record evidence_paths for every match directory."
+    non_goals:
+      - "Do not exceed planned chunk size unless explicitly approved."
+      - "Do not tune gameplay."
+      - "Do not merge the full dataset yet."
+      - "Do not claim bot strength."
+    files_likely_to_change:
+      - "configs/evaluation/"
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run baseline chunk 1 real matches."
+      - "Confirm manifest entries and evidence paths."
+      - "Confirm historical runs are not mixed in."
+    done_criteria:
+      - "8-12 real match attempts are recorded or failures are structured."
+      - "Manifest references chunk 1."
+      - "Evidence paths are recorded."
+    stop_conditions:
+      - "If collection exceeds quota window, stop and preserve partial evidence."
+      - "If SC2 launch repeatedly fails, mark blocked."
+    rollback_notes:
+      - "Preserve real evidence; revert only queue/docs/config changes if needed."
+    evidence_paths:
+      - "configs/evaluation/phase_a_baseline_v0_chunk_1.yaml"
+      - "configs/maps/phase_a_baseline_chunk1_maps.yaml"
+      - "configs/opponents/phase_a_baseline_chunk1_pool.yaml"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/summary.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-ef90a636/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-caf91b96/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-5d045c5a/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-3da62ab6/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-56570d76/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-b6d890d3/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-ad495afd/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/reallaunch-318750bc/"
+      - "real chunk result: 8 matches, status_counts={'max_game_time_reached': 8}, replay_count=8, telemetry_count=8"
+
+  - id: task_8c_baseline_dataset_chunk_2
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match evidence"
+    real_validation_status: completed
+    requires:
+      - task_8b_baseline_dataset_chunk_1
+    goal: "Collect the second baseline dataset chunk with 8-12 real matches."
+    scope:
+      - "Run the second 8-12 real matches from the baseline V0 plan."
+      - "Continue the same baseline dataset or use a clearly linked sub-run."
+      - "Write manifest entries."
+      - "Record evidence_paths for every match directory."
+    non_goals:
+      - "Do not exceed planned chunk size unless explicitly approved."
+      - "Do not tune gameplay."
+      - "Do not merge the full dataset yet."
+      - "Do not claim bot strength."
+    files_likely_to_change:
+      - "configs/evaluation/"
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run baseline chunk 2 real matches."
+      - "Confirm manifest entries and evidence paths."
+      - "Confirm historical runs are not mixed in."
+    done_criteria:
+      - "8-12 real match attempts are recorded or failures are structured."
+      - "Manifest references chunk 2."
+      - "Evidence paths are recorded."
+    stop_conditions:
+      - "If collection exceeds quota window, stop and preserve partial evidence."
+      - "If SC2 launch repeatedly fails, mark blocked."
+    rollback_notes:
+      - "Preserve real evidence; revert only queue/docs/config changes if needed."
+    evidence_paths:
+      - "configs/evaluation/phase_a_baseline_v0_chunk_2a.yaml"
+      - "configs/evaluation/phase_a_baseline_v0_chunk_2b.yaml"
+      - "configs/maps/phase_a_baseline_chunk2a_maps.yaml"
+      - "configs/maps/phase_a_baseline_chunk2b_maps.yaml"
+      - "configs/opponents/phase_a_baseline_chunk2a_pool.yaml"
+      - "configs/opponents/phase_a_baseline_chunk2b_pool.yaml"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-3838d109/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-2797c44f/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-209ba17f/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2a/reallaunch-729e6c23/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-33bcb2b3/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-94f8dad4/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-72802f06/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2b/reallaunch-2695741d/"
+      - "real chunk result: 8 matches, status_counts={'max_game_time_reached': 8}, replay_count=8, telemetry_count=8"
+
+  - id: task_8d_baseline_dataset_chunk_3_optional
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: high
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "new real match evidence"
+    real_validation_status: completed
+    requires:
+      - task_8c_baseline_dataset_chunk_2
+    goal: "Collect an optional third baseline chunk if the first two chunks do not reach 24 matches or coverage is incomplete."
+    scope:
+      - "Check whether baseline dataset has at least 24 real match attempts and required map/opponent coverage."
+      - "If not, run an additional 8-12 real matches."
+      - "If already sufficient, mark skipped_with_reason."
+      - "Record evidence_paths if run."
+    non_goals:
+      - "Do not run this chunk if coverage is already sufficient."
+      - "Do not exceed planned chunk size unless explicitly approved."
+      - "Do not tune gameplay."
+      - "Do not claim bot strength."
+    files_likely_to_change:
+      - "configs/evaluation/"
+      - "data/logs/evaluation/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Confirm whether chunk 3 is needed."
+      - "If run, verify real match outputs and manifest entries."
+      - "If skipped, verify documented reason."
+    done_criteria:
+      - "Baseline dataset has at least 24 real match attempts or a documented exception."
+      - "Coverage gap status is explicit."
+      - "Evidence paths or skip reason are recorded."
+    stop_conditions:
+      - "If collection exceeds quota window, stop and preserve partial evidence."
+      - "If data quality is too low, block merge rather than hiding failures."
+    rollback_notes:
+      - "Preserve real evidence; revert only queue/docs/config changes if needed."
+    evidence_paths:
+      - "configs/evaluation/phase_a_baseline_v0_chunk_3.yaml"
+      - "configs/maps/phase_a_baseline_chunk3_maps.yaml"
+      - "configs/opponents/phase_a_baseline_chunk3_pool.yaml"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/summary.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-0114db2f/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-61225c95/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-6ce5df40/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-9ac07d38/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-b2da718c/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-d12d6ff5/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-d8db51f2/"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/reallaunch-fea3acf5/"
+      - "real chunk result: 8 matches, status_counts={'max_game_time_reached': 8}, replay_count=8, telemetry_count=8"
+
+  - id: task_8e_merge_baseline_dataset_manifest
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "real match evidence from baseline chunks"
+    real_validation_status: completed
+    requires:
+      - task_8d_baseline_dataset_chunk_3_optional
+    goal: "Merge baseline dataset chunks into a versioned dataset manifest."
+    scope:
+      - "Use chunk outputs from task_8b/task_8c and task_8d if run."
+      - "Write dataset_manifest.json."
+      - "List included runs."
+      - "List excluded historical runs."
+      - "Report match count."
+      - "Report map/opponent coverage."
+      - "Report artifact completeness."
+    non_goals:
+      - "Do not run new SC2 matches."
+      - "Do not generate dataset quality report yet."
+      - "Do not include historical runs by default."
+      - "Do not claim bot strength."
+    files_likely_to_change:
+      - "evaluation/metrics/"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run manifest merge on real baseline chunk outputs."
+      - "Confirm included/excluded run lists are explicit."
+      - "Confirm match count and coverage fields exist."
+    done_criteria:
+      - "dataset_manifest.json exists."
+      - "Manifest uses real baseline chunk outputs."
+      - "Historical exclusions are explicit."
+      - "Artifact completeness is summarized."
+    stop_conditions:
+      - "If baseline chunks are missing, block this task."
+      - "If match count is below 24 without documented exception, block Phase A closeout."
+    rollback_notes:
+      - "Revert merged manifest output; preserve source baseline chunks."
+    evidence_paths:
+      - "evaluation/metrics/dataset_manifest.py"
+      - "tests/unit/test_dataset_manifest_merge.py"
+      - "data/logs/evaluation/phase_a_baseline_v0/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2/dataset_manifest.json"
+      - "data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/dataset_manifest.json"
+      - "merged baseline result: 24 matches, status_counts={'max_game_time_reached': 24}, maps=['incorporeal_aie_v4', 'leylines_aie_v3'], opponents=['builtin_easy_protoss', 'builtin_easy_terran', 'builtin_easy_zerg', 'builtin_medium_protoss', 'builtin_medium_terran', 'builtin_medium_zerg'], replay_count=24, telemetry_count=24"
+
+  - id: task_8f_dataset_quality_report
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "real match evidence from merged baseline dataset"
+    real_validation_status: completed
+    requires:
+      - task_8e_merge_baseline_dataset_manifest
+    goal: "Generate the Baseline Dataset V0 quality report from real baseline data."
+    scope:
+      - "Report match_count."
+      - "Report maps."
+      - "Report opponent_races and opponent_difficulties."
+      - "Report status distribution, crash_rate, timeout_rate."
+      - "Report missing_replay_count and missing_telemetry_count."
+      - "Report telemetry_event_coverage and replay_availability."
+      - "Report match_duration summary."
+      - "Report first_scout_time if available."
+      - "Report current bot behavior limitations."
+    non_goals:
+      - "Do not run new SC2 matches."
+      - "Do not tune gameplay."
+      - "Do not claim bot strength."
+      - "Do not enter Phase B."
+    files_likely_to_change:
+      - "evaluation/metrics/"
+      - "evaluation/reports/"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Generate dataset quality report from merged real baseline manifest."
+      - "Confirm report separates infrastructure evidence and baseline dataset evidence."
+      - "Confirm report states limitations and does not claim strength."
+    done_criteria:
+      - "Dataset quality summary JSON exists."
+      - "Dataset quality Markdown report exists."
+      - "Report uses real baseline dataset outputs."
+      - "Report states current bot behavior limitations."
+    stop_conditions:
+      - "If merged manifest is missing, block this task."
+      - "If metrics require fields not yet collected, report null/unknown rather than fabricating."
+    rollback_notes:
+      - "Revert generated quality report; preserve source real match dataset."
+    evidence_paths:
+      - "evaluation/reports/run_phase_a_dataset_quality_report.py"
+      - "tests/unit/test_phase_a_dataset_quality_report.py"
+      - "data/logs/evaluation/phase_a_baseline_v0/dataset_manifest.json"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/baseline_dataset_v0_quality/summary.json"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/baseline_dataset_v0_quality/report.md"
+      - "quality report result: 24 matches, status_counts={'max_game_time_reached': 24}, crash_rate=0.0, timeout_rate=0.0, replay_availability=1.0, telemetry_availability=1.0"
+
+  - id: task_8g_scalable_collection_command
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: medium
+    expected_codex_window: one_plus_window
+    validation_level_required: L2
+    actual_validation_level: L2
+    data_source: "dry/config evidence"
+    real_validation_status: not_applicable
+    requires:
+      - task_8f_dataset_quality_report
+    goal: "Create reusable collection command/config levels for future Phase B/C/D data collection."
+    scope:
+      - "Support smoke: 4 matches."
+      - "Support baseline: 24-48 matches."
+      - "Support evaluation: 50+ matches."
+      - "Support regression: configurable."
+      - "Support custom run_id."
+      - "Ensure each run has isolated run_id output."
+      - "Ensure historical runs are not automatically mixed into current reports."
+    non_goals:
+      - "Do not run large batches by default."
+      - "Do not run SC2 in this task unless a minimal dry command explicitly stays dry."
+      - "Do not tune gameplay."
+      - "Do not enter Phase B."
+    files_likely_to_change:
+      - "configs/evaluation/"
+      - "evaluation/runner/"
+      - "scripts/"
+      - "docs/commands/common_commands.md"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+      - "docs/handoffs/latest.md"
+    verification:
+      - "Run dry/config validation for collection levels."
+      - "Confirm commands do not default to large real runs."
+      - "Confirm run_id scoping is explicit."
+    done_criteria:
+      - "Reusable collection levels exist."
+      - "Custom run_id is supported or documented."
+      - "Historical run exclusion is explicit."
+      - "No large batch runs by default."
+    stop_conditions:
+      - "If runner changes become broad, mark split_required."
+      - "If command would accidentally launch a large real batch, stop and revise."
+    rollback_notes:
+      - "Revert collection command/config changes from this task."
+    evidence_paths:
+      - "configs/evaluation/phase_a_collection_levels.yaml"
+      - "configs/opponents/phase_a_builtin_easy_medium_pool.yaml"
+      - "evaluation/runner/build_collection_config.py"
+      - "tests/unit/test_build_collection_config.py"
+      - "docs/commands/common_commands.md"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/collection_config_examples/smoke_dry.yaml"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/collection_config_examples/baseline_dry.yaml"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/collection_config_examples/regression_dry.yaml"
+      - "data/logs/evaluation/phase_a_collections/smoke/phase_a_collection_smoke_dry_example/summary.json"
+      - "dry/config result: smoke=4, baseline=24, evaluation=60, regression=12; dry_run is default; large real evaluation blocked without --allow-large-real"
+
+  - id: task_8h_phase_a_closeout_gate_update
+    status: completed
+    phase_layer: A2_baseline_real_match_dataset_v0
+    quota_risk: low
+    expected_codex_window: one_plus_window
+    validation_level_required: L3
+    actual_validation_level: L3
+    data_source: "real baseline dataset and reports from task_8e/task_8f"
+    real_validation_status: completed
+    requires:
+      - task_8g_scalable_collection_command
+    goal: "Close out Phase A only if A1 and A2 gates are satisfied."
+    scope:
+      - "Update docs/context/current_status.md."
+      - "Update docs/context/validated_findings.md."
+      - "Update docs/context/open_hypotheses.md."
+      - "Update docs/commands/common_commands.md."
+      - "Update docs/commands/verification_matrix.md."
+      - "Update docs/handoffs/latest.md."
+      - "Record whether Phase A closeout requirements were met."
+      - "Recommend whether to create Phase B task queue."
+    non_goals:
+      - "Do not run new SC2 matches."
+      - "Do not write gameplay code."
+      - "Do not create Phase B queue unless explicitly requested."
+      - "Do not claim bot strength beyond Phase A evidence."
+    files_likely_to_change:
+      - "docs/context/current_status.md"
+      - "docs/context/validated_findings.md"
+      - "docs/context/open_hypotheses.md"
+      - "docs/commands/common_commands.md"
+      - "docs/commands/verification_matrix.md"
+      - "docs/handoffs/latest.md"
+      - "docs/plans/active/phase_a_task_queue.yaml"
+    verification:
+      - "Confirm A1 infrastructure gate completed."
+      - "Confirm baseline dataset has at least 24 real matches or documented exception."
+      - "Confirm dataset quality report exists."
+      - "Confirm scalable collection command/config exists."
+      - "Confirm docs cite evidence paths."
+    done_criteria:
+      - "Phase A closeout docs updated."
+      - "Queue marks Phase A tasks completed or documents blockers."
+      - "Next recommendation is explicit."
+      - "No unsupported strength claims are present."
+    stop_conditions:
+      - "If A1 or A2 required evidence is missing, do not close Phase A."
+      - "If baseline dataset is below 24 without accepted exception, block closeout."
+      - "If docs would need to overclaim, stop and mark blocked."
+    rollback_notes:
+      - "Revert closeout doc changes if Phase A evidence is rejected."
+    evidence_paths:
+      - "docs/context/current_status.md"
+      - "docs/context/validated_findings.md"
+      - "docs/context/open_hypotheses.md"
+      - "docs/commands/common_commands.md"
+      - "docs/commands/verification_matrix.md"
+      - "docs/handoffs/latest.md"
+      - "data/logs/evaluation/phase_a_baseline_v0/dataset_manifest.json"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/a1_infrastructure_gate/summary.json"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/baseline_dataset_v0_quality/summary.json"
+      - "artifacts/reports/phase_a_ladder_infra_dataset/baseline_dataset_v0_quality/report.md"
+      - "phase a closeout gate: A1 report exists, Baseline V0 has 24 real matches, quality report exists, scalable collection config exists; next recommendation is Phase B task queue"

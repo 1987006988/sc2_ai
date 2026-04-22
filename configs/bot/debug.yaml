@@ -1,0 +1,43 @@
+bot:
+  name: sc2-ai-debug
+  race: protoss
+  strategy: debug_stub
+
+managers:
+  macro: true
+  scouting: true
+  strategy: true
+  tactical: true
+  micro: false
+
+opponent_model:
+  mode: rule_based
+
+runtime:
+  max_game_loop: 2600
+  max_steps:
+  worker_production: true
+  worker_gather: true
+  worker_scout: true
+  supply_sustain: true
+  supply_sustain_threshold: 2
+  supply_structure_name: pylon
+  army_defense: true
+
+build_order:
+  target_probe_count: 22
+  pylon_supply_buffer: 2
+  gateway_min_probe_count: 16
+  gateway_min_game_time: 90.0
+  assimilator_enabled: true
+  cybernetics_core_enabled: true
+  zealot_production_priority: 10
+  stalker_production_priority: 20
+  attack_army_supply_threshold: 8
+  attack_game_time_threshold: 360.0
+  defend_radius: 30.0
+
+telemetry:
+  enabled: true
+  output_dir: data/logs/telemetry
+  verbose: true

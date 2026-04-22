@@ -1,0 +1,35 @@
+bot:
+  name: sc2-ai-rule-based-tag-only
+  race: protoss
+  strategy: phase1e_tag_only
+
+managers:
+  macro: true
+  scouting: true
+  strategy: true
+  tactical: true
+  micro: false
+
+opponent_model:
+  mode: rule_based
+  intervention_mode: tag_only
+  rush_risk_threshold: 0.5
+  tech_risk_threshold: 0.5
+  low_information_confidence_threshold: 0.25
+  low_information_game_time_threshold: 90.0
+
+runtime:
+  max_game_loop: 2600
+  max_steps:
+  worker_production: true
+  worker_gather: true
+  worker_scout: true
+  supply_sustain: true
+  supply_sustain_threshold: 2
+  supply_structure_name: pylon
+  army_defense: true
+
+telemetry:
+  enabled: true
+  output_dir: data/logs/telemetry
+  verbose: true

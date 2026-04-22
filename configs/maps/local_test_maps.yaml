@@ -1,0 +1,11 @@
+maps:
+  - id: incorporeal_aie_v4
+    name: IncorporealAIE_v4
+    file: IncorporealAIE_v4.SC2Map
+    enabled: true
+    notes: Installed from the AI Arena 2025PS2 map pack into D:\games\StarCraft II\Maps.
+  - id: leylines_aie_v3
+    name: LeyLinesAIE_v3
+    file: LeyLinesAIE_v3.SC2Map
+    enabled: true
+    notes: Installed from the AI Arena 2025PS2 map pack into D:\games\StarCraft II\Maps.

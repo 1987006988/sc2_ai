@@ -1,0 +1,23 @@
+opponents:
+  - id: builtin_easy_terran
+    type: computer
+    race: terran
+    difficulty: easy
+    tags:
+      - builtin
+      - terran
+      - easy
+      - ablation
+    enabled: true
+    notes: Terran baseline for Phase 1D opponent-model ablation.
+  - id: builtin_easy_zerg
+    type: computer
+    race: zerg
+    difficulty: easy
+    tags:
+      - builtin
+      - zerg
+      - easy
+      - ablation
+    enabled: true
+    notes: Zerg race-coverage baseline for Phase 1D opponent-model ablation.

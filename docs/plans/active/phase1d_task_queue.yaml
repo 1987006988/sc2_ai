@@ -1,0 +1,744 @@
+queue:
+  name: phase1d_opponent_modeling_ablation_v0
+  execution_mode: manual_trigger_only
+  validation_levels:
+    L0: "static/code check: files, interfaces, and configs exist"
+    L1: "unit test: synthetic input or fake observation verifies code logic"
+    L2: "dry telemetry: dry path can write telemetry"
+    L3: "real telemetry: real SC2 local match contains target telemetry"
+  quota_policy:
+    expected_codex_window: one_plus_window
+    one_task_per_trigger: true
+    avoid_scope_expansion: true
+    run_only_task_verification: true
+    scheduler_available: false
+  forbidden_scope:
+    - SMAC
+    - LLM replay summary
+    - world-model-lite
+    - replay imitation learning
+    - complex build order
+    - army production
+    - expansion
+  trigger_rules:
+    - Read this queue.
+    - "Find the first task with `status: in_progress`; otherwise find the first task with `status: pending` whose `requires` entries are completed."
+    - Execute only that one task.
+    - Run only that task's verification.
+    - Update this queue status and validation fields.
+    - Update `docs/handoffs/latest.md`.
+    - Stop.
+  tasks:
+    - id: task_0_create_master_plan_and_queue
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L0
+      actual_validation_level: L0
+      data_source: static/code only
+      real_validation_status: not_required
+      evidence_paths:
+        - docs/plans/active/MASTER_PLAN_interview_demo_v0.md
+        - docs/plans/active/phase1d_opponent_modeling_ablation_v0.md
+        - docs/plans/active/phase1d_task_queue.yaml
+        - docs/plans/active/phase1d_manual_trigger.md
+      requires: []
+      goal: Create or refresh the Phase 1D master/queue/manual-trigger planning files.
+      scope:
+        - Ensure the interview demo master plan exists.
+        - Ensure the Phase 1D plan exists.
+        - Rewrite this queue using quota-safe manual-trigger tasks.
+        - Add manual trigger instructions.
+        - Update handoff with current queue status.
+      non_goals:
+        - Do not implement Phase 1D code.
+        - Do not run real SC2.
+        - Do not start task 1.
+      files_likely_to_change:
+        - docs/plans/active/MASTER_PLAN_interview_demo_v0.md
+        - docs/plans/active/phase1d_opponent_modeling_ablation_v0.md
+        - docs/plans/active/phase1d_task_queue.yaml
+        - docs/plans/active/phase1d_manual_trigger.md
+        - docs/handoffs/latest.md
+      verification:
+        - Confirm queue YAML parses.
+        - Confirm first pending task is `task_1_config_schema_only`.
+      done_criteria:
+        - Queue is split into quota-safe tasks.
+        - Manual-trigger instructions exist.
+        - Handoff states there is no scheduler and next task is task 1.
+      stop_conditions:
+        - Queue cannot be parsed.
+        - Required plan files are missing and cannot be created.
+      rollback_notes:
+        - Restore the previous queue file from version control or recreate it from handoff notes.
+
+    - id: task_1_config_schema_only
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 6
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test
+      real_validation_status: not_required
+      evidence_paths:
+        - tests/unit/test_config_loader.py
+        - configs/bot/opponent_model_null.yaml
+        - configs/bot/opponent_model_rule_based.yaml
+        - configs/evaluation/phase1d_ablation_opponent_model.yaml
+      requires:
+        - task_0_create_master_plan_and_queue
+      goal: Add Phase 1D config schema and minimal ablation config files without runtime behavior.
+      scope:
+        - Add supply sustain config fields to schema/loader.
+        - Add null and rule_based bot configs.
+        - Add Phase 1D ablation evaluation config.
+        - Keep old `bot_config` smoke config compatible.
+      non_goals:
+        - Do not update runtime pylon behavior.
+        - Do not update opponent model rules.
+        - Do not run real SC2.
+      files_likely_to_change:
+        - src/sc2bot/config/schema.py
+        - src/sc2bot/config/loader.py
+        - configs/bot/opponent_model_null.yaml
+        - configs/bot/opponent_model_rule_based.yaml
+        - configs/evaluation/phase1d_ablation_opponent_model.yaml
+        - tests/unit/test_config_loader.py
+      verification:
+        - python -m pytest tests/unit/test_config_loader.py
+      done_criteria:
+        - New configs load.
+        - Existing default/debug configs still load.
+        - No runtime behavior changes are included.
+      stop_conditions:
+        - Loader changes require broader config refactor.
+        - More than max_scope_files are needed.
+      rollback_notes:
+        - Revert config schema/loader changes and remove new config files.
+
+    - id: task_2_supply_sustain_telemetry_scaffold
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 5
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test
+      real_validation_status: not_required
+      evidence_paths:
+        - tests/unit/test_game_loop.py
+      requires:
+        - task_1_config_schema_only
+      goal: Add telemetry scaffolding/helpers for supply sustain without issuing build commands.
+      scope:
+        - Add structured supply sustain telemetry helper.
+        - Record skipped reasons in dry/safe paths where no build is attempted.
+        - Add focused tests for event payload shape if feasible.
+      non_goals:
+        - Do not place pylons.
+        - Do not call python-sc2 build APIs.
+        - Do not run real SC2.
+      files_likely_to_change:
+        - src/sc2bot/runtime/game_loop.py
+        - tests/unit/test_game_loop.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_game_loop.py
+      done_criteria:
+        - Supply sustain telemetry payloads are structured.
+        - No gameplay actions are added.
+      stop_conditions:
+        - Requires real python-sc2 action calls.
+        - Touches unrelated manager behavior.
+      rollback_notes:
+        - Remove telemetry helper and associated tests.
+
+    - id: task_3_protoss_pylon_sustain_minimal
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      max_scope_files: 5
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test; prior real match telemetry available
+      real_validation_status: prior_evidence_available_not_current_run
+      evidence_paths:
+        - tests/unit/test_game_loop.py
+        - data/logs/evaluation/phase1d_single_rule_based/reallaunch-b1f5139f/telemetry/events.jsonl
+      requires:
+        - task_2_supply_sustain_telemetry_scaffold
+      goal: Implement the smallest Protoss pylon sustain behavior.
+      scope:
+        - Trigger when supply is near cap.
+        - Safely skip no worker, no minerals, pending pylon, no townhall, or placement failure.
+        - Issue pylon build command when placement succeeds.
+        - Record attempt/success/failure/skip telemetry.
+      non_goals:
+        - Do not add gateway, gas, army production, expansion, or full build order.
+        - Do not change opponent-model behavior.
+      files_likely_to_change:
+        - src/sc2bot/runtime/game_loop.py
+        - tests/unit/test_game_loop.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_game_loop.py tests
+      done_criteria:
+        - Runtime handles all skip/failure cases without crashing.
+        - Pylon sustain is config-gated.
+      stop_conditions:
+        - Pylon placement requires complex placement search.
+        - Real SC2 validation becomes necessary to proceed.
+      rollback_notes:
+        - Disable `supply_sustain` in configs or revert runtime pylon calls.
+
+    - id: task_4_opponent_prediction_dataclass
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test
+      real_validation_status: not_required
+      evidence_paths:
+        - tests/unit/test_opponent_model_interface.py
+      requires:
+        - task_1_config_schema_only
+      goal: Extend opponent prediction data shape and serialization.
+      scope:
+        - Add prediction mode and signals fields.
+        - Add `to_dict()`.
+        - Keep null model output compatible.
+      non_goals:
+        - Do not implement rule-based risk rules.
+        - Do not integrate telemetry.
+      files_likely_to_change:
+        - src/sc2bot/opponent_model/interface.py
+        - src/sc2bot/opponent_model/null_model.py
+        - tests/unit/test_opponent_model_interface.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_opponent_model_interface.py
+      done_criteria:
+        - Prediction object serializes all fields.
+        - Null baseline remains zero-risk and prediction-only.
+      stop_conditions:
+        - Interface change requires broad manager refactor.
+      rollback_notes:
+        - Revert interface fields and test expectations.
+
+    - id: task_5_rule_based_opponent_model_v0
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L1
+      actual_validation_level: L1
+      data_source: synthetic unit test
+      real_validation_status: pending
+      evidence_paths:
+        - tests/unit/test_opponent_model_interface.py
+      requires:
+        - task_4_opponent_prediction_dataclass
+      goal: Implement simple, explainable rule-based opponent model v0.
+      scope:
+        - Add rush-risk rule for early combat units.
+        - Add production-structure signal.
+        - Add gas/tech signal.
+        - Add low-information confidence behavior.
+        - Add expansion/macro signal if available.
+      non_goals:
+        - Do not change gameplay.
+        - Do not add learning or replay parsing.
+      files_likely_to_change:
+        - src/sc2bot/opponent_model/rule_based_model.py
+        - tests/unit/test_opponent_model_interface.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_opponent_model_interface.py
+      done_criteria:
+        - Representative observations produce expected risk/signals.
+        - Rule output remains prediction-only.
+      stop_conditions:
+        - Required signals are unavailable from `ScoutingObservation`.
+      rollback_notes:
+        - Restore previous placeholder rule-based model.
+
+    - id: task_6a_opponent_prediction_telemetry_dry_path
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      max_scope_files: 5
+      validation_level_required: L2
+      actual_validation_level: L2
+      data_source: dry-path telemetry
+      real_validation_status: pending
+      evidence_paths:
+        - tests/unit/test_telemetry_schema.py
+        - tests/integration/test_bot_startup.py
+      requires:
+        - task_5_rule_based_opponent_model_v0
+      goal: Record opponent prediction telemetry in dry/startup paths without changing gameplay behavior.
+      scope:
+        - Add or confirm `opponent_prediction` telemetry event.
+        - Include mode and serialized prediction.
+        - Let StrategyManager record prediction-only tags without behavioral branching.
+        - Prove dry path can write opponent prediction telemetry.
+      non_goals:
+        - Do not add strategy interventions.
+        - Do not change macro or micro behavior from predictions.
+        - Do not run real SC2.
+        - Do not claim real match telemetry validation.
+      files_likely_to_change:
+        - src/sc2bot/runtime/game_loop.py
+        - src/sc2bot/managers/strategy_manager.py
+        - tests/integration/test_bot_startup.py
+        - tests/unit/test_telemetry_schema.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_telemetry_schema.py tests/integration/test_bot_startup.py
+      done_criteria:
+        - Dry/startup path records or can exercise prediction telemetry.
+        - No gameplay response changes are introduced.
+      stop_conditions:
+        - Telemetry integration requires schema redesign.
+      rollback_notes:
+        - Remove `opponent_prediction` event recording and strategy tag changes.
+
+    - id: task_6b_real_opponent_prediction_telemetry_probe
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      max_scope_files: 3
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: new real match telemetry
+      real_validation_status: validated
+      evidence_paths:
+        - data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/
+        - data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/match_result.json
+        - data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/match.SC2Replay
+        - data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/telemetry/events.jsonl
+      requires:
+        - task_6a_opponent_prediction_telemetry_dry_path
+      goal: Prove real SC2 local match telemetry contains `opponent_prediction`.
+      scope:
+        - Run one minimal real local match, preferably with the rule_based bot config.
+        - Inspect the real match `telemetry/events.jsonl`.
+        - Confirm an event with `event_type = opponent_prediction` exists.
+        - Confirm payload contains `opponent_model_mode`, `prediction`, `prediction_mode`, `signals`, `rush_risk`, `tech_risk`, and `confidence`.
+        - Record the real match output directory in `evidence_paths`.
+      non_goals:
+        - Do not build a feature extractor.
+        - Do not run a batch.
+        - Do not generate a report.
+        - Do not change gameplay.
+        - Do not tune rule-based model rules.
+        - Do not execute task_7.
+      files_likely_to_change:
+        - docs/plans/active/phase1d_task_queue.yaml
+        - docs/handoffs/latest.md
+        - data/logs/evaluation/
+      verification:
+        - Run one real local match through the project runner with `opponent_model.mode = rule_based`.
+        - Inspect `telemetry/events.jsonl` for `event_type = opponent_prediction`.
+        - Confirm required payload fields are present.
+      done_criteria:
+        - "`actual_validation_level` is updated to L3."
+        - "`data_source` is updated to `new real match telemetry`."
+        - "`evidence_paths` includes the real match output directory and telemetry file."
+      stop_conditions:
+        - Real SC2 launch fails repeatedly.
+        - Match completes but telemetry file is missing.
+        - Telemetry exists but no `opponent_prediction` event is recorded.
+      rollback_notes:
+        - Keep code unchanged; leave task pending or blocked with the failed output directory recorded.
+
+    - id: task_7_feature_extractor_single_match
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L2
+      actual_validation_level: L2
+      data_source: new real match telemetry
+      real_validation_status: validated_real_input
+      evidence_paths:
+        - data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/
+        - data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/match_result.json
+        - data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/telemetry/events.jsonl
+        - tests/unit/test_feature_extractor.py
+      requires:
+        - task_6b_real_opponent_prediction_telemetry_probe
+      goal: Extract requested Phase 1D fields from one real match directory.
+      scope:
+        - Add feature extractor module.
+        - Parse one real `match_result.json`.
+        - Parse one real `telemetry/events.jsonl` from task_6b.
+        - Handle missing telemetry safely.
+        - Use the task_6b real match directory as the primary acceptance input.
+      non_goals:
+        - Do not process batch directories.
+        - Do not generate reports.
+        - Do not run real SC2.
+        - Do not use dry-path telemetry as the only acceptance input.
+      files_likely_to_change:
+        - evaluation/metrics/feature_extractor.py
+        - tests/unit/test_feature_extractor.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_feature_extractor.py
+        - Run or exercise the extractor against the real match directory recorded by task_6b.
+      done_criteria:
+        - Single-match extraction returns all requested keys.
+        - Missing fields do not crash.
+        - Acceptance evidence uses real match telemetry from task_6b.
+      stop_conditions:
+        - Requested keys cannot be derived from real match result or telemetry.
+        - task_6b has not produced real `opponent_prediction` telemetry.
+      rollback_notes:
+        - Remove extractor module and focused tests.
+
+    - id: task_8_feature_extractor_batch
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L2
+      actual_validation_level: L2
+      data_source: synthetic unit test; real match output root exercise
+      real_validation_status: validated_real_input_root
+      evidence_paths:
+        - tests/unit/test_feature_extractor.py
+        - data/logs/evaluation/phase1d_task6b_probe/
+      requires:
+        - task_7_feature_extractor_single_match
+      goal: Extend feature extractor to process batch output directories.
+      scope:
+        - Discover `*/match_result.json` under an evaluation output directory.
+        - Return feature list for all matches.
+        - Keep single-match extraction compatible.
+      non_goals:
+        - Do not generate summary/report.
+        - Do not run real SC2.
+      files_likely_to_change:
+        - evaluation/metrics/feature_extractor.py
+        - tests/unit/test_feature_extractor.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_feature_extractor.py
+      done_criteria:
+        - Batch extraction returns one feature dict per match.
+        - Empty/missing directories return an empty list.
+      stop_conditions:
+        - Batch structure differs across runners and needs larger refactor.
+      rollback_notes:
+        - Revert batch discovery logic while keeping single-match extractor.
+
+    - id: task_9_opponent_model_metrics_summary
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L2
+      actual_validation_level: L2
+      data_source: synthetic unit test; real match output root exercise
+      real_validation_status: validated_real_input_root
+      evidence_paths:
+        - tests/unit/test_feature_extractor.py
+        - data/logs/evaluation/phase1d_task6b_probe/
+        - /tmp/phase1d_task9_summary_probe/summary.json
+      requires:
+        - task_8_feature_extractor_batch
+      goal: Aggregate extracted features into a machine-readable ablation summary.
+      scope:
+        - Group features by opponent model mode.
+        - Count statuses and signal matches.
+        - Write `summary.json`.
+      non_goals:
+        - Do not generate markdown report.
+        - Do not run real SC2.
+      files_likely_to_change:
+        - evaluation/metrics/opponent_model_metrics.py
+        - tests/unit/test_feature_extractor.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_feature_extractor.py
+      done_criteria:
+        - Summary is JSON-serializable.
+        - Summary includes match count, status counts, mode comparison, and features.
+      stop_conditions:
+        - Aggregation requires fields not emitted by extractor.
+      rollback_notes:
+        - Revert metrics summary logic.
+
+    - id: task_10_markdown_report_generation
+      status: completed
+      quota_risk: low
+      expected_codex_window: one_plus_window
+      max_scope_files: 5
+      validation_level_required: L2
+      actual_validation_level: L2
+      data_source: synthetic unit test; real match output root exercise
+      real_validation_status: validated_real_input_root
+      evidence_paths:
+        - tests/unit/test_feature_extractor.py
+        - data/logs/evaluation/phase1d_task6b_probe/
+        - /tmp/phase1d_task10_report_probe/summary.json
+        - /tmp/phase1d_task10_report_probe/report.md
+      requires:
+        - task_9_opponent_model_metrics_summary
+      goal: Generate a short markdown report from the ablation summary.
+      scope:
+        - Render markdown report.
+        - Add report CLI wrapper if needed.
+        - State prediction-only limitation clearly.
+      non_goals:
+        - Do not add dashboards or plots.
+        - Do not use LLM generation.
+        - Do not run real SC2.
+      files_likely_to_change:
+        - evaluation/metrics/opponent_model_metrics.py
+        - evaluation/reports/run_opponent_model_ablation_report.py
+        - evaluation/reports/__init__.py
+        - tests/unit/test_feature_extractor.py
+        - docs/handoffs/latest.md
+      verification:
+        - python -m pytest tests/unit/test_feature_extractor.py
+        - Run report generator on synthetic test output if available.
+      done_criteria:
+        - "report.md can be generated from saved features/summary."
+        - Report does not claim win-rate improvement.
+      stop_conditions:
+        - Report generation needs manual/notebook state.
+      rollback_notes:
+        - Remove report CLI and markdown renderer while keeping JSON summary.
+
+    - id: task_11a_real_single_null_match
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      max_scope_files: 3
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: new real match telemetry
+      real_validation_status: validated
+      evidence_paths:
+        - data/logs/evaluation/phase1d_task11a_null_match/reallaunch-b111cf67/
+        - data/logs/evaluation/phase1d_task11a_null_match/reallaunch-b111cf67/match_result.json
+        - data/logs/evaluation/phase1d_task11a_null_match/reallaunch-b111cf67/match.SC2Replay
+        - data/logs/evaluation/phase1d_task11a_null_match/reallaunch-b111cf67/telemetry/events.jsonl
+      requires:
+        - task_10_markdown_report_generation
+      goal: Run one real local match with the null opponent model config.
+      scope:
+        - Run one real local match using `opponent_model.mode = null`.
+        - Confirm match result, replay, and telemetry files exist.
+        - Confirm telemetry includes `opponent_prediction` baseline output.
+        - Record output directory in `evidence_paths`.
+      non_goals:
+        - Do not run rule_based in this task.
+        - Do not run batch.
+        - Do not tune behavior.
+      files_likely_to_change:
+        - data/logs/evaluation/
+        - docs/plans/active/phase1d_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - Run one real local match with null config.
+        - Inspect telemetry for `opponent_prediction`.
+      done_criteria:
+        - Real null match output directory is recorded.
+        - "`actual_validation_level` is updated to L3."
+      stop_conditions:
+        - Real SC2 launch fails repeatedly.
+        - Telemetry is missing or lacks `opponent_prediction`.
+      rollback_notes:
+        - Keep code unchanged; record failed output and rerun later.
+
+    - id: task_11b_real_single_rule_based_match
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      max_scope_files: 3
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: new real match telemetry
+      real_validation_status: validated
+      evidence_paths:
+        - data/logs/evaluation/phase1d_task11b_rule_based_match/reallaunch-edba8ac0/
+        - data/logs/evaluation/phase1d_task11b_rule_based_match/reallaunch-edba8ac0/match_result.json
+        - data/logs/evaluation/phase1d_task11b_rule_based_match/reallaunch-edba8ac0/match.SC2Replay
+        - data/logs/evaluation/phase1d_task11b_rule_based_match/reallaunch-edba8ac0/telemetry/events.jsonl
+      requires:
+        - task_11a_real_single_null_match
+      goal: Run one real local match with the rule_based opponent model config.
+      scope:
+        - Run one real local match using `opponent_model.mode = rule_based`.
+        - Confirm match result, replay, and telemetry files exist.
+        - Confirm telemetry includes non-empty serialized `opponent_prediction`.
+        - Record output directory in `evidence_paths`.
+      non_goals:
+        - Do not run batch.
+        - Do not tune model rules from this result.
+        - Do not claim gameplay improvement.
+      files_likely_to_change:
+        - data/logs/evaluation/
+        - docs/plans/active/phase1d_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - Run one real local match with rule_based config.
+        - Inspect telemetry for `opponent_prediction`.
+      done_criteria:
+        - Real rule_based match output directory is recorded.
+        - "`actual_validation_level` is updated to L3."
+      stop_conditions:
+        - Real SC2 launch fails repeatedly.
+        - Telemetry is missing or lacks `opponent_prediction`.
+      rollback_notes:
+        - Keep code unchanged; record failed output and rerun later.
+
+    - id: task_11c_real_2x2_ablation_batch
+      status: completed
+      quota_risk: high
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: new real match telemetry
+      real_validation_status: validated
+      evidence_paths:
+        - data/logs/evaluation/phase1d_ablation_opponent_model/summary.json
+        - data/logs/evaluation/phase1d_ablation_opponent_model/reallaunch-3619df30/
+        - data/logs/evaluation/phase1d_ablation_opponent_model/reallaunch-71c37762/
+        - data/logs/evaluation/phase1d_ablation_opponent_model/reallaunch-10906834/
+        - data/logs/evaluation/phase1d_ablation_opponent_model/reallaunch-59d2fdcb/
+      requires:
+        - task_11b_real_single_rule_based_match
+      goal: Run the smallest real null vs rule_based 2x2 ablation batch.
+      scope:
+        - Run 1 map x at least 2 opponents x 2 bot configs.
+        - Confirm every match has an independent output directory.
+        - Confirm batch `summary.json` exists.
+        - Confirm null and rule_based telemetry include `opponent_prediction`.
+      non_goals:
+        - Do not modify model rules based on results.
+        - Do not expand the opponent pool.
+        - Do not claim win-rate improvement.
+        - Do not generate the final report in this task.
+      files_likely_to_change:
+        - data/logs/evaluation/phase1d_ablation_opponent_model/
+        - docs/plans/active/phase1d_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - python evaluation/runner/run_batch.py --config configs/evaluation/phase1d_ablation_opponent_model.yaml
+        - Inspect batch outputs and telemetry.
+      done_criteria:
+        - At least 4 real match result directories exist.
+        - Batch `summary.json` exists.
+        - "`actual_validation_level` is updated to L3."
+      stop_conditions:
+        - Real SC2 launch fails repeatedly.
+        - Batch exceeds available quota window.
+        - Any required telemetry is missing.
+      rollback_notes:
+        - Keep code unchanged; delete or ignore partial generated run directories and rerun later.
+
+    - id: task_11d_report_on_real_ablation
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      max_scope_files: 4
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: real ablation output
+      real_validation_status: validated
+      evidence_paths:
+        - data/logs/evaluation/phase1d_ablation_opponent_model/
+        - data/logs/evaluation/phase1d_ablation_opponent_model/summary.json
+        - artifacts/reports/phase1d_ablation_opponent_model/summary.json
+        - artifacts/reports/phase1d_ablation_opponent_model/report.md
+      requires:
+        - task_11c_real_2x2_ablation_batch
+      goal: Generate report artifacts from the real ablation batch.
+      scope:
+        - Run the ablation report generator on real task_11c outputs.
+        - Generate report `summary.json`.
+        - Generate report `report.md`.
+        - Confirm report states prediction-only limitations and does not claim win-rate improvement.
+      non_goals:
+        - Do not rerun SC2 matches.
+        - Do not change model rules.
+        - Do not add dashboard or plots.
+      files_likely_to_change:
+        - artifacts/reports/phase1d_ablation_opponent_model/summary.json
+        - artifacts/reports/phase1d_ablation_opponent_model/report.md
+        - docs/plans/active/phase1d_task_queue.yaml
+        - docs/handoffs/latest.md
+      verification:
+        - python -m evaluation.reports.run_opponent_model_ablation_report --evaluation-dir data/logs/evaluation/phase1d_ablation_opponent_model --output-dir artifacts/reports/phase1d_ablation_opponent_model
+      done_criteria:
+        - Report artifacts exist.
+        - Report uses real ablation outputs.
+        - Report wording does not overclaim performance improvement.
+      stop_conditions:
+        - Report generation fails on real output.
+        - Report wording implies unsupported gameplay improvement.
+      rollback_notes:
+        - Remove generated report artifacts and fix report generation later.
+
+    - id: task_12_phase1d_closeout
+      status: completed
+      quota_risk: medium
+      expected_codex_window: one_plus_window
+      max_scope_files: 8
+      validation_level_required: L3
+      actual_validation_level: L3
+      data_source: full test suite; real ablation report artifacts
+      real_validation_status: validated
+      evidence_paths:
+        - artifacts/reports/phase1d_ablation_opponent_model/summary.json
+        - artifacts/reports/phase1d_ablation_opponent_model/report.md
+        - data/logs/evaluation/phase1d_ablation_opponent_model/summary.json
+        - docs/context/current_status.md
+        - docs/context/validated_findings.md
+        - docs/context/open_hypotheses.md
+        - docs/commands/common_commands.md
+        - docs/commands/verification_matrix.md
+      requires:
+        - task_11d_report_on_real_ablation
+      goal: Close Phase 1D by updating project memory and marking the milestone state.
+      scope:
+        - Confirm all previous tasks are completed.
+        - Confirm required L3 validation tasks have real evidence paths.
+        - Update status, findings, hypotheses, handoff, commands, and verification matrix.
+        - Add lessons for real pitfalls found.
+        - Mark Phase 1D plan completed if all validation passed.
+      non_goals:
+        - Do not implement new features.
+        - Do not rerun real SC2 unless needed to verify a doc claim.
+      files_likely_to_change:
+        - docs/context/current_status.md
+        - docs/context/validated_findings.md
+        - docs/context/open_hypotheses.md
+        - docs/handoffs/latest.md
+        - docs/commands/common_commands.md
+        - docs/commands/verification_matrix.md
+        - docs/lessons/recurring_pitfalls.md
+        - docs/plans/active/phase1d_opponent_modeling_ablation_v0.md
+      verification:
+        - python -m pytest tests
+        - Confirm report paths exist.
+        - Confirm queue has no pending tasks before this closeout.
+        - Confirm L3 evidence paths are recorded for task_6b and task_11a through task_11d.
+      done_criteria:
+        - Project memory accurately reflects Phase 1D completion.
+        - Next recommended work is Phase 1E.
+      stop_conditions:
+        - Any previous task is pending, in_progress, or blocked.
+        - Required L3 evidence paths are missing.
+      rollback_notes:
+        - Revert closeout docs only; do not revert completed implementation tasks.
