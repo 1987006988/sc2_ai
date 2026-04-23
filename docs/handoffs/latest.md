@@ -1,103 +1,91 @@
-# Handoff: Phase B-R task_3 Checkpoint A
+# Handoff: Phase B-R task_4 Real Duration Window Probe
 
-Date: 2026-04-22
+Date: 2026-04-23
 
 ## Executed Task
 
-`task_3_checkpoint_A_duration_window_acceptance`
+`task_4_real_duration_window_probe`
 
 Status: completed.
 
-Decision: `accepted_continue`
-
-Next allowed task: `task_4_real_duration_window_probe`
-
 ## Validation
 
-- Required level: L2
-- Achieved level: L2
-- Data source: dry-run / static config and test evidence
-- Real validation status: not applicable for this checkpoint
+- Required level: L3
+- Achieved level: L3
+- Data source: new real match output
+- Real validation status: completed
 
-No SC2 match was run. No gameplay code was changed. Phase C was not started.
-The next task was not executed.
+This task ran one real SC2 local match. It did not tune build logic, did not
+validate Gateway/Cyber/production capability, did not run batch evaluation, and
+did not execute task 5.
 
-## Reviewed Tasks
+## Evidence
 
-- `task_1_duration_window_contract`
-- `task_2_runtime_window_parameterization`
+Output directory:
 
-## Checkpoint Findings
+- `data/logs/evaluation/phase_b_revalidation_duration_probe/reallaunch-7d883e41/`
+
+Artifacts:
+
+- `match_result.json`: present
+- `match.SC2Replay`: present
+- `telemetry/events.jsonl`: present
+- `launch_path_diagnostics.json`: present
+
+Key result fields:
+
+- status: `max_game_time_reached`
+- result: `Result.Defeat`
+- failure_reason: `null`
+- exit_reason: `max_game_time_reached`
+- runtime_max_game_loop: `7200`
+- requested_game_time_limit_seconds: `352`
+
+Telemetry summary:
+
+- event_count: `20508`
+- max_game_loop: `7200`
+- max_game_time: `321.42857142857144`
+
+## Gate Results
 
 Minimum gate: passed.
 
-- Opportunity-window rules exist.
-- `insufficient_duration` is defined as the required classification when
-  `actual_game_time < required_min_game_time`.
-- Runtime window is configurable through bot config.
-- Phase B-R duration probe uses `configs/bot/phase_b_revalidation_gameplay.yaml`
-  instead of `configs/bot/debug.yaml`.
+- `actual_game_time=321.43s`, which is above the 300s opportunity window.
+- Result, replay, and telemetry artifacts exist.
 
 Target gate: passed.
 
-- Phase B-R gameplay config sets `runtime.max_game_loop: 7200`.
-- The derived python-sc2 `game_time_limit` is 352 seconds.
-- `debug.yaml` remains a short-window config with `max_game_loop: 2600` and a
-  derived run-game limit of 147 seconds.
-- `run_match.py` derives python-sc2 `game_time_limit` from bot
-  `runtime.max_game_loop` instead of using fixed 120 seconds.
-- Successful real-match result payloads will record:
-  - `runtime_max_game_loop`
-  - `requested_game_time_limit_seconds`
+- `match_result.json` records structured status and failure reason.
+- Runtime request fields are present in `match_result.json`.
+- Telemetry confirms the match reached `game_loop=7200`.
 
 Stretch gate: partial.
 
-- Expected runtime window is visible in future real match result payloads.
-- No standalone metrics/report helper was added.
-
-## Evidence Paths
-
-- `docs/plans/active/phase_b_revalidation_playable_core.md`
-- `docs/plans/active/phase_b_revalidation_task_queue.yaml`
-- `configs/bot/phase_b_revalidation_gameplay.yaml`
-- `configs/evaluation/phase_b_revalidation_duration_probe.yaml`
-- `evaluation/runner/run_match.py`
-- `tests/unit/test_config_loader.py`
-- `tests/integration/test_evaluation_config.py`
-
-## Verification
-
-- `python -m pytest tests/unit/test_config_loader.py tests/integration/test_evaluation_config.py`
-  - result: 18 passed
-- Queue YAML parse:
-  - result: `QUEUE_YAML_OK`
-- Runtime window dry check:
-  - `configs/bot/debug.yaml 2600 147`
-  - `configs/bot/phase_b_revalidation_gameplay.yaml 7200 352`
+- Requested runtime window is visible in `match_result.json`.
+- No separate config snapshot artifact was produced.
 
 ## What This Proves
 
-- Checkpoint A accepts the duration-window contract and runtime-window
-  parameterization.
-- It is now valid to proceed to the real duration-window probe in task 4.
+- The Phase B-R gameplay runtime window is no longer capped at the old
+  `game_time≈116.07` limit.
+- The runner and bot config can produce a real match that reaches the >=300s
+  opportunity window.
+- It is fair to proceed to the build-chain revalidation probe.
 
 ## What This Does Not Prove
 
-- It does not prove a real SC2 match reaches 300s.
-- It does not prove Gateway ready, Cyber Core, combat-unit production,
+- It does not validate Gateway-ready, Cyber Core, combat-unit production,
   attack/defend, friendly combat, Level 1, or ladder competitiveness.
-- It does not validate gameplay capability.
+- It does not prove any gameplay capability beyond duration-window readiness.
 
 ## Blockers
 
-None for checkpoint A.
-
-The next task must provide real SC2 evidence that the new window reaches
-`actual_game_time >= 300s` or natural end.
+None for task 4.
 
 ## Next Pending Task
 
-`task_4_real_duration_window_probe`
+`task_5_build_chain_revalidation_probe`
 
 Do not execute it until the user explicitly asks to continue the Phase B-R
 queue.

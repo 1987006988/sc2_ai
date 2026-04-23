@@ -239,15 +239,15 @@ tasks:
       - "Next group may proceed to real duration probe, but no gameplay capability is validated yet."
 
   - id: task_4_real_duration_window_probe
-    status: pending
+    status: completed
     group: "B: Gateway / Cyber Core / Production Chain"
     checkpoint_id: null
     quota_risk: medium
     expected_codex_window: one_plus_window
     validation_level_required: L3
-    actual_validation_level: null
+    actual_validation_level: L3
     data_source: "new real match output"
-    real_validation_status: pending
+    real_validation_status: completed
     requires:
       - task_3_checkpoint_A_duration_window_acceptance
     goal: "Run one real SC2 probe to prove the longer Phase B validation window works."
@@ -277,8 +277,33 @@ tasks:
     stop_conditions:
       - "If launch fails or actual duration is insufficient, block later capability probes."
     rollback_notes: "Preserve evidence; update queue only."
-    evidence_paths: []
-    capability_validation_status: not_started
+    evidence_paths:
+      - "data/logs/evaluation/phase_b_revalidation_duration_probe/reallaunch-7d883e41/"
+      - "data/logs/evaluation/phase_b_revalidation_duration_probe/reallaunch-7d883e41/match_result.json"
+      - "data/logs/evaluation/phase_b_revalidation_duration_probe/reallaunch-7d883e41/match.SC2Replay"
+      - "data/logs/evaluation/phase_b_revalidation_duration_probe/reallaunch-7d883e41/telemetry/events.jsonl"
+      - "data/logs/evaluation/phase_b_revalidation_duration_probe/reallaunch-7d883e41/launch_path_diagnostics.json"
+    actual_game_time: 321.42857142857144
+    actual_game_loop: 7200
+    actual_game_time_sufficient: true
+    capability_validation_status: duration_window_validated
+    failure_class: null
+    minimum_gate_result:
+      passed: true
+      notes:
+        - "actual_game_time reached 321.43s, above the 300s minimum unless natural end."
+        - "match_result.json, match.SC2Replay, and telemetry/events.jsonl exist."
+    target_gate_result:
+      passed: true
+      notes:
+        - "match_result.json records status=max_game_time_reached and failure_reason=null."
+        - "match_result.json records runtime_max_game_loop=7200 and requested_game_time_limit_seconds=352."
+        - "telemetry records max game_loop=7200 and max game_time=321.43."
+    stretch_gate_status:
+      status: partial
+      notes:
+        - "requested runtime window is present in match_result.json."
+        - "No separate config snapshot artifact was produced."
 
   - id: task_5_build_chain_revalidation_probe
     status: pending
