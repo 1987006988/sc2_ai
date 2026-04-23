@@ -1,3 +1,8 @@
+# Status: legacy_historical_reference
+# Execution authority: no
+# Superseded by: docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
+# Legacy note: retained as historical queue evidence only; do not use as the
+# active execution entrypoint.
 phase: "Phase B: Playable Competitive Core"
 status: active
 created_at: "2026-04-22"

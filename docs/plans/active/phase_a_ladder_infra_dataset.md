@@ -1,6 +1,11 @@
 # Phase A: Ladder Infrastructure & Scalable Real-Match Dataset
 
-Status: planned.
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+
+Legacy note: retained as historical infrastructure-planning context only. It
+must not be used as the current execution authority.
 
 Task queue: `docs/plans/active/phase_a_task_queue.yaml`
 

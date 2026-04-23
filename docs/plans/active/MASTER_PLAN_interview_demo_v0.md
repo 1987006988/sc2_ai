@@ -1,8 +1,13 @@
 # Master Plan: Interview Demo V0
 
-Status: paused / superseded as the active route on 2026-04-21.
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
 
-Superseded by: `docs/plans/active/ladder_ready_adaptive_sc2_bot_roadmap.md`
+Legacy note: retained as historical planning context only. It must not be used
+as the current execution authority.
+
+Previous supersession chain: `docs/plans/active/ladder_ready_adaptive_sc2_bot_roadmap.md`
 
 Reason: Phase 1D and Phase 1E validated runtime, telemetry, opponent prediction, strategy response, reporting, and L3 validation mechanics, but they do not prove ladder readiness or playable competitive quality. Phase 1F demo packaging is paused until the bot has a ladder-ready playable core.
 

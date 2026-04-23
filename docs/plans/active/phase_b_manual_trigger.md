@@ -1,6 +1,8 @@
 # Phase B Manual Trigger
 
-Status: active.
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
 
 Queue: `docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml`
 

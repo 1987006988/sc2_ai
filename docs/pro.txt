@@ -1,0 +1,2877 @@
+<<<FILE: docs/foundation/04_research_direction/research_direction_decision.md>>>
+
+# 研究方向决策
+
+状态：active
+更新日期：2026-04-23
+适用范围：仓库主线、计划、评测、后续 Codex 执行
+取代关系：此文件与 MASTER_RESEARCH_EXECUTION_PLAN.md 一起成为主线决策源；旧路线文档保留为历史证据，不再单独决定执行优先级。
+
+## 一句话总定位
+
+本项目保留“单一种族 Protoss 的全游戏 StarCraft II 智能体”大方向，但立即重构为：先做出经真实对局验证的可玩核心，再围绕“稀疏侦察驱动的在线对手状态推断与时机门控”这一唯一研究特色，验证它是否能稳定改变真实行为并产生可归因收益。
+
+## 审计后的起点
+
+1. Phase A 已经证明的只有基础设施：真实本地对局可启动、评测流程可运行、replay / telemetry / result 可落盘、内置对手与地图池可以批量跑。
+2. 旧 Phase B 没有证明 playable core。它证明的是：在被短运行窗口截断的条件下，仓库能够产生 build / combat 相关诊断信号，但没有证明 Gateway ready、Cyber Core、combat-unit production、friendly army、attack order、friendly combat、Level 1 baseline。
+3. Phase B-R 目前只证明了一件事：真实对局窗口已经不再被约 116 秒上限卡死，因而后续 capability probe 具备公平机会。它没有证明 build chain、army core、combat core。
+4. opponent model 当前被验证的是 telemetry 与 response-tag 通路，不是 gameplay 改变，更不是 outcome improvement。
+5. 当前 gameplay 主线仍偏薄：真实行为主要由 runtime survival baseline 驱动，宏观 / 策略 / 战术管理层还没有形成一个被真实对局验收过的可玩主线。
+
+## 主研究问题
+
+在一个已经被真实 SC2 对局验证为可玩的 Protoss 基线之上，是否可以用稀疏 live scouting 构造一个轻量、可解释、在线更新的对手状态推断层，并让它真实改变以下三类时机门控：
+
+1. 是否继续补侦察；
+2. 是否进入防守姿态；
+3. 首轮主动出击时机是否延后、保持或提前；
+
+从而在 matched real-match evaluation 中，相比 null / non-adaptive baseline，产生可重复观察的行为差异，并在合适的对手切片上带来非偶然的结果改善。
+
+## 当前最大问题判定
+
+当前最大问题不是“研究方向完全错了”，也不是“再多写 telemetry 就会自然解决”，而是两件事叠加：
+
+1. 阶段排序错误：在 playable core 未被真实验证前，项目过早投入到了 opponent-model 诊断分支。
+2. 验收口径错误：task completed、diagnostic completed、capability validated 曾被混用，导致 Phase B 任务耗尽但 objective 其实没有被接受。
+
+因此，本项目需要的不是放弃方向，而是把方向压缩为一个更硬的执行顺序：先可玩，再自适应；先 capability，再 research claim；先真实证据，再报告叙述。
+
+## 为什么这个问题值得做
+
+1. 它抓住了 full-game SC2 中真正有研究意味的问题：部分可观测条件下，侦察信息如何转化为可验证的实时决策改变，而不是只做静态 build order 脚本。
+2. 它适合当前仓库的真实资产。仓库已经有真实对局运行、telemetry、scouting observation、null / rule-based opponent-model interface、strategy response tags 这些可直接重用的基础，但还没有大规模学习所需的数据规模和训练基础设施。
+3. 它可证伪。若 adaptive layer 不改变行为、改变了行为但没有收益、或者带来收益但破坏 baseline 稳定性，结论都可以被真实对局直接否定。这比继续堆 diagnostics 更有研究价值。
+4. 它保留上限。若这个轻量在线 adaptive layer 被验证有效，后续才有理由把 learned opponent model、replay learning、combat predictor 等更重模块接入主线。
+
+## 为什么不是其他方向
+
+### 不是“纯规则 bot 强度冲分”方向
+
+因为那会让项目失去研究辨识度。纯强度提升可以作为阶段目标，但不能作为最终研究贡献。
+
+### 不是“继续做 telemetry / report / diagnostic”方向
+
+因为这条线已经超过最低可用程度。继续在没有 capability 的前提下扩写 telemetry，只会制造完成感，不会提升真实研究密度。
+
+### 不是“直接做 AlphaStar 风格的大规模学习主线”
+
+因为当前仓库没有经过真实验收的 baseline、没有足够规模且可靠的数据生产线、没有与该路线匹配的训练基础设施。此时转向大规模学习，只会把项目重心从研究问题转移为长期基础设施重写。
+
+### 不是“先做 replay learning / combat predictor / SMAC micro / LLM coach”方向
+
+因为这些都建立在已验证 playable core 之上。当前先决条件不存在，提前推进只会让主线分裂。
+
+### 不是“先做 AI Arena / ladder 展示包装”方向
+
+因为包装不是能力。没有已接受的 playable baseline 与 adaptive claim，展示只会放大叙事与证据的不一致。
+
+## 项目必须围绕什么
+
+1. 围绕真实 playable core。没有真实 build chain、army、defend / attack、friendly combat，就没有后续 adaptive research。
+2. 围绕单一 research feature。只保留“稀疏侦察驱动的在线对手状态推断与时机门控层”。
+3. 围绕真实对局证据。任何 gameplay 或 research claim 都必须通过 real-match protocol。
+4. 围绕可归因比较。adaptive 结论必须来自 null vs adaptive 的 paired evaluation，而不是单侧 anecdotal run。
+5. 围绕严格分类。任何产出必须先标明它属于 infrastructure、gameplay capability 还是 research contribution。
+
+## 项目不得跑偏到什么
+
+1. 不得把 diagnostic completed 写成 capability validated。
+2. 不得在 Level 1 baseline 未接受前进入 Phase C / learned adaptive / broader ladder claims。
+3. 不得把 telemetry richness 当成 gameplay 进步。
+4. 不得同时追多个“特色”。本阶段只允许一个 research 特色，其他一律后置。
+5. 不得把 multi-race、复杂 macro、扩张经济、微操炫技当成当前主线目标。
+6. 不得为了“看起来像完成”而用短窗口、debug config、非对照评测去替代真实验证。
+
+## 主研究特色只保留一个
+
+唯一保留的主研究特色是：
+
+稀疏侦察驱动的在线对手状态推断与时机门控层。
+
+其定义是：
+
+把 live scouting 形成的部分观测信息，映射为一个轻量、可解释、在线更新的 opponent state；再把这个 state 限定地作用到三类时机门控上：补侦察、防守姿态、首轮出击时机。它不是全面策略重写器，不是大模型指挥器，不是端到端策略网络，也不是新的 telemetry 展示层。
+
+## 次要支线与后置理由
+
+### 支线一：learned opponent model
+
+后置原因：当前连 rule-based adaptive layer 的因果效果都未被验证，直接学习会掩盖归因问题。
+
+### 支线二：replay / log imitation
+
+后置原因：需要先有来自真实可玩 baseline 的高质量数据，否则学到的只是 survival scaffold。
+
+### 支线三：combat predictor / micro module
+
+后置原因：当前首先缺的是 army existence 与 tactical transition，不是更复杂的局部控制。
+
+### 支线四：broader opponent pool / AI Arena / ladder packaging
+
+后置原因：展示池应该用来放大已验证结论，而不是替代主线验证。
+
+### 支线五：LLM coach / natural-language analysis
+
+后置原因：它可以服务解释或工具化，但不直接构成当前 full-game SC2 主线贡献。
+
+## 执行含义
+
+1. Phase A 继续作为 infrastructure foundation 保留。
+2. 旧 Phase B 只作为 diagnostic history 保留，不再作为 Level 1 进度依据。
+3. Phase B-R 的 duration-window 修复和 checkpoint discipline 继续保留，但要并入新的 master plan，不再单独主导项目。
+4. opponent model 相关资产保留接口与历史报告，但必须从 telemetry-only 改造为 gameplay gate，并且只能在 baseline accepted 之后声明研究结论。
+5. 现在最值得推进的方向不是新建更多研究支线，而是完成：
+   build chain -> army production -> tactical core -> baseline batch acceptance -> adaptive paired validation
+   这一条唯一主线。
+
+## 决策结论
+
+当前方向判定为：
+
+保留并重构。
+
+保留的是高层目标：做全游戏 Protoss bot，并把 opponent modeling 作为真正的研究差异化来源。
+重构的是执行顺序、验收口径、阶段边界和研究特色数量。
+从本文件生效起，任何不服务于“真实 playable core + 单一 adaptive research feature”的工作，都不是当前主线。
+<<<END_FILE>>>
+
+<<<FILE: docs/foundation/04_research_direction/retain_rewrite_drop_matrix.md>>>
+
+# 保留 / 重写 / 后置 / 停止矩阵
+
+状态：active
+更新日期：2026-04-23
+适用范围：仓库现有资产的主线处置
+使用方式：任何计划调整、代码重构、评测设计、报告生成，都先参照本矩阵决定某类资产属于“保留”“重写”“后置”还是“停止”。
+
+## 处置原则
+
+1. 保留：该资产已经为主线提供真实基础，不应推倒重来。
+2. 重写：该资产包含有用事实，但当前叙事、接口、职责或验收方式不适合继续直接使用。
+3. 后置：该资产方向并非错误，但不应早于 playable core 与 Level 1 baseline。
+4. 停止：该资产继续推进只会制造完成感、放大误验收，或对当前主线构成噪声。
+
+---
+
+## 一、Phase A 资产
+
+当前判定：保留为 infrastructure foundation；重写其对外表述；停止把其用于 gameplay 或 research claim。
+
+### 可保留
+
+1. real-match launch、SC2PATH 预检、map / opponent pool、artifact persistence、batch orchestration 相关实现与数据。
+2. `artifacts/reports/phase_a_ladder_infra_dataset/` 下的基础设施报告与 manifest。
+3. `docs/context/validated_findings.md` 中与本地真实运行、replay 保存、地图安装、评测落盘有关的事实。
+4. Phase A 对 real-match-first discipline 的基础实践。
+
+### 需要重写
+
+1. 所有让人误以为 Phase A 代表 gameplay progress 的叙述。
+2. README 与 active plan 中对 Phase A 成果的上下文定位。
+3. 后续报告模板中对 Phase A 数据的引用方式，必须显式标记为 infrastructure-only。
+
+### 应后置
+
+1. 以 Phase A 数据为起点做更大规模的数据集美化、统计可视化、展示包装。
+2. 任何把 Phase A baseline dataset 直接接到学习分支的工作。
+
+### 应停止
+
+1. 用 Phase A 的 artifact 完整性去暗示 bot 已经 playable。
+2. 在没有新 capability evidence 的前提下继续扩写 Phase A 风格的基础设施报告。
+
+### 保留原因
+
+Phase A 解决的是“能不能稳定跑真实 SC2 并拿到可审计 artifact”这个基础问题，这一层已经是仓库最扎实的已验证资产，不应被推翻。
+
+### 重写原因
+
+Phase A 的问题不在事实，而在叙事风险。若不重写表述，它会被误读成“项目已经接近 gameplay baseline”，这与仓库现状不符。
+
+### 风险
+
+1. 基础设施完成感掩盖 gameplay 缺口。
+2. Phase A dataset 被错误复用为可玩性证据。
+3. 资源继续投入到报表而不是核心能力。
+
+### 迁移建议
+
+1. 把 Phase A 永久标记为 infrastructure foundation。
+2. 在所有新报告中单独列出“继承自 Phase A 的基础设施能力”，不得与 gameplay evidence 混写。
+3. 保留数据与实现，不再给 Phase A 新建主线里程碑。
+
+---
+
+## 二、旧 Phase B 资产
+
+当前判定：保留 raw evidence 与 evidence audit；重写其主计划地位；停止把旧 Phase B 当作 Level 1 进度。
+
+### 可保留
+
+1. `artifacts/reports/phase_b_playable_competitive_core/evidence_audit.md`。
+2. 旧 Phase B real-match artifacts、replays、telemetry、small-eval 原始输出。
+3. 旧 Phase B 中关于 capability vs diagnostic 的重新分类结果。
+4. 对 runtime duration bug 的定位结果及其历史链路。
+
+### 需要重写
+
+1. `docs/plans/active/phase_b_playable_competitive_core.md` 的主线地位。
+2. 旧 Phase B task queue 在主项目中的使用方式。
+3. 任何把旧 Phase B “任务完成”叙述成“playable core 已通过”的报告或 README 文案。
+
+### 应后置
+
+1. 对旧 Phase B 数据再做新的总结性图表、美化版报告。
+2. 基于旧 Phase B small eval 做对外展示。
+
+### 应停止
+
+1. 把旧 Phase B 的 gateway command telemetry 当成 gateway-ready。
+2. 把 own_army_count=0 条件下的 attack / defend / combat 诊断信号当成真实 army capability。
+3. 把旧 Phase B 小规模 batch 当成 Level 1 baseline。
+
+### 保留原因
+
+旧 Phase B 虽然没完成原目标，但它非常有价值地证明了哪里没有被验证、为什么没有被验证、以及为什么后续必须改验收口径。
+
+### 重写原因
+
+旧 Phase B 的最大问题不是没有数据，而是任务目标、完成状态与能力状态之间的映射失真。主线必须改成“历史诊断资产”，不能继续作为现行成功依据。
+
+### 风险
+
+1. 继续误用 legacy evidence，导致后续 checkpoint 被污染。
+2. 让团队误以为“再补几份报告就能过关”。
+3. 让 adaptive 研究建立在未验证 baseline 之上。
+
+### 迁移建议
+
+1. 旧 Phase B 文档全部标记为 legacy diagnostic path。
+2. 保留 evidence audit 作为失败分类样板。
+3. 在新主计划中只引用旧 Phase B 的 blocker、failure class、raw evidence，不再引用其 closeout 叙述。
+
+---
+
+## 三、Phase B-R 资产
+
+当前判定：保留 duration-window 修复证据与 checkpoint discipline；重写其边界与归属；后置其作为单独阶段文档的主导地位。
+
+### 可保留
+
+1. `docs/handoffs/latest.md` 中关于 real duration probe 的事实。
+2. `docs/plans/active/phase_b_revalidation_playable_core.md` 中对严格验收、failure class、minimum / target / stretch 的设计。
+3. `docs/plans/active/phase_b_revalidation_task_queue.yaml` 中“每 3 个任务一个 checkpoint”的纪律。
+4. `configs/bot/phase_b_revalidation_gameplay.yaml` 作为过渡期长窗口 gameplay config 的参考。
+5. Duration probe 的 raw artifacts。
+
+### 需要重写
+
+1. Phase B-R 作为“独立主线阶段”的定位。
+2. 其 task queue 与新的 master queue 的关系。
+3. handoff 中“已完成”叙事的解释边界，必须明确它只证明 duration 公平性。
+
+### 应后置
+
+1. 把 Phase B-R 文档继续扩成一条长期独立路线。
+2. 在没有 master plan 收编前继续追加 Phase B-R 风格局部任务。
+
+### 应停止
+
+1. 把 duration-window probe 解释成 build-chain、army core、combat core 已恢复。
+2. 让 Phase B-R 继续以旧 Phase B 语义独自推进，而不受新的全局计划统一调度。
+
+### 保留原因
+
+Phase B-R 引入了两个对主线非常重要的资产：一是公平运行窗口的修复事实，二是 checkpoint / gate / failure-class 的执行纪律。
+
+### 重写原因
+
+Phase B-R 仍然过于局部，只解决了“如何重新验证旧 Phase B”的问题，而没有成为“如何完成真实 playable core 并过渡到 research claim”的总框架。
+
+### 风险
+
+1. 项目长期停留在“局部 revalidation”而无法进入 research contribution 阶段。
+2. queue 与 active plan 并行失控。
+3. 继续以 Phase B 思维理解更大主线。
+
+### 迁移建议
+
+1. 把 Phase B-R 的 duration repair、gate discipline、failure taxonomy 吸收进新 master plan 与 validation protocol。
+2. 旧 Phase B-R 文件保留只读历史地位。
+3. 后续执行统一由 `MASTER_RESEARCH_EXECUTION_PLAN.md` 与 `research_master_task_queue.yaml` 驱动。
+
+---
+
+## 四、opponent model 相关资产
+
+当前判定：保留接口、null / rule-based 基线与历史 ablation；重写目标与验收；后置 learned opponent model；停止把 telemetry-only 路径叫做 adaptive bot。
+
+### 可保留
+
+1. `src/sc2bot/opponent_model/` 下的 interface、null model、rule-based model。
+2. `src/sc2bot/managers/strategy_manager.py` 中的 response-tag 选择骨架。
+3. `artifacts/reports/phase1d_ablation_opponent_model/` 与 `artifacts/reports/phase1e_strategy_intervention/` 的历史报告。
+4. scouting observation、opponent prediction、strategy response 这条数据通路。
+
+### 需要重写
+
+1. opponent model 的主目标：从“能产生 prediction / tag”改为“能真实改变 gameplay gate 并接受 paired evaluation”。
+2. strategy response 的作用范围：必须直连 gameplay，而不是只记 telemetry。
+3. adaptive claim 的验收口径：必须从单侧运行改为 control vs treatment 的 paired evaluation。
+
+### 应后置
+
+1. learned opponent model。
+2. replay-driven hidden-state estimator。
+3. 更复杂的多分支 response policy。
+4. broader opponent pool 上的 adaptive generalization 叙述。
+
+### 应停止
+
+1. 用 prediction telemetry 丰富度代替 adaptive 成功。
+2. 在 baseline 未接受前继续扩 opponent-model 规则集。
+3. 把 Phase1D / Phase1E 报告解读为 outcome improvement 证据。
+
+### 保留原因
+
+当前 opponent model 相关资产已经把“观测 -> 预测 -> response tag”的接口链条打通了，这为单一 adaptive research feature 提供了直接可用的骨架。
+
+### 重写原因
+
+当前问题不是接口没有，而是它没有对 gameplay 产生经验证的因果作用。必须把它从“说明系统有这条通路”升级为“说明这条通路真的改变行为并带来收益”。
+
+### 风险
+
+1. 继续沉迷于 prediction telemetry，重复 Phase1D / Phase1E 的问题。
+2. 提前引入 learned model，掩盖主线可解释性与归因。
+3. adaptive claim 与 baseline stability 同时漂移，导致 paired evaluation 不可比。
+
+### 迁移建议
+
+1. 保留 interface，不改 mainline / research 分隔原则。
+2. 只保留一个 adaptive feature：对 continue_scouting、defensive_posture、first_attack_timing 的门控。
+3. 所有 adaptive 代码必须在 Level 1 baseline accepted 之后进入主线验证。
+
+---
+
+## 五、telemetry / report 相关资产
+
+当前判定：保留 telemetry schema、artifact persistence、报告生成骨架；重写报告分类与验证语义；后置展示型报表；停止 telemetry-only milestone。
+
+### 可保留
+
+1. 当前 telemetry 输出与 event persistence 管线。
+2. `artifacts/reports/` 下已经能自动整理的基本报告框架。
+3. match_result、replay、telemetry summary、manifest 这些 artifact 组织方式。
+4. evidence audit 这种“先分类再下结论”的写法。
+
+### 需要重写
+
+1. 所有报告模板必须强制分离：
+
+   * infrastructure
+   * gameplay capability
+   * research contribution
+2. 每个报告必须显式写明：
+
+   * task completed status
+   * diagnostic completed status
+   * capability validation status
+3. checkpoint 报告必须写 failure class、decision、next allowed task。
+
+### 应后置
+
+1. 仪表盘美化。
+2. 大规模可视化。
+3. 对外展示用叙述性长报告。
+
+### 应停止
+
+1. 以“事件更多了、报表更丰富了”充当能力进度。
+2. 在 capability 未过关时追加纯 telemetry 任务。
+3. 用报告 closeout 语言替代 checkpoint 审核。
+
+### 保留原因
+
+telemetry 和报告基础设施不是问题来源，它们反而是当前仓库最成熟的证据管道之一。
+
+### 重写原因
+
+问题出在报告如何解释证据、如何分类、如何影响决策。报告必须回到服务 gate，而不是制造叙事完成度。
+
+### 风险
+
+1. 指标膨胀，掩盖能力空洞。
+2. 报告语言继续领先于证据。
+3. 执行资源被报表工作吞噬。
+
+### 迁移建议
+
+1. 后续所有报告都以 `real_match_validation_protocol.md` 为分类准绳。
+2. checkpoint 报告成为唯一可改变队列状态的报告。
+3. 非 checkpoint 报告不得单独宣布 phase accepted。
+
+---
+
+## 六、runtime / config 相关资产
+
+当前判定：保留 real launch、runner、SC2PATH preflight、长窗口 gameplay config；重写配置角色与 gameplay ownership；后置大型框架重构；停止用 debug config 做 capability eval。
+
+### 可保留
+
+1. `src/sc2bot/runtime/` 下的真实运行入口。
+2. 现有 evaluation runner、SC2PATH 处理、地图检查、real local match orchestration。
+3. `configs/bot/phase_b_revalidation_gameplay.yaml` 作为长窗口 gameplay config 参考。
+4. 现有 build-order 参数接口与 runtime.max_game_loop 相关配置能力。
+
+### 需要重写
+
+1. `debug.yaml` 的角色定义，必须明确为 debug_only。
+2. baseline_playable 与 adaptive_research 两类正式评测配置。
+3. gameplay ownership。当前大量真实行为仍在 runtime survival baseline 中，macro manager 仍过于空壳，必须至少收敛为可维护的 build / army / tactical 主线。
+4. provenance 记录：任何真实评测都必须保存 code / config snapshot。
+
+### 应后置
+
+1. 为了“架构漂亮”而做的大型框架重写。
+2. 与当前主线无关的配置拆分、参数中心化或复杂 profile 系统。
+
+### 应停止
+
+1. 用 `configs/bot/debug.yaml` 做 capability claim 或 research claim。
+2. 继续让短窗口或隐式窗口控制混入正式评测。
+3. 在 gameplay ownership 未理顺前同时重写多层 manager 和 runtime。
+
+### 保留原因
+
+runtime / evaluation 层已经证明能够真实启动、持续运行并落盘 artifact。真正的问题不是没有运行层，而是 gameplay 逻辑组织与配置角色混乱。
+
+### 重写原因
+
+如果不明确 debug_only、baseline_playable、adaptive_research 三类配置角色，旧 Phase B 的验收事故会重复发生。
+
+### 风险
+
+1. 同一能力在不同配置下得出不可比结论。
+2. gameplay 代码继续散落，难以形成 build-chain / army / tactical 的可靠修复闭环。
+3. 大型架构重写拖垮主线节奏。
+
+### 迁移建议
+
+1. 先做“足够支撑主线”的重构，不做“为了整洁”的全面重构。
+2. 以 build-chain -> army -> tactical 三段为轴心收拢 gameplay ownership。
+3. 正式评测只允许 baseline_playable 与 adaptive_research 两条配置主线。
+
+---
+
+## 七、research 相关资产
+
+当前判定：保留 `research/` 目录作为隔离区；后置绝大多数 prototype；停止把 research prototype 当 mainline 进度。
+
+### 可保留
+
+1. `research/` 目录及其“与 mainline 隔离”的仓库约定。
+2. 与 replay learning、combat predictor、smac_micro、llm_coach 等相关的原型探索价值。
+3. AGENTS 中关于 mainline 与 research 分隔的规则。
+
+### 需要重写
+
+1. prototype promotion 条件。
+2. prototype 何时允许进入主线的验收标准。
+3. 研究型分支与当前唯一主研究特色之间的优先级关系。
+
+### 应后置
+
+1. replay learning
+2. combat predictor
+3. smac_micro
+4. llm_coach
+5. 更重的 learned opponent modeling
+
+### 应停止
+
+1. 在 playable core 未接受前把 research prototype 接入主线。
+2. 用 prototype 存在本身去证明项目“接近前沿”。
+3. 在没有 paired evaluation 证据前宣称研究贡献成立。
+
+### 保留原因
+
+`research/` 目录本身没有问题；问题是它与当前主线的时序关系。隔离区让仓库可以保留想法，但不污染 mainline。
+
+### 重写原因
+
+必须把“何时允许进入主线”从模糊意愿改成硬门槛：只有当 playable baseline 被接受、且 prototype 服务于当前唯一研究特色时，才允许 promotion。
+
+### 风险
+
+1. 研究支线过早分裂主线。
+2. prototype 质量与 mainline 质量互相拖累。
+3. 项目叙事漂向“什么都在做”，但没有一个真实结论完成。
+
+### 迁移建议
+
+1. 保留 research 目录，不迁入 `src/sc2bot/`。
+2. 所有 prototype promotion 先过 two-step gate：
+
+   * Level 1 baseline accepted
+   * paired adaptive evaluation 需要它
+3. 当前阶段一律不把 `research/` 目录作为主线输出依据。
+
+---
+
+## 八、README / docs 相关资产
+
+当前判定：保留 AGENTS 与 context 文档中的事实价值；重写 README、active plan、状态叙述；后置对外包装；停止使用过时路线文档作为 source of truth。
+
+### 可保留
+
+1. `AGENTS.md` 中关于 mainline / research 分隔、promotion 纪律、计划优先级的基本约束。
+2. `docs/context/current_status.md`、`validated_findings.md`、`open_hypotheses.md` 中的事实性内容。
+3. `docs/handoffs/latest.md` 的交接机制本身。
+4. 现有 plan 文档作为历史路径记录。
+
+### 需要重写
+
+1. `README.md` 的当前主线叙述。
+2. `docs/plans/active/ladder_competitive_adaptive_sc2_bot_plan.md` 的 source-of-truth 地位。
+3. 所有 still-active 但已与仓库现状不一致的 next step、phase status、closeout 说明。
+4. docs 中对 Phase A / Phase B / Phase B-R 的关系叙述。
+
+### 应后置
+
+1. 对外展示型 README 强化。
+2. 对 broader pool、AI Arena、showcase 的文案打磨。
+
+### 应停止
+
+1. 继续让多个 active plan 并列充当主计划。
+2. 在 README 里用“长期目标”掩盖当前 baseline 真实状态。
+3. 让 handoff 文档绕开 master queue 直接定义下一任务。
+
+### 保留原因
+
+当前 docs 系统已经累积了大量事实与过程记录，不应推倒。真正的问题在于哪些文档是历史，哪些文档是现行指令。
+
+### 重写原因
+
+如果 source of truth 不收敛，Codex 后续执行会被旧 plan、旧 closeout、旧 handoff 同时拉扯。
+
+### 风险
+
+1. 文档互相矛盾。
+2. 新执行者误读项目真实进度。
+3. 同一能力在不同文档中被定义成不同东西。
+
+### 迁移建议
+
+1. 从本轮开始，以下文件组成新的执行真源：
+
+   * `docs/foundation/04_research_direction/research_direction_decision.md`
+   * `docs/foundation/04_research_direction/retain_rewrite_drop_matrix.md`
+   * `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+   * `docs/plans/active/research_master_task_queue.yaml`
+   * `docs/experiments/real_match_validation_protocol.md`
+2. 旧 active plan 保留为历史背景，但不再单独驱动任务。
+3. 所有 handoff 都必须引用 master queue 的当前任务与 checkpoint 状态。
+
+---
+
+## 统一迁移规则
+
+1. 历史 artifacts 不删除，只重分类。
+2. source of truth 只允许一个集合，不允许多条 active 主计划并行。
+3. 任何资产若无法明确归类为 infrastructure、gameplay capability、research contribution，就不得进入新阶段 gate。
+4. 任何继续推进 telemetry-only、report-only、prototype-only 而不服务于 playable core 或单一 adaptive research feature 的工作，都视为停止项。
+   <<<END_FILE>>>
+
+<<<FILE: docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md>>>
+
+# MASTER_RESEARCH_EXECUTION_PLAN
+
+状态：active
+更新日期：2026-04-23
+作用：这是当前仓库的唯一主执行计划文件。旧的 active 计划与阶段计划继续保留为历史背景，但不再单独决定任务优先级。
+直接依赖：
+
+* docs/foundation/04_research_direction/research_direction_decision.md
+* docs/foundation/04_research_direction/retain_rewrite_drop_matrix.md
+* docs/experiments/real_match_validation_protocol.md
+* docs/plans/active/research_master_task_queue.yaml
+
+## 一、总目标
+
+建立一个单一种族 Protoss 的全游戏 SC2 智能体，并完成以下两个层级的真实验收：
+
+1. 先完成 gameplay 层级的真实 playable core：
+
+   * opening build chain 被真实验证；
+   * combat-unit production 与 friendly army 被真实验证；
+   * defend / attack / friendly combat 被真实验证；
+   * non-adaptive baseline 在真实 batch 中达到 Level 1 playable baseline 接受标准。
+
+2. 再完成 research 层级的真实 adaptive claim：
+
+   * 只保留一个研究特色：稀疏侦察驱动的在线对手状态推断与时机门控层；
+   * 该 adaptive layer 在 matched real-match paired evaluation 中，真实改变行为；
+   * 该行为差异与 outcome / robustness / failure-class 改善方向一致，形成可归因研究贡献。
+
+只完成第 1 层，不算完成项目研究目标。
+只完成 telemetry、report、diagnostic，也不算完成 gameplay 目标。
+
+## 二、仓库审计后的真实起点
+
+当前仓库起点不是“从零开始”，也不是“已接近可玩 baseline”，而是下面这个更精确的位置：
+
+1. Phase A 已接受，但只接受为 infrastructure foundation。
+2. 旧 Phase B 任務做完了，但 objective 没有被接受；它只能算 diagnostic history。
+3. Phase B-R 已证明 duration window 不再被 116 秒左右的短窗口截断，但这只是公平验证前提，不是 gameplay capability。
+4. opponent model 当前只到 telemetry / response-tag 级别，没有完成 gameplay 改变，更没有完成 outcome 改善。
+5. gameplay 主线仍偏薄，必须先补 build-chain、army、tactical 三段，再进入 baseline batch 与 adaptive paired evaluation。
+
+因此，本计划的起始点是：
+真实 playable core 重建期，而不是 research 扩展期。
+
+## 三、不可违背的硬规则
+
+### 规则 1：严格区分三条线
+
+1. infrastructure
+2. gameplay capability
+3. research contribution
+
+任何文件、任务、报告、checkpoint，必须先说明自己属于哪一类。
+
+### 规则 2：严格区分三种状态
+
+1. task completed：任务动作完成，例如代码改了、脚本跑了、报告写了。
+2. diagnostic completed：产生了有价值的诊断或 blocker 分类，但不等于目标能力成立。
+3. capability validated：目标能力在真实、公平、可追溯的条件下被验证成立。
+
+没有 capability validated，就不能用“已完成”替代。
+
+### 规则 3：不能再把 diagnostic completed 当成 capability validated
+
+以下都不允许再被写成能力通过：
+
+1. command telemetry 代替 structure ready。
+2. own_army_count=0 条件下的 tactical / combat 诊断信号。
+3. 被 runtime bug 或不公平窗口截断的 short run。
+4. 单侧 anecdotal run 代替 paired adaptive evaluation。
+5. 报告 closeout 代替 checkpoint accept。
+
+### 规则 4：每 3 个任务必须有一个 checkpoint
+
+本项目以任务三元组推进：
+
+1. 实现或修复任务
+2. probe / batch / paired evaluation 任务
+3. checkpoint 任务
+
+checkpoint 不通过，后续任务全部 blocked。
+checkpoint 通过后，才能进入下一阶段。
+
+### 规则 5：不允许 phase skip
+
+1. 未过 build chain，不得跑 army core 结论。
+2. 未过 army core，不得跑 tactical core 结论。
+3. 未过 tactical core，不得跑 Level 1 baseline batch。
+4. 未过 Level 1 baseline，不得跑 adaptive paired evaluation。
+5. 未过 adaptive paired evaluation，不得宣称 research contribution 成立。
+
+### 规则 6：debug config 不得用于 capability 或 research claim
+
+debug 只用于 debug。
+正式 gameplay claim 只允许 baseline_playable。
+正式 research claim 只允许 baseline_playable 与 adaptive_research 的配对使用。
+
+### 规则 7：repair 是主线的一部分，不是补充说明
+
+任何 phase 失败，下一步都必须是 repair、rerun 或返回前一 phase。
+不允许在 failure 未分类或未修复时继续推进下游任务。
+
+## 四、分阶段主线
+
+### Phase R0：研究方向与验证契约冻结
+
+目标：
+把仓库从“多个旧计划并列驱动”的状态，收束到一条新主线；同时冻结 validation protocol、config role、checkpoint discipline，保证后续 real-match evidence 不再重复旧 Phase B 的误验收。
+
+#### Minimum
+
+1. 研究方向决策文件落盘。
+2. retain / rewrite / drop 矩阵落盘。
+3. master plan 与 task queue 落盘。
+4. validation protocol 落盘。
+5. legacy Phase A、旧 Phase B、Phase B-R 的地位被统一重分类。
+
+#### Target
+
+1. debug_only、baseline_playable、adaptive_research 三类配置角色被明确冻结。
+2. 评测 artifact 强制记录 code / config provenance、validation class、run class。
+3. 后续执行已能只依赖新 source of truth，不再依赖旧 plan 的隐含语义。
+
+#### Stretch
+
+1. dry-run 入口能输出完整 provenance 与 validation class。
+2. checkpoint 与报告模板可以直接复用新协议字段。
+
+#### 必须拿到的真实证据
+
+Phase R0 不要求新增 real SC2 evidence。
+它继承的唯一真实前提是：Phase B-R 已经证明长窗口 duration probe 成立。
+这个继承证据只用于证明后续 probe 具备公平运行前提，不用于证明 gameplay capability。
+
+#### 未通过如何 repair
+
+1. 若文档事实与仓库不一致，修正文档，不进入下一阶段。
+2. 若 config role 仍不清楚，修 config contract，不进入 build-chain probe。
+3. 若 evaluation artifact 仍缺 provenance，修 runner / report contract，不进入 real gameplay phase。
+
+#### 进入下一阶段条件
+
+checkpoint_A_start_gate 通过。
+
+---
+
+### Phase R1：opening build chain 可玩化
+
+目标：
+让 opening 从 command-level 诊断路径升级为 capability-level build chain，至少完成 Gateway ready 与早期 gas / cyber opportunity 的真实验证。
+
+#### Minimum
+
+1. Gateway ready 在有效 real probe 中被验证。
+2. runtime duration 条件无争议，不能再用 short-window run 作为 build-chain 结论。
+3. build stall / supply stall / gas stall / tech stall 原因可追溯。
+
+#### Target
+
+1. gas / cyber 路径在公平机会窗口内被验证为“已尝试并可解释”。
+2. opening 结构不再依赖零散 side effect，而是具备明确 build-chain 状态。
+3. 为后续 first combat-unit production 提供稳定前提。
+
+#### Stretch
+
+1. 在不越界宣称 army core 的前提下，出现 first combat-unit command 或 production-ready state。
+2. opening build-chain 结构已能直接承接 production phase，而不是后续重写。
+
+#### 必须拿到的真实证据
+
+1. real match result
+2. replay
+3. telemetry / event summary
+4. config snapshot
+5. gateway command / started / ready 相关证据
+6. assimilator / cyber attempt 或显式 stall classification
+
+#### 未通过如何 repair
+
+1. invalid evidence：原样 rerun，不改代码。
+2. insufficient duration：回到 R0 修 runtime / evaluation contract，不把它误判为 gameplay failure。
+3. logic failure：修 build-chain 逻辑，回 task_004。
+4. prerequisite ambiguity：重写 build-chain 状态表达，不进入 R2。
+
+#### 进入下一阶段条件
+
+checkpoint_B_build_chain_gate 通过。
+
+---
+
+### Phase R2：real army production 与 rally core
+
+目标：
+在真实对局中让友军 army 确实出现，并且不是偶发现象；让 continued production 与基础 rally 成为真实 capability，而不是报告中的推定结论。
+
+#### Minimum
+
+1. own_army_count>0 在有效 real probe 中成立。
+2. 至少一种 combat unit 被真实产出并可追溯。
+3. rally 只建立在真实 army existence 上。
+
+#### Target
+
+1. combat-unit production 不是一次性偶发。
+2. supply / gas / production idle 等阻断点被处理到足以持续生产。
+3. army presence 可作为 tactical core 的可靠输入。
+
+#### Stretch
+
+1. first controlled move from rally 出现。
+2. production path 已经能承接简单兵种构成，不必立刻引入复杂 composition。
+
+#### 必须拿到的真实证据
+
+1. real match artifacts 完整
+2. first combat unit created
+3. own_army_count transitions
+4. continued production 证据
+5. rally evidence 与 replay 相互印证
+
+#### 未通过如何 repair
+
+1. invalid evidence：rerun。
+2. army 未出现：修 production，不得提前进入 tactical probe。
+3. build-chain regression：回到 R1。
+4. rally 逻辑不稳定：先保守固定 rally，再重新 probe。
+
+#### 进入下一阶段条件
+
+checkpoint_C_army_core_gate 通过。
+
+---
+
+### Phase R3：defend / attack transition 与 first friendly combat
+
+目标：
+在友军 army 已被验证的前提下，让 defend、attack、friendly combat 进入 capability validated，而不是停留在 enemy-visible 级别的诊断信号。
+
+#### Minimum
+
+1. 至少一种合法战术 order 在真实对局中成立。
+2. order 发生时 own_army_count>0。
+3. order 原因可解释，不能是“系统发了命令但没有 army”。
+
+#### Target
+
+1. friendly combat 被真实验证。
+2. defend / attack 至少有一条链路可被清晰修复与稳定复现。
+3. tactical probe 已足以支撑 baseline batch，不需要再靠纯战术报告推动阶段。
+
+#### Stretch
+
+1. defend 与 attack 两类行为都能在受控切片中观察到。
+2. regroup / fallback 原因字段已经够清楚，可支持后续 baseline repair。
+
+#### 必须拿到的真实证据
+
+1. defend_order 或 attack_order 的 real evidence
+2. friendly combat evidence
+3. target_position / reason / own_army_count / enemy contact 的一致证据
+4. replay 级别的可复核接敌事实
+
+#### 未通过如何 repair
+
+1. invalid evidence：rerun。
+2. no legal tactical order：修战术逻辑，不进入 batch。
+3. army regression：退回 R2。
+4. 如果只出现“有敌人可见”而无友军 army 接敌，继续判为 diagnostic-only。
+
+#### 进入下一阶段条件
+
+checkpoint_D_tactical_core_gate 通过。
+
+---
+
+### Phase R4：non-adaptive baseline 的 Level 1 验收
+
+目标：
+证明 non-adaptive baseline 已经不再是 survival scaffold，而是一个可在真实 batch 中被接受的 Level 1 playable baseline。
+
+#### Minimum
+
+1. baseline batch 中不存在系统性 prerequisite regression。
+2. baseline 的真实 gameplay 已经覆盖 build chain、army、tactical、friendly combat 基本链路。
+3. 至少出现一场无争议的真正胜利或极强 near-win 证据，说明系统不再只是被动存活体。
+
+#### Target
+
+1. 在 protocol 规定的 easy opponent slice 上，出现重复性胜利或同等强度的稳定优势证据。
+2. baseline 行为与 outcome 足以支持它作为 adaptive paired evaluation 的 control。
+3. Level 1 playable baseline 被 checkpoint 正式接受。
+
+#### Stretch
+
+1. medium slice 产生非退化对局，可作为后续 extension 参考。
+2. dominant failure class 已经收敛到少数可解释问题，而不是系统性混乱。
+
+#### 必须拿到的真实证据
+
+1. formal real batch artifacts
+2. 完整的 provenance
+3. outcome、duration、build-chain、army、tactical、combat 组合证据
+4. repair 或 confirmation rerun 的对照证据
+5. 显式 failure-class 排序
+
+#### 未通过如何 repair
+
+1. invalid evidence：原样 rerun。
+2. minor instability：做一次聚焦 repair 或 confirmation，不扩 scope。
+3. tactical regression：退回 R3。
+4. army / production regression：退回 R2。
+5. 若 batch 仍显示系统只是诊断体，禁止进入 adaptive phase。
+
+#### 进入下一阶段条件
+
+checkpoint_E_level1_baseline_gate 通过。
+checkpoint_E 不通过，adaptive phase 不得开始。
+
+---
+
+### Phase R5：单一 adaptive research feature 的真实验证
+
+目标：
+在已经接受的 Level 1 baseline 上，只引入一个研究特色：稀疏侦察驱动的在线对手状态推断与时机门控层，并用 paired evaluation 验证其真实行为效应与可归因收益。
+
+#### Minimum
+
+1. adaptive layer 不再是 telemetry-only，而是直接控制至少一个 real gameplay gate。
+2. paired evaluation 中存在可重复观察的 control vs treatment 行为差异。
+3. adaptive 接入没有破坏 baseline core。
+
+#### Target
+
+1. 行为差异与 outcome / robustness / failure-class 改善方向一致。
+2. control 与 treatment 的差异足够单一，结论可以归因到 adaptive layer。
+3. checkpoint 正式接受 research contribution 成立。
+
+#### Stretch
+
+1. adaptive 效果在多于一个 opponent race 或 map slice 上保持同方向。
+2. adaptive layer 同时稳定控制两类以上允许的时机门控，但不引入第二个 research feature。
+
+#### 必须拿到的真实证据
+
+1. paired real-match artifacts
+2. baseline_playable 与 adaptive_research 的成对 provenance
+3. continue_scouting、defensive_posture、first_attack_timing 的行为差异证据
+4. outcome / failure-class 改善证据
+5. paired report 中的因果解释
+
+#### 未通过如何 repair
+
+1. invalid evidence：rerun paired evaluation。
+2. no behavior change：修 adaptive gate，不得硬写收益。
+3. behavior change but no causal benefit：先冻结结论为“adaptive effect 未被接受”，再决定是否继续 repair。
+4. core regression：回到 R4 通过时的 baseline control 版本，禁止带着漂移的 baseline 继续做 adaptive 结论。
+
+#### 进入下一阶段条件
+
+checkpoint_F_adaptive_research_gate 通过。
+checkpoint_F 通过时，核心项目目标达成。
+若之后要做 medium / broader-pool extension，只能作为扩展阶段，不得回写成核心目标尚未达成。
+
+## 五、阶段之间的强依赖关系
+
+1. R0 通过前，只能做文档、config contract、evaluation contract 工作。
+2. R1 不通过，R2 blocked。
+3. R2 不通过，R3 blocked。
+4. R3 不通过，R4 blocked。
+5. R4 不通过，R5 blocked。
+6. R5 不通过，项目最多只能声称“已到 Level 1 baseline”，不能声称“已有研究贡献”。
+
+## 六、每阶段的 minimum / target / stretch 不是同一件事
+
+1. minimum 用来判断是否具备继续前进的资格。
+2. target 用来判断该阶段是否真正达到计划目标。
+3. stretch 用来决定是否可以减少后续风险或为扩展阶段铺路。
+
+禁止把 minimum 改写成阶段最终成功定义。
+禁止为了尽快通过 checkpoint，把 target 偷偷降成 minimum。
+禁止把 stretch 的缺失误写为失败，但也禁止把 stretch 的偶发达成夸大为 target 稳定达成。
+
+## 七、真实证据的统一要求
+
+除 R0 外，每个阶段都必须至少提供以下证据包：
+
+1. code provenance
+2. config snapshot
+3. match result
+4. replay
+5. telemetry / event summary
+6. phase-specific report
+7. failure-class 或 capability-validation-status 的显式记录
+
+没有这个证据包，不能做 capability claim。
+证据包不完整时，只能判为 invalid evidence 或 diagnostic-only。
+
+## 八、repair 逻辑
+
+### repair 的定义
+
+repair 不是“以后再看”，而是对已发现 failure class 的直接动作。
+
+### repair 的优先级
+
+1. 先修 invalid evidence 与 runtime contract。
+2. 再修 prerequisite regression。
+3. 再修当前 phase 的主逻辑。
+4. 最后才考虑更高层行为优化。
+
+### repair 的限制
+
+1. 一次只修 dominant failure class。
+2. repair 完成后必须 rerun 与该 failure class 对应的最小必要验证。
+3. 不得在 repair 中偷偷引入新 research feature。
+4. 不得在 R4 之前把 baseline 与 adaptive 一起改。
+
+## 九、checkpoint 纪律
+
+每个 checkpoint 都必须产出以下字段，且字段必须由证据驱动：
+
+1. reviewed_tasks
+2. minimum_gate_passed
+3. target_gate_passed
+4. stretch_gate_status
+5. evidence_paths
+6. capability_validation_status
+7. failure_class
+8. decision
+9. next_allowed_task
+
+### checkpoint 的合法 decision
+
+1. accepted_continue
+2. repair_and_rerun
+3. return_to_prior_phase
+4. blocked_invalid_evidence
+5. blocked_pending_prerequisite
+
+不允许出现“看起来差不多，可以先往后跑”的非正式 decision。
+
+## 十、哪些完成后才能进入下一阶段
+
+1. 只有 checkpoint pass，才能 phase advance。
+2. implementation task 完成但 probe 未过，不算 phase complete。
+3. probe 跑完但 checkpoint 未接受，不算 phase complete。
+4. report 已生成但 capability_validation_status 仍是 diagnostic-only，不算 phase complete。
+
+## 十一、明确禁止的误推进方式
+
+1. 用短窗口 real match 继续刷 build / combat 报告。
+2. 用 debug config 继续做 capability claim。
+3. baseline 未接受就把 opponent model 接入 gameplay 并开始讲研究故事。
+4. 用 broader pool 或展示包装掩盖 baseline 未过关。
+5. 在 mainline 未通过时，把希望寄托到 `research/` 目录里的 prototype。
+
+## 十二、完成定义
+
+本计划的“完成”不是“bot 能跑”，也不是“文档齐了”，而是同时满足：
+
+1. Level 1 non-adaptive playable baseline 被 checkpoint_E 正式接受。
+2. 单一 adaptive research feature 被 checkpoint_F 正式接受。
+3. 两者都有真实对局证据、可追溯 artifact、明确 failure-class 语义与清晰的 control / treatment 边界。
+
+只有这三个条件同时满足，项目才算从“基础设施 + 诊断仓库”升级为“有研究价值、可验证、可展示的 SC2 AI 项目”。
+<<<END_FILE>>>
+
+<<<FILE: docs/plans/active/research_master_task_queue.yaml>>>
+version: 1
+document_status: active
+owner_role: chief_research_planner
+source_of_truth:
+
+* docs/foundation/04_research_direction/research_direction_decision.md
+* docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
+* docs/experiments/real_match_validation_protocol.md
+  active_next_task: task_002_lock_runtime_eval_contract_and_config_roles
+  execution_rules:
+  checkpoint_every_n_tasks: 3
+  checkpoint_failure_blocks_progress: true
+  phase_skip_allowed: false
+  diagnostic_is_capability: false
+  task_completed_is_capability_validated: false
+  debug_config_allowed_for_capability_claims: false
+  adaptive_tasks_require_baseline_gate: checkpoint_E_level1_baseline_gate
+  validation_levels:
+  L0: documentation_and_classification_only
+  L1: static_code_config_and_test_validation
+  L2: dry_run_integration_without_gameplay_claim
+  L3: single_valid_real_sc2_probe
+  L4: real_sc2_batch_or_paired_evaluation
+  L5: phase_decision_backed_by_L3_or_L4_evidence
+  historical_start_state:
+  infrastructure_status: accepted_phase_a
+  legacy_phase_b_status: diagnostic_only_not_level1
+  duration_window_status: revalidated_once_in_phase_b_r
+  opponent_model_status: telemetry_validated_gameplay_effect_unvalidated
+  current_entry_phase: phase_r0_execution_freeze
+  phases:
+* id: phase_r0_execution_freeze
+  name: 研究方向与验证契约冻结
+  objective: 冻结新的主研究方向、任务分类口径、验证协议与配置角色，阻断 legacy Phase B 式的误验收继续发生。
+  entry_requirements: []
+  exit_checkpoint: checkpoint_A_start_gate
+  tasks:
+
+  * id: task_001_lock_research_direction_and_repo_reclassification
+    phase: phase_r0_execution_freeze
+    group: direction_and_truth_source
+    status: completed
+    quota_risk: low
+    expected_codex_window: single_session
+    validation_level_required: L1
+    actual_validation_level: L1
+    data_source:
+
+    * README.md
+    * AGENTS.md
+    * docs/handoffs/latest.md
+    * docs/context/current_status.md
+    * docs/context/validated_findings.md
+    * docs/context/open_hypotheses.md
+    * docs/plans/active/*
+    * artifacts/reports/*
+      real_validation_status: not_applicable
+      requires: []
+      goal: 将仓库当前事实重新分类为 infrastructure、gameplay capability、research contribution，并冻结新的主研究方向。
+      scope:
+    * 落盘 research_direction_decision.md
+    * 落盘 retain_rewrite_drop_matrix.md
+    * 在主计划中写清 legacy Phase A、旧 Phase B、Phase B-R 的地位
+      non_goals:
+    * 不改 gameplay 代码
+    * 不跑真实 SC2
+    * 不宣称任何新能力已经被验证
+      files_likely_to_change:
+    * docs/foundation/04_research_direction/research_direction_decision.md
+    * docs/foundation/04_research_direction/retain_rewrite_drop_matrix.md
+    * docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
+      verification:
+    * 文档内部结论与仓库现状一致
+    * 明确写出保留并重构
+    * 明确主研究特色只保留一个
+      done_criteria:
+    * 三份核心文档已落盘
+    * legacy 资产分类清晰
+    * 没有把 diagnostic 写成 capability validated
+      minimum_gate:
+      claim: 新的研究方向与项目分类已经冻结
+      pass_condition: 主方向、主研究问题、当前真实进度、禁止跑偏项全部写清
+      target_gate:
+      claim: source of truth 已从旧散乱计划收敛到新主计划
+      pass_condition: 新文件可单独驱动后续执行，不依赖旧 Phase B 叙述
+      stretch_gate:
+      claim: 仓库历史资产有明确迁移矩阵
+      pass_condition: 每类资产均包含保留原因、重写原因、风险、迁移建议
+      stop_conditions:
+    * 文档互相矛盾
+    * 旧计划仍被默认视为主线
+    * research feature 数量超过一个
+      rollback_notes:
+    * 本任务是文档冻结任务，不涉及代码回滚
+    * 若内容发现与仓库事实不一致，直接修正文档，不进入后续阶段
+      evidence_paths:
+    * docs/foundation/04_research_direction/research_direction_decision.md
+    * docs/foundation/04_research_direction/retain_rewrite_drop_matrix.md
+    * docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
+      capability_validation_status: not_applicable_document_task
+  * id: task_002_lock_runtime_eval_contract_and_config_roles
+    phase: phase_r0_execution_freeze
+    group: validation_contract
+    status: pending
+    quota_risk: medium
+    expected_codex_window: single_session_plus_dry_run
+    validation_level_required: L2
+    actual_validation_level: none
+    data_source:
+
+    * docs/experiments/real_match_validation_protocol.md
+    * configs/bot/debug.yaml
+    * configs/bot/phase_b_revalidation_gameplay.yaml
+    * evaluation/*
+    * src/sc2bot/runtime/*
+    * docs/handoffs/latest.md
+      real_validation_status: not_started
+      requires:
+    * task_001_lock_research_direction_and_repo_reclassification
+      goal: 冻结 runtime 与 evaluation contract，明确 debug、baseline_playable、adaptive_research 三类配置角色，禁止再用短窗口 debug 配置做 capability claim。
+      scope:
+    * 为 baseline_playable 与 adaptive_research 明确配置命名与用途
+    * 在评测输出中强制记录 code/config provenance、run class、validation class
+    * 保证 run_match 与 runtime.max_game_loop 的关系对 capability eval 可审计
+      non_goals:
+    * 不新增 gameplay 行为
+    * 不跑 baseline batch
+    * 不把 dry-run 当成 gameplay evidence
+      files_likely_to_change:
+    * docs/experiments/real_match_validation_protocol.md
+    * configs/bot/debug.yaml
+    * configs/bot/baseline_playable.yaml
+    * configs/bot/adaptive_research.yaml
+    * configs/bot/phase_b_revalidation_gameplay.yaml
+    * evaluation/*
+      verification:
+    * 静态检查所有 capability eval 不再指向 debug.yaml
+    * dry-run 输出必须包含 config snapshot 与 validation class
+    * 文档与配置命名一致
+      done_criteria:
+    * debug 配置被明确限制为 debug_only
+    * baseline_playable 与 adaptive_research 的角色清晰
+    * 评测 artifact 强制包含 provenance 字段
+      minimum_gate:
+      claim: 配置角色冻结完成
+      pass_condition: debug_only、baseline_playable、adaptive_research 三类角色明确且无歧义
+      target_gate:
+      claim: 评测契约冻结完成
+      pass_condition: 评测输出能记录 code hash、config snapshot、validation class、run class
+      stretch_gate:
+      claim: dry-run 入口可用于验证 contract 完整性
+      pass_condition: 至少一条 dry-run 路径可输出完整 provenance，而不冒充 gameplay evidence
+      stop_conditions:
+    * capability eval 仍可引用 debug.yaml
+    * config 命名与文档不一致
+    * 评测 artifact 缺少 provenance 或 validation class
+      rollback_notes:
+    * 保留 phase_b_revalidation_gameplay.yaml 作为过渡回退配置，直到 baseline_playable.yaml 成为唯一主线
+    * 若 dry-run 暴露 runner 合同问题，先修 evaluation，不得跳去 real gameplay probe
+      evidence_paths:
+    * docs/experiments/real_match_validation_protocol.md
+    * configs/bot/
+    * artifacts/reports/validation_contract/
+      capability_validation_status: not_applicable_document_and_integration_task
+  * id: checkpoint_A_start_gate
+    phase: phase_r0_execution_freeze
+    group: checkpoint
+    status: blocked
+    quota_risk: low
+    expected_codex_window: review_window
+    validation_level_required: L5
+    actual_validation_level: none
+    data_source:
+
+    * task_001_lock_research_direction_and_repo_reclassification
+    * task_002_lock_runtime_eval_contract_and_config_roles
+      real_validation_status: not_started
+      requires:
+    * task_001_lock_research_direction_and_repo_reclassification
+    * task_002_lock_runtime_eval_contract_and_config_roles
+      goal: 确认新的研究方向、验证协议和配置角色已经冻结，允许进入真实 playable core 重建阶段。
+      scope:
+    * 审查 reviewed_tasks 的证据、失败分类与验证级别
+    * 决定 accepted_continue、repair_and_rerun、return_to_prior_phase 或 blocked
+    * 写回 evidence_paths、failure_class、decision、next_allowed_task
+      non_goals:
+    * 不新增 gameplay 功能
+    * 不用叙述替代证据
+    * 不绕过前序门槛直接放行后续阶段
+      files_likely_to_change:
+    * docs/plans/active/research_master_task_queue.yaml
+    * artifacts/reports/checkpoints/
+      verification:
+    * reviewed_tasks 全部已完成并附带所需证据
+    * minimum_gate、target_gate、stretch_gate 的判断依据可追溯
+    * decision 与 next_allowed_task 一致
+      done_criteria:
+    * checkpoint 字段全部写实，不留空泛结论
+    * failure_class 被明确记录
+    * 若 minimum_gate 未通过，则后续阶段保持 blocked
+      minimum_gate:
+      claim: 新方向与验证契约已经可执行
+      pass_condition: task_001 与 task_002 完成，且没有遗留的 debug/capability 混用风险
+      target_gate:
+      claim: 主线 source of truth 已稳定
+      pass_condition: 后续 Codex 可仅依赖新方向文件、主计划、协议与队列执行
+      stretch_gate:
+      claim: 可以进行 build-chain real probe 而不会重演 Phase B 误验收
+      pass_condition: checkpoint 审核认定 evidence taxonomy 与 runtime contract 足以支撑后续 probe
+      stop_conditions:
+    * reviewed_tasks 任一任务证据无效
+    * 前置阶段 prerequisite regression 被发现
+    * capability_validation_status 与证据不一致
+      rollback_notes:
+    * 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
+    * 不得保持后续任务为 pending 可执行状态；必须显式 blocked
+      evidence_paths:
+    * artifacts/reports/checkpoints/
+      capability_validation_status: not_applicable_checkpoint
+      reviewed_tasks:
+    * task_001_lock_research_direction_and_repo_reclassification
+    * task_002_lock_runtime_eval_contract_and_config_roles
+      minimum_gate_passed: null
+      target_gate_passed: null
+      stretch_gate_status: pending
+      failure_class: pending
+      decision: pending
+      next_allowed_task:
+      on_pass: task_004_rebuild_opening_build_chain_logic
+      on_fail_contract_incomplete: task_002_lock_runtime_eval_contract_and_config_roles
+      on_fail_direction_mismatch: task_001_lock_research_direction_and_repo_reclassification
+* id: phase_r1_build_chain_core
+  name: 开局 build chain 可玩化
+  objective: 把 legacy Phase B 的 command-level 诊断改造成真实可验收的 opening build chain，至少公平验证 Gateway ready 与早期 tech-chain opportunity。
+  entry_requirements:
+
+  * checkpoint_A_start_gate passed
+    exit_checkpoint: checkpoint_B_build_chain_gate
+    tasks:
+  * id: task_004_rebuild_opening_build_chain_logic
+    phase: phase_r1_build_chain_core
+    group: build_chain_impl
+    status: blocked
+    quota_risk: medium
+    expected_codex_window: single_session_to_multi_session
+    validation_level_required: L1
+    actual_validation_level: none
+    data_source:
+
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/macro_manager.py
+    * src/sc2bot/config/*
+    * legacy Phase B artifacts
+    * docs/experiments/real_match_validation_protocol.md
+      real_validation_status: not_started
+      requires:
+    * checkpoint_A_start_gate
+      goal: 将开局经济与 tech 路径从 survival-baseline 风格的零散 safe_* 调用，收敛为可解释、可测试、可验收的 opening build chain。
+      scope:
+    * 明确 worker、pylon、gateway、assimilator、cybernetics core 的前置条件与优先级
+    * 为 build stall、supply stall、gas stall、tech stall 记录显式原因
+    * 必要时把 gameplay 主线从 runtime 中抽出到可维护的 macro/build controller，但不得为架构洁癖重写半个仓库
+      non_goals:
+    * 不做扩张经济
+    * 不做高级微操
+    * 不接入 adaptive behavior
+    * 不做 multi-race
+      files_likely_to_change:
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/macro_manager.py
+    * src/sc2bot/config/*
+    * tests/*
+      verification:
+    * 静态测试与最小集成检查可以解释 build-chain 状态转移
+    * build stall 原因可被日志或事件直接定位
+    * 代码不会因为重构失去现有真实运行入口
+      done_criteria:
+    * 存在一个清晰的 opening build-chain 控制路径
+    * Gateway ready 与 tech-chain 前置不再仅依赖 command telemetry 推断
+    * 为真实 probe 提供可读的状态与失败原因
+      minimum_gate:
+      claim: 开局 build-chain 逻辑已经具备可 probe 的结构化实现
+      pass_condition: 静态与最小集成检查可区分 build command、build started、build ready、stall reason
+      target_gate:
+      claim: 代码已为真实 build-chain probe 做好准备
+      pass_condition: opening path 覆盖 gateway、gas、cyber 前置，且不再只是一串松散 side effects
+      stretch_gate:
+      claim: 后续 production path 有可扩展接口
+      pass_condition: build-chain 状态可被后续 combat-unit production 复用，不需要再次大改 opening 结构
+      stop_conditions:
+    * 重构破坏现有 real-match 启动
+    * build-chain 仍然无法区分 ready 与 command-only
+    * 为追求架构整洁而拖慢 capability 修复
+      rollback_notes:
+    * 若重构导致启动回归，先回退到能跑的 runtime 基线，再做增量改造
+    * 保留 phase_b_revalidation_gameplay 作为临时回退配置，直到 baseline_playable 配置与实现稳定
+      evidence_paths:
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/macro_manager.py
+    * tests/
+      capability_validation_status: not_applicable_implementation_task
+  * id: task_005_real_build_chain_probe
+    phase: phase_r1_build_chain_core
+    group: build_chain_probe
+    status: blocked
+    quota_risk: medium
+    expected_codex_window: single_probe_window
+    validation_level_required: L3
+    actual_validation_level: none
+    data_source:
+
+    * task_004_rebuild_opening_build_chain_logic
+    * configs/bot/baseline_playable.yaml
+    * docs/experiments/real_match_validation_protocol.md
+    * evaluation/*
+      real_validation_status: not_started
+      requires:
+    * task_004_rebuild_opening_build_chain_logic
+    * checkpoint_A_start_gate
+      goal: 在真实 SC2 中验证 opening build chain 是否真的到达 Gateway ready，并且公平暴露 gas / cyber 机会窗口。
+      scope:
+    * 使用 baseline_playable 配置运行 real build-chain probe
+    * 记录 gateway command、gateway started、gateway ready、assimilator attempt、cyber attempt 或 stall reason
+    * 保持范围严格聚焦于开局 build chain，不提前宣称 army/tactical 成功
+      non_goals:
+    * 不做 win-rate 结论
+    * 不做 adaptive claim
+    * 不把单次 run 的 command telemetry 当成 gateway-ready 证据
+      files_likely_to_change:
+    * evaluation/*
+    * artifacts/reports/r1_build_chain_probe/report.md
+    * data/logs/evaluation/r1_build_chain_probe/
+      verification:
+    * 真实 probe 符合 protocol 的有效证据要求
+    * 构建相关事件与 replay 可相互印证
+    * 若未完成 ready，failure class 必须明确是 insufficient_duration、missing_prerequisite 还是 logic_failure
+      done_criteria:
+    * 产生一组有效 real-match artifacts
+    * Gateway ready 是否成立被明确判定
+    * 早期 tech-chain opportunity 是否成立被明确判定
+      minimum_gate:
+      claim: Gateway ready 已在公平机会窗口内被真实验证
+      pass_condition: 有效 real probe 中出现 gateway ready，或自然结束前给出不可混淆的 blocker classification
+      target_gate:
+      claim: 早期 gas / cyber opportunity 已被公平暴露
+      pass_condition: assimilator attempt 与 cyber attempt 或其显式 stall reason 被记录，并满足 protocol 的机会窗口要求
+      stretch_gate:
+      claim: production phase 已经被部分前向验证
+      pass_condition: 在不越界宣称 army core 的前提下，出现 first combat-unit command 或明确进入 production-ready state
+      stop_conditions:
+    * 证据无效
+    * runtime 时长再次不足
+    * Gateway ready 未被验证且 failure class 不清晰
+      rollback_notes:
+    * invalid evidence 时原样 rerun，不改代码
+    * insufficient duration 时修 runtime/eval contract，不误判为 gameplay failure
+    * logic failure 时回到 task_004 修 build chain
+      evidence_paths:
+    * data/logs/evaluation/r1_build_chain_probe/
+    * artifacts/reports/r1_build_chain_probe/report.md
+      capability_validation_status: pending
+  * id: checkpoint_B_build_chain_gate
+    phase: phase_r1_build_chain_core
+    group: checkpoint
+    status: blocked
+    quota_risk: low
+    expected_codex_window: review_window
+    validation_level_required: L5
+    actual_validation_level: none
+    data_source:
+
+    * task_004_rebuild_opening_build_chain_logic
+    * task_005_real_build_chain_probe
+      real_validation_status: not_started
+      requires:
+    * task_004_rebuild_opening_build_chain_logic
+    * task_005_real_build_chain_probe
+      goal: 确认 build chain 已从 diagnostic-level 进入 capability-level，允许进入 real army production 阶段。
+      scope:
+    * 审查 reviewed_tasks 的证据、失败分类与验证级别
+    * 决定 accepted_continue、repair_and_rerun、return_to_prior_phase 或 blocked
+    * 写回 evidence_paths、failure_class、decision、next_allowed_task
+      non_goals:
+    * 不新增 gameplay 功能
+    * 不用叙述替代证据
+    * 不绕过前序门槛直接放行后续阶段
+      files_likely_to_change:
+    * docs/plans/active/research_master_task_queue.yaml
+    * artifacts/reports/checkpoints/
+      verification:
+    * reviewed_tasks 全部已完成并附带所需证据
+    * minimum_gate、target_gate、stretch_gate 的判断依据可追溯
+    * decision 与 next_allowed_task 一致
+      done_criteria:
+    * checkpoint 字段全部写实，不留空泛结论
+    * failure_class 被明确记录
+    * 若 minimum_gate 未通过，则后续阶段保持 blocked
+      minimum_gate:
+      claim: build-chain capability 最低门槛通过
+      pass_condition: Gateway ready 在有效 real probe 中被验证，且 duration contract 无争议
+      target_gate:
+      claim: tech-chain opportunity 已经公平暴露
+      pass_condition: gas / cyber attempt 或 blocker classification 足以支撑进入 production 阶段
+      stretch_gate:
+      claim: opening 结构无需再次大改也可进入 army core
+      pass_condition: checkpoint 判断 build-chain 结构稳定，后续可在其上叠加 production 而非重新造 opening
+      stop_conditions:
+    * reviewed_tasks 任一任务证据无效
+    * 前置阶段 prerequisite regression 被发现
+    * capability_validation_status 与证据不一致
+      rollback_notes:
+    * 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
+    * 不得保持后续任务为 pending 可执行状态；必须显式 blocked
+      evidence_paths:
+    * artifacts/reports/checkpoints/
+      capability_validation_status: not_applicable_checkpoint
+      reviewed_tasks:
+    * task_004_rebuild_opening_build_chain_logic
+    * task_005_real_build_chain_probe
+      minimum_gate_passed: null
+      target_gate_passed: null
+      stretch_gate_status: pending
+      failure_class: pending
+      decision: pending
+      next_allowed_task:
+      on_pass: task_007_rewrite_combat_unit_production_and_rally_logic
+      on_fail_logic: task_004_rebuild_opening_build_chain_logic
+      on_fail_invalid_evidence: task_005_real_build_chain_probe
+      on_fail_duration_contract: task_002_lock_runtime_eval_contract_and_config_roles
+* id: phase_r2_army_production_core
+  name: 真实 army production 与 rally core
+  objective: 让 bot 在真实对局中稳定产出第一批战斗单位并形成基本集结，而不是只有 build telemetry 没有友军 army。
+  entry_requirements:
+
+  * checkpoint_B_build_chain_gate passed
+    exit_checkpoint: checkpoint_C_army_core_gate
+    tasks:
+  * id: task_007_rewrite_combat_unit_production_and_rally_logic
+    phase: phase_r2_army_production_core
+    group: army_core_impl
+    status: blocked
+    quota_risk: medium
+    expected_codex_window: single_session_to_multi_session
+    validation_level_required: L1
+    actual_validation_level: none
+    data_source:
+
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/macro_manager.py
+    * src/sc2bot/managers/tactical_manager.py
+    * configs/bot/baseline_playable.yaml
+      real_validation_status: not_started
+      requires:
+    * checkpoint_B_build_chain_gate
+      goal: 补齐真实 combat-unit production、持续生产与基础 rally 逻辑，使 own_army_count>0 不再只是理论路径。
+      scope:
+    * 把 zealot / stalker 生产从可触发命令提升为真实产出路径
+    * 解决 supply、gas、production idle、rally point 这些会阻断第一支军队出现的问题
+    * 让 rally 行为只在 army 真实存在时触发，并记录原因
+      non_goals:
+    * 不做复杂兵种组合
+    * 不做高级微操
+    * 不做 adaptive policy
+      files_likely_to_change:
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/macro_manager.py
+    * src/sc2bot/managers/tactical_manager.py
+    * configs/bot/baseline_playable.yaml
+    * tests/*
+      verification:
+    * 静态与最小集成检查可解释生产链条与 rally 前提
+    * 不再出现 attack/defend 在 own_army_count=0 时被误认为 capability 的路径
+    * 生产与 rally 的事件记录可支持后续 real probe
+      done_criteria:
+    * 第一支 army 的前提链条被结构化实现
+    * rally 只在真实 army 存在时触发
+    * 生产死锁原因可被明确记录
+      minimum_gate:
+      claim: combat-unit production 具备可 probe 的实现
+      pass_condition: 代码能区分 production command、unit created、continued production、rally eligibility
+      target_gate:
+      claim: army core 不再依赖 build-chain 的侥幸 side effect
+      pass_condition: 生产逻辑与 supply/gas/rally 条件显式化，且可被测试
+      stretch_gate:
+      claim: 后续 tactical transition 有稳定输入
+      pass_condition: own_army_count、rally state、production health 可作为战术阶段的可靠前置
+      stop_conditions:
+    * 仍然只能发生产命令而无真实单位
+    * rally 在无 army 时被触发
+    * 实现破坏 build-chain 已通过的能力
+      rollback_notes:
+    * 若 production 修复引发 build-chain 回归，回退到 checkpoint_B 通过时的 opening 实现，再做更小粒度改动
+    * 若 rally 逻辑引发不稳定，先保守保持 rally，再进入 real probe
+      evidence_paths:
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/macro_manager.py
+    * src/sc2bot/managers/tactical_manager.py
+    * tests/
+      capability_validation_status: not_applicable_implementation_task
+  * id: task_008_real_army_presence_probe
+    phase: phase_r2_army_production_core
+    group: army_presence_probe
+    status: blocked
+    quota_risk: medium
+    expected_codex_window: single_probe_plus_minimal_stability_window
+    validation_level_required: L3
+    actual_validation_level: none
+    data_source:
+
+    * task_007_rewrite_combat_unit_production_and_rally_logic
+    * configs/bot/baseline_playable.yaml
+    * docs/experiments/real_match_validation_protocol.md
+      real_validation_status: not_started
+      requires:
+    * task_007_rewrite_combat_unit_production_and_rally_logic
+    * checkpoint_B_build_chain_gate
+      goal: 在真实 SC2 中验证友军 army 是否真正出现、持续存在并具备基础集结行为。
+      scope:
+    * 跑 real army presence probe
+    * 记录 first combat unit created、own_army_count transitions、continued production、rally events
+    * 若未出现友军 army，明确区分 missing_prerequisite、logic_failure、invalid_evidence
+      non_goals:
+    * 不做 defend/attack 成功结论
+    * 不做 baseline Level 1 结论
+    * 不把单次偶发现象夸大为稳定性结论
+      files_likely_to_change:
+    * data/logs/evaluation/r2_army_presence_probe/
+    * artifacts/reports/r2_army_presence_probe/report.md
+      verification:
+    * probe 符合 protocol 的有效证据要求
+    * 友军单位出现与 telemetry 计数一致
+    * 若 claim 要求稳定性，必须用最小必要 rerun 解释波动，而不是跳过
+      done_criteria:
+    * own_army_count>0 是否成立被明确判定
+    * combat unit production 是否真实成立被明确判定
+    * rally 是否在真实 army 基础上成立被明确判定
+      minimum_gate:
+      claim: 友军 army 已真实出现
+      pass_condition: 有效 real probe 中 own_army_count>0 且与 replay/telemetry 可相互印证
+      target_gate:
+      claim: production 与 rally 不是一次性偶发
+      pass_condition: 最小必要的重复验证表明 first army 不是偶然 bug，且存在基础 rally 行为
+      stretch_gate:
+      claim: 战术阶段已有可用输入
+      pass_condition: first army 之后出现受控移动或明确的 rally-ready 状态
+      stop_conditions:
+    * 证据无效
+    * 友军 army 未出现
+    * build-chain regression 被发现
+      rollback_notes:
+    * invalid evidence 时原样 rerun
+    * army 未出现时回到 task_007 修 production，而不是提前跑 tactical probe
+    * 若 regression 指向 opening，再回到 task_004 或 checkpoint_B
+      evidence_paths:
+    * data/logs/evaluation/r2_army_presence_probe/
+    * artifacts/reports/r2_army_presence_probe/report.md
+      capability_validation_status: pending
+  * id: checkpoint_C_army_core_gate
+    phase: phase_r2_army_production_core
+    group: checkpoint
+    status: blocked
+    quota_risk: low
+    expected_codex_window: review_window
+    validation_level_required: L5
+    actual_validation_level: none
+    data_source:
+
+    * task_007_rewrite_combat_unit_production_and_rally_logic
+    * task_008_real_army_presence_probe
+      real_validation_status: not_started
+      requires:
+    * task_007_rewrite_combat_unit_production_and_rally_logic
+    * task_008_real_army_presence_probe
+      goal: 确认友军 army 已真实成立，允许进入 defend/attack 与 friendly combat 阶段。
+      scope:
+    * 审查 reviewed_tasks 的证据、失败分类与验证级别
+    * 决定 accepted_continue、repair_and_rerun、return_to_prior_phase 或 blocked
+    * 写回 evidence_paths、failure_class、decision、next_allowed_task
+      non_goals:
+    * 不新增 gameplay 功能
+    * 不用叙述替代证据
+    * 不绕过前序门槛直接放行后续阶段
+      files_likely_to_change:
+    * docs/plans/active/research_master_task_queue.yaml
+    * artifacts/reports/checkpoints/
+      verification:
+    * reviewed_tasks 全部已完成并附带所需证据
+    * minimum_gate、target_gate、stretch_gate 的判断依据可追溯
+    * decision 与 next_allowed_task 一致
+      done_criteria:
+    * checkpoint 字段全部写实，不留空泛结论
+    * failure_class 被明确记录
+    * 若 minimum_gate 未通过，则后续阶段保持 blocked
+      minimum_gate:
+      claim: army core 最低门槛通过
+      pass_condition: own_army_count>0 与 first combat unit created 已被真实验证
+      target_gate:
+      claim: production 与 rally 足够稳定，可支撑 tactical probe
+      pass_condition: checkpoint 认定 army existence 不是偶发现象，且 rally/continued production 足够可信
+      stretch_gate:
+      claim: 可以进入 tactical phase 而非继续停留在生产修补
+      pass_condition: checkpoint 未发现 opening 或 production 的结构性回归
+      stop_conditions:
+    * reviewed_tasks 任一任务证据无效
+    * 前置阶段 prerequisite regression 被发现
+    * capability_validation_status 与证据不一致
+      rollback_notes:
+    * 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
+    * 不得保持后续任务为 pending 可执行状态；必须显式 blocked
+      evidence_paths:
+    * artifacts/reports/checkpoints/
+      capability_validation_status: not_applicable_checkpoint
+      reviewed_tasks:
+    * task_007_rewrite_combat_unit_production_and_rally_logic
+    * task_008_real_army_presence_probe
+      minimum_gate_passed: null
+      target_gate_passed: null
+      stretch_gate_status: pending
+      failure_class: pending
+      decision: pending
+      next_allowed_task:
+      on_pass: task_010_rewrite_defend_attack_transition_logic
+      on_fail_production_logic: task_007_rewrite_combat_unit_production_and_rally_logic
+      on_fail_invalid_evidence: task_008_real_army_presence_probe
+      on_fail_opening_regression: task_004_rebuild_opening_build_chain_logic
+* id: phase_r3_tactical_core
+  name: 真实 defend/attack transition 与 first friendly combat
+  objective: 在友军 army 已被验证的前提下，让 defend、attack 与 friendly combat 进入 capability validated 状态。
+  entry_requirements:
+
+  * checkpoint_C_army_core_gate passed
+    exit_checkpoint: checkpoint_D_tactical_core_gate
+    tasks:
+  * id: task_010_rewrite_defend_attack_transition_logic
+    phase: phase_r3_tactical_core
+    group: tactical_impl
+    status: blocked
+    quota_risk: medium
+    expected_codex_window: single_session_to_multi_session
+    validation_level_required: L1
+    actual_validation_level: none
+    data_source:
+
+    * src/sc2bot/managers/tactical_manager.py
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/strategy_manager.py
+    * configs/bot/baseline_playable.yaml
+      real_validation_status: not_started
+      requires:
+    * checkpoint_C_army_core_gate
+      goal: 把 defend、attack、regroup 的触发从当前极薄逻辑提升为建立在真实 army existence 之上的可测试战术过渡。
+      scope:
+    * 限制 defend/attack 只在 own_army_count>0 且前置满足时触发
+    * 显式记录 defend_reason、attack_reason、regroup_reason
+    * 把 known enemy location、visible threat 与 attack timing gate 接入基线战术逻辑
+      non_goals:
+    * 不做 adaptive layer
+    * 不做多线作战
+    * 不做复杂 micro
+      files_likely_to_change:
+    * src/sc2bot/managers/tactical_manager.py
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/strategy_manager.py
+    * configs/bot/baseline_playable.yaml
+    * tests/*
+      verification:
+    * 静态与最小集成检查可说明 defend/attack 只会在合法前置下触发
+    * combat event payload 不再在 own_army_count=0 的情况下制造误导性成功感
+    * 战术原因字段足够支持 real probe 审核
+      done_criteria:
+    * 战术过渡逻辑可被测试与追踪
+    * defend/attack/regroup 的原因明确
+    * 不会回归到无 army 也出 order 的错误路径
+      minimum_gate:
+      claim: 战术阶段具备可 probe 的合法触发逻辑
+      pass_condition: defend/attack 触发均绑定真实 army 与上下文条件
+      target_gate:
+      claim: friendly combat 的前置已经具备
+      pass_condition: 战术逻辑能把 army 从 rally 推向 defend 或 attack contact，而不是永远停在原地
+      stretch_gate:
+      claim: 后续 baseline batch 将有可解释的行为指标
+      pass_condition: 战术原因字段足以支持 batch report 对行为失败进行归因
+      stop_conditions:
+    * 仍在 own_army_count=0 时触发 order
+    * attack/defend 原因不可解释
+    * 实现破坏 army core
+      rollback_notes:
+    * 若战术改动引发 army core 回归，先回退到 checkpoint_C 通过时的生产实现
+    * 若只是不稳定，保守保留 defend，限制 attack，再进入 probe
+      evidence_paths:
+    * src/sc2bot/managers/tactical_manager.py
+    * src/sc2bot/runtime/game_loop.py
+    * tests/
+      capability_validation_status: not_applicable_implementation_task
+  * id: task_011_real_tactical_probe
+    phase: phase_r3_tactical_core
+    group: tactical_probe
+    status: blocked
+    quota_risk: medium
+    expected_codex_window: single_probe_plus_contact_window
+    validation_level_required: L3
+    actual_validation_level: none
+    data_source:
+
+    * task_010_rewrite_defend_attack_transition_logic
+    * configs/bot/baseline_playable.yaml
+    * docs/experiments/real_match_validation_protocol.md
+      real_validation_status: not_started
+      requires:
+    * task_010_rewrite_defend_attack_transition_logic
+    * checkpoint_C_army_core_gate
+      goal: 在真实 SC2 中验证 defend/attack 是否真正发生，并且 friendly combat 是否从友军 army 出发出现。
+      scope:
+    * 运行 tactical probe
+    * 记录 defend_order、attack_order、regroup、friendly combat、target_position 与原因字段
+    * 若没有接触敌军，区分 insufficient_duration、no_contact_under_valid_conditions、logic_failure
+      non_goals:
+    * 不做 Level 1 最终结论
+    * 不做 adaptive paired claim
+    * 不把 enemy visible 当成 friendly combat 证据
+      files_likely_to_change:
+    * data/logs/evaluation/r3_tactical_probe/
+    * artifacts/reports/r3_tactical_probe/report.md
+      verification:
+    * real probe 符合 protocol 有效证据要求
+    * order、army count、enemy contact、combat event 在 replay/telemetry 中可相互印证
+    * failure class 能指向明确 repair 位置
+      done_criteria:
+    * defend/attack capability 的最低结论被明确写清
+    * friendly combat 是否成立被明确判定
+    * 下一阶段 baseline batch 所需的行为标签已经可用
+      minimum_gate:
+      claim: 至少一种合法战术 order 已被真实验证
+      pass_condition: 有效 real probe 中 defend_order 或 attack_order 发生，且 own_army_count>0
+      target_gate:
+      claim: friendly combat 已被真实验证
+      pass_condition: 有效 real probe 中出现由友军 army 主导的接敌事件，并与 replay/telemetry 一致
+      stretch_gate:
+      claim: baseline batch 已有足够战术证据基础
+      pass_condition: 在受控切片中可观察到 defend 与 attack 两类行为，或 checkpoint 明确认定哪一类仍需 repair
+      stop_conditions:
+    * 证据无效
+    * 没有合法战术 order
+    * 友军 army 回归缺失
+      rollback_notes:
+    * invalid evidence 时原样 rerun
+    * 无合法战术 order 时回 task_010 修战术逻辑
+    * 友军 army 回归缺失时退回 task_007 或 checkpoint_C
+      evidence_paths:
+    * data/logs/evaluation/r3_tactical_probe/
+    * artifacts/reports/r3_tactical_probe/report.md
+      capability_validation_status: pending
+  * id: checkpoint_D_tactical_core_gate
+    phase: phase_r3_tactical_core
+    group: checkpoint
+    status: blocked
+    quota_risk: low
+    expected_codex_window: review_window
+    validation_level_required: L5
+    actual_validation_level: none
+    data_source:
+
+    * task_010_rewrite_defend_attack_transition_logic
+    * task_011_real_tactical_probe
+      real_validation_status: not_started
+      requires:
+    * task_010_rewrite_defend_attack_transition_logic
+    * task_011_real_tactical_probe
+      goal: 确认 defend/attack 与 friendly combat 已达到 baseline batch 所需的最低能力门槛。
+      scope:
+    * 审查 reviewed_tasks 的证据、失败分类与验证级别
+    * 决定 accepted_continue、repair_and_rerun、return_to_prior_phase 或 blocked
+    * 写回 evidence_paths、failure_class、decision、next_allowed_task
+      non_goals:
+    * 不新增 gameplay 功能
+    * 不用叙述替代证据
+    * 不绕过前序门槛直接放行后续阶段
+      files_likely_to_change:
+    * docs/plans/active/research_master_task_queue.yaml
+    * artifacts/reports/checkpoints/
+      verification:
+    * reviewed_tasks 全部已完成并附带所需证据
+    * minimum_gate、target_gate、stretch_gate 的判断依据可追溯
+    * decision 与 next_allowed_task 一致
+      done_criteria:
+    * checkpoint 字段全部写实，不留空泛结论
+    * failure_class 被明确记录
+    * 若 minimum_gate 未通过，则后续阶段保持 blocked
+      minimum_gate:
+      claim: 战术最低门槛通过
+      pass_condition: 至少一种合法战术 order 在真实对局中成立，且不依赖假 army 或假 contact
+      target_gate:
+      claim: friendly combat 或其可验证近邻形态已经成立
+      pass_condition: checkpoint 认定战术 probe 足以支持进入 baseline batch，而不是继续停留在纯战术实现层
+      stretch_gate:
+      claim: Level 1 baseline batch 已有公平前提
+      pass_condition: 未发现 prerequisite regression，且 tactical failure class 足够明确可供 batch repair 使用
+      stop_conditions:
+    * reviewed_tasks 任一任务证据无效
+    * 前置阶段 prerequisite regression 被发现
+    * capability_validation_status 与证据不一致
+      rollback_notes:
+    * 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
+    * 不得保持后续任务为 pending 可执行状态；必须显式 blocked
+      evidence_paths:
+    * artifacts/reports/checkpoints/
+      capability_validation_status: not_applicable_checkpoint
+      reviewed_tasks:
+    * task_010_rewrite_defend_attack_transition_logic
+    * task_011_real_tactical_probe
+      minimum_gate_passed: null
+      target_gate_passed: null
+      stretch_gate_status: pending
+      failure_class: pending
+      decision: pending
+      next_allowed_task:
+      on_pass: task_013_baseline_easy_pool_batch_evaluation
+      on_fail_tactical_logic: task_010_rewrite_defend_attack_transition_logic
+      on_fail_invalid_evidence: task_011_real_tactical_probe
+      on_fail_army_regression: task_007_rewrite_combat_unit_production_and_rally_logic
+* id: phase_r4_baseline_outcome_validation
+  name: 非自适应 baseline 的 Level 1 验收
+  objective: 证明 non-adaptive Protoss baseline 已经不再是 survival scaffold，而是可以被真实 batch 评为 Level 1 playable baseline 的最小系统。
+  entry_requirements:
+
+  * checkpoint_D_tactical_core_gate passed
+    exit_checkpoint: checkpoint_E_level1_baseline_gate
+    tasks:
+  * id: task_013_baseline_easy_pool_batch_evaluation
+    phase: phase_r4_baseline_outcome_validation
+    group: baseline_batch_eval
+    status: blocked
+    quota_risk: high
+    expected_codex_window: multi_run_batch_window
+    validation_level_required: L4
+    actual_validation_level: none
+    data_source:
+
+    * checkpoint_D_tactical_core_gate
+    * configs/bot/baseline_playable.yaml
+    * docs/experiments/real_match_validation_protocol.md
+    * evaluation/*
+      real_validation_status: not_started
+      requires:
+    * checkpoint_D_tactical_core_gate
+      goal: 对 non-adaptive baseline 运行正式 real batch evaluation，生成 Level 1 接受所需的 outcome 与 gameplay evidence。
+      scope:
+    * 按照 protocol 选择 representative easy opponent slice 与 map slice
+    * 收集 outcome、duration、build-chain、army、tactical、friendly combat、artifact completeness 等指标
+    * 显式标记 invalid evidence、insufficient duration、prerequisite regression、logic failure
+      non_goals:
+    * 不做 adaptive claim
+    * 不把单局亮点当成 batch 结论
+    * 不在 baseline 未稳定前扩大到 broader pool
+      files_likely_to_change:
+    * data/logs/evaluation/r4_baseline_easy_pool_batch/
+    * artifacts/reports/r4_baseline_easy_pool/report.md
+      verification:
+    * batch 设计与 protocol 一致
+    * 每个 run 均能追溯到 code/config provenance
+    * 报告必须把 infrastructure、gameplay capability、research contribution 分开写
+      done_criteria:
+    * 生成完整 baseline batch artifacts
+    * Level 1 相关结论可以被 checkpoint 审核
+    * dominant failure class 被排序，便于下一任务 repair 或确认
+      minimum_gate:
+      claim: baseline 已不再是纯诊断脚手架
+      pass_condition: batch 中不存在系统性 prerequisite regression，且至少出现一场无争议的真正胜利或极强 near-win 证据
+      target_gate:
+      claim: Level 1 playable baseline 具有可接受的重复性
+      pass_condition: easy slice 上出现重复 wins 或同等强度的稳定优势证据，足以支撑 checkpoint 做 Level 1 决策
+      stretch_gate:
+      claim: 可以准备进入 adaptive research 阶段
+      pass_condition: batch 不仅有 outcome，还能证明 baseline 行为已稳定到足以承载 paired adaptive comparison
+      stop_conditions:
+    * 证据无效
+    * 系统性 prerequisite regression
+    * batch 结果仍表明 baseline 只是诊断体而非可玩体
+      rollback_notes:
+    * 若失败来自下游战术问题，回到 task_010
+    * 若失败来自 army/production，回到 task_007
+    * 若失败来自 evidence invalidation，先原样 rerun，再决定是否 repair
+      evidence_paths:
+    * data/logs/evaluation/r4_baseline_easy_pool_batch/
+    * artifacts/reports/r4_baseline_easy_pool/report.md
+      capability_validation_status: pending
+  * id: task_014_baseline_repair_or_confirmation
+    phase: phase_r4_baseline_outcome_validation
+    group: baseline_repair_confirmation
+    status: blocked
+    quota_risk: high
+    expected_codex_window: single_repair_plus_focused_rerun_window
+    validation_level_required: L4
+    actual_validation_level: none
+    data_source:
+
+    * task_013_baseline_easy_pool_batch_evaluation
+    * checkpoint_D_tactical_core_gate
+      real_validation_status: not_started
+      requires:
+    * task_013_baseline_easy_pool_batch_evaluation
+      goal: 基于 baseline batch 的 dominant failure class，执行一次最高优先级 repair，或在 target 已通过时执行最小必要 confirmation rerun 以冻结 Level 1 证据。
+      scope:
+    * 若 task_013 target 未通过，则只修最主要 failure class，不分散到多条支线
+    * 若 task_013 target 已通过，则不扩 scope，只做最小 confirmation 以证明结果不是偶发
+    * rerun 只覆盖受影响的 opponent/map slice，避免无效扩大样本
+      non_goals:
+    * 不新增 adaptive behavior
+    * 不转向 broader pool
+    * 不把 report 写作当成 repair 替代品
+      files_likely_to_change:
+    * src/sc2bot/runtime/game_loop.py
+    * src/sc2bot/managers/macro_manager.py
+    * src/sc2bot/managers/tactical_manager.py
+    * configs/bot/baseline_playable.yaml
+    * data/logs/evaluation/r4_baseline_repair_or_confirmation/
+    * artifacts/reports/r4_baseline_repair_or_confirmation/report.md
+      verification:
+    * repair 或 confirmation 的范围与 task_013 failure class 一一对应
+    * rerun 结果与原 batch 可对比
+    * 没有引入新的 prerequisite regression
+      done_criteria:
+    * dominant failure class 被处理或被确认不影响 Level 1 结论
+    * 补充证据可以支持 checkpoint_E 做 pass/fail 决策
+    * baseline 仍保持 non-adaptive 对照角色的清晰性
+      minimum_gate:
+      claim: 最高优先级 baseline 风险已被处理
+      pass_condition: repair 后的 focused rerun 明确改善 dominant failure class，或 confirmation 证明原结论稳定
+      target_gate:
+      claim: Level 1 决策已具备足够稳健性
+      pass_condition: repair/confirmation 之后，checkpoint 不再需要额外 large scope 证据就能决定是否接受 baseline
+      stretch_gate:
+      claim: baseline 已准备好作为 adaptive paired eval 的 control
+      pass_condition: baseline 行为稳定、配置冻结、不会在 paired eval 中继续漂移
+      stop_conditions:
+    * repair 没有针对 dominant failure class
+    * rerun 引入新的 prerequisite regression
+    * 为了追求通过而偷偷扩大 scope 或变更多个变量
+      rollback_notes:
+    * 若 repair 导致 core regression，立即回退到 task_013 前的通过版本并重新定位 failure class
+    * 若 confirmation rerun 与原 batch 冲突，取消 Level 1 冻结并继续 baseline repair
+      evidence_paths:
+    * data/logs/evaluation/r4_baseline_repair_or_confirmation/
+    * artifacts/reports/r4_baseline_repair_or_confirmation/report.md
+      capability_validation_status: pending
+  * id: checkpoint_E_level1_baseline_gate
+    phase: phase_r4_baseline_outcome_validation
+    group: checkpoint
+    status: blocked
+    quota_risk: low
+    expected_codex_window: review_window
+    validation_level_required: L5
+    actual_validation_level: none
+    data_source:
+
+    * task_013_baseline_easy_pool_batch_evaluation
+    * task_014_baseline_repair_or_confirmation
+      real_validation_status: not_started
+      requires:
+    * task_013_baseline_easy_pool_batch_evaluation
+    * task_014_baseline_repair_or_confirmation
+      goal: 决定 non-adaptive baseline 是否被正式接受为 Level 1 playable core；此 checkpoint 不通过则 adaptive 研究阶段不得开始。
+      scope:
+    * 审查 reviewed_tasks 的证据、失败分类与验证级别
+    * 决定 accepted_continue、repair_and_rerun、return_to_prior_phase 或 blocked
+    * 写回 evidence_paths、failure_class、decision、next_allowed_task
+      non_goals:
+    * 不新增 gameplay 功能
+    * 不用叙述替代证据
+    * 不绕过前序门槛直接放行后续阶段
+      files_likely_to_change:
+    * docs/plans/active/research_master_task_queue.yaml
+    * artifacts/reports/checkpoints/
+      verification:
+    * reviewed_tasks 全部已完成并附带所需证据
+    * minimum_gate、target_gate、stretch_gate 的判断依据可追溯
+    * decision 与 next_allowed_task 一致
+      done_criteria:
+    * checkpoint 字段全部写实，不留空泛结论
+    * failure_class 被明确记录
+    * 若 minimum_gate 未通过，则后续阶段保持 blocked
+      minimum_gate:
+      claim: baseline 最低接受门槛通过
+      pass_condition: batch 证据表明 bot 已从 survival scaffold 进入真实 playable core，且不存在致命 prerequisite regression
+      target_gate:
+      claim: Level 1 playable baseline 被接受
+      pass_condition: easy slice 上有重复性 outcome 证据与配套 gameplay evidence，可支持 baseline 作为 adaptive control
+      stretch_gate:
+      claim: 可以进入 adaptive research 阶段
+      pass_condition: checkpoint 认定 baseline 稳定到足以承载 paired evaluation，而不是边跑 paired eval 边修 baseline
+      stop_conditions:
+    * reviewed_tasks 任一任务证据无效
+    * 前置阶段 prerequisite regression 被发现
+    * capability_validation_status 与证据不一致
+      rollback_notes:
+    * 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
+    * 不得保持后续任务为 pending 可执行状态；必须显式 blocked
+      evidence_paths:
+    * artifacts/reports/checkpoints/
+      capability_validation_status: not_applicable_checkpoint
+      reviewed_tasks:
+    * task_013_baseline_easy_pool_batch_evaluation
+    * task_014_baseline_repair_or_confirmation
+      minimum_gate_passed: null
+      target_gate_passed: null
+      stretch_gate_status: pending
+      failure_class: pending
+      decision: pending
+      next_allowed_task:
+      on_pass: task_016_integrate_single_adaptive_gating_layer
+      on_fail_minor_instability: task_014_baseline_repair_or_confirmation
+      on_fail_tactical_regression: task_010_rewrite_defend_attack_transition_logic
+      on_fail_army_regression: task_007_rewrite_combat_unit_production_and_rally_logic
+* id: phase_r5_adaptive_research_validation
+  name: 单一 adaptive research feature 的真实验证
+  objective: 在已接受的 Level 1 baseline 之上，仅引入一个 adaptive gating layer，并用 paired evaluation 验证其真实行为效应与可归因收益。
+  entry_requirements:
+
+  * checkpoint_E_level1_baseline_gate passed
+    exit_checkpoint: checkpoint_F_adaptive_research_gate
+    tasks:
+  * id: task_016_integrate_single_adaptive_gating_layer
+    phase: phase_r5_adaptive_research_validation
+    group: adaptive_impl
+    status: blocked
+    quota_risk: high
+    expected_codex_window: single_session_to_multi_session
+    validation_level_required: L1
+    actual_validation_level: none
+    data_source:
+
+    * src/sc2bot/managers/strategy_manager.py
+    * src/sc2bot/opponent_model/*
+    * src/sc2bot/runtime/game_loop.py
+    * configs/bot/baseline_playable.yaml
+    * configs/bot/adaptive_research.yaml
+    * phase1d/phase1e reports
+      real_validation_status: not_started
+      requires:
+    * checkpoint_E_level1_baseline_gate
+      goal: 仅接入一个 research feature：稀疏侦察驱动的在线对手状态推断与时机门控层，并把它真正连到 gameplay gate，而非仅保留 telemetry tag。
+      scope:
+    * 允许 adaptive layer 影响 continue_scouting、defensive_posture、first_attack_timing 这三类门控
+    * 保持 control 与 treatment 的代码基线尽量一致，差异集中在 adaptive switch 与必要参数
+    * 保留 null / baseline_playable 作为 paired evaluation control
+      non_goals:
+    * 不新增第二个 research feature
+    * 不引入 learned opponent model
+    * 不在此阶段重新大修 baseline core
+      files_likely_to_change:
+    * src/sc2bot/managers/strategy_manager.py
+    * src/sc2bot/opponent_model/*
+    * src/sc2bot/runtime/game_loop.py
+    * configs/bot/baseline_playable.yaml
+    * configs/bot/adaptive_research.yaml
+    * tests/*
+      verification:
+    * 静态与最小集成检查能说明 adaptive output 如何进入 gameplay gate
+    * control 与 treatment 的唯一差异可审计
+    * adaptive layer 不会让 baseline prerequisite regression
+      done_criteria:
+    * adaptive layer 进入 mainline gameplay path
+    * control 与 treatment 配置冻结并可追溯
+    * 研究特色仍然只有一个，没有 scope creep
+      minimum_gate:
+      claim: adaptive layer 已不再是 telemetry-only
+      pass_condition: 至少一个 real gameplay gate 由 opponent-state inference 直接控制，而非只写 response tag
+      target_gate:
+      claim: paired evaluation 已具备因果可比性
+      pass_condition: control 与 treatment 除 adaptive layer 外保持同一 baseline 核心
+      stretch_gate:
+      claim: 三类允许的时机门控已具备可扩展接口
+      pass_condition: continue_scouting、defensive_posture、first_attack_timing 至少两类可被 adaptive layer 接管而不破坏 baseline
+      stop_conditions:
+    * adaptive layer 仍然只写 tag 不改 gameplay
+    * 一次接入多个研究特色
+    * control 与 treatment 同时改 baseline，导致无法归因
+      rollback_notes:
+    * 若 adaptive 接入破坏 baseline，通过 checkpoint_E 冻结的 control 版本回退
+    * 若某一门控接入过重，先只保留一个最可解释的门控再进入 paired eval
+      evidence_paths:
+    * src/sc2bot/managers/strategy_manager.py
+    * src/sc2bot/opponent_model/
+    * configs/bot/adaptive_research.yaml
+    * tests/
+      capability_validation_status: not_applicable_implementation_task
+  * id: task_017_null_vs_adaptive_paired_evaluation
+    phase: phase_r5_adaptive_research_validation
+    group: paired_eval
+    status: blocked
+    quota_risk: high
+    expected_codex_window: multi_run_paired_window
+    validation_level_required: L4
+    actual_validation_level: none
+    data_source:
+
+    * task_016_integrate_single_adaptive_gating_layer
+    * configs/bot/baseline_playable.yaml
+    * configs/bot/adaptive_research.yaml
+    * docs/experiments/real_match_validation_protocol.md
+      real_validation_status: not_started
+      requires:
+    * task_016_integrate_single_adaptive_gating_layer
+    * checkpoint_E_level1_baseline_gate
+      goal: 在 matched real-match setting 中比较 baseline_playable 与 adaptive_research，验证 adaptive layer 是否真实改变行为并带来可归因收益。
+      scope:
+    * 按 protocol 组织 paired evaluation，保持 opponent/map slice 一致
+    * 重点比较 continue_scouting、defensive_posture、first_attack_timing 相关行为差异，以及 outcome/robustness 的方向性变化
+    * 所有 paired runs 必须保留完整 provenance 与 failure classification
+      non_goals:
+    * 不扩展到 broader pool showcase
+    * 不把未配对的 anecdotal run 当作研究结论
+    * 不在 paired eval 中继续调整 baseline core
+      files_likely_to_change:
+    * data/logs/evaluation/r5_paired_adaptive_eval/
+    * artifacts/reports/r5_paired_adaptive_eval/report.md
+      verification:
+    * paired design 符合 protocol
+    * behavior delta 先于 outcome 解读
+    * 若没有行为差异，不得硬写收益结论
+      done_criteria:
+    * paired artifacts 完整
+    * adaptive 是否改变真实行为被明确判定
+    * adaptive 是否产生方向性收益被明确判定
+      minimum_gate:
+      claim: adaptive layer 真实改变了 gameplay behavior
+      pass_condition: paired evaluation 中至少一类允许门控出现可重复观察的 control vs treatment 差异
+      target_gate:
+      claim: adaptive layer 带来可归因收益
+      pass_condition: 在 matched slice 上出现 outcome 改善、鲁棒性改善或 failure-class 改善，且该改善与行为差异方向一致
+      stretch_gate:
+      claim: 研究结论具有跨切片潜力
+      pass_condition: 效果在多于一个 opponent race 或 map slice 上保持同方向，或 checkpoint 明确界定其边界
+      stop_conditions:
+    * 证据无效
+    * 没有行为差异
+    * 行为差异存在但收益方向不清或伴随 core regression
+      rollback_notes:
+    * invalid evidence 时原样 rerun
+    * 无行为差异时回 task_016 修 adaptive gate，而不是继续扩大样本
+    * 若出现 core regression，回退到 checkpoint_E 接受的 baseline control
+      evidence_paths:
+    * data/logs/evaluation/r5_paired_adaptive_eval/
+    * artifacts/reports/r5_paired_adaptive_eval/report.md
+      capability_validation_status: pending
+  * id: checkpoint_F_adaptive_research_gate
+    phase: phase_r5_adaptive_research_validation
+    group: checkpoint
+    status: blocked
+    quota_risk: low
+    expected_codex_window: review_window
+    validation_level_required: L5
+    actual_validation_level: none
+    data_source:
+
+    * task_016_integrate_single_adaptive_gating_layer
+    * task_017_null_vs_adaptive_paired_evaluation
+      real_validation_status: not_started
+      requires:
+    * task_016_integrate_single_adaptive_gating_layer
+    * task_017_null_vs_adaptive_paired_evaluation
+      goal: 决定本项目是否已经完成核心 research claim：单一 sparse-scout adaptive layer 在真实 SC2 中被证明能改变行为并带来可归因收益。
+      scope:
+    * 审查 reviewed_tasks 的证据、失败分类与验证级别
+    * 决定 accepted_continue、repair_and_rerun、return_to_prior_phase 或 blocked
+    * 写回 evidence_paths、failure_class、decision、next_allowed_task
+      non_goals:
+    * 不新增 gameplay 功能
+    * 不用叙述替代证据
+    * 不绕过前序门槛直接放行后续阶段
+      files_likely_to_change:
+    * docs/plans/active/research_master_task_queue.yaml
+    * artifacts/reports/checkpoints/
+      verification:
+    * reviewed_tasks 全部已完成并附带所需证据
+    * minimum_gate、target_gate、stretch_gate 的判断依据可追溯
+    * decision 与 next_allowed_task 一致
+      done_criteria:
+    * checkpoint 字段全部写实，不留空泛结论
+    * failure_class 被明确记录
+    * 若 minimum_gate 未通过，则后续阶段保持 blocked
+      minimum_gate:
+      claim: research claim 最低门槛通过
+      pass_condition: paired evaluation 证明 adaptive layer 改变了真实行为，且没有破坏 baseline core
+      target_gate:
+      claim: 核心 research contribution 被接受
+      pass_condition: behavior delta 与收益方向一致，足以把本项目从 playable bot 提升为有研究贡献的系统
+      stretch_gate:
+      claim: 可进入扩展展示而不是继续重做主线
+      pass_condition: checkpoint 认定当前证据已足以支撑后续 medium/broader-pool extension 或对外展示整理
+      stop_conditions:
+    * reviewed_tasks 任一任务证据无效
+    * 前置阶段 prerequisite regression 被发现
+    * capability_validation_status 与证据不一致
+      rollback_notes:
+    * 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
+    * 不得保持后续任务为 pending 可执行状态；必须显式 blocked
+      evidence_paths:
+    * artifacts/reports/checkpoints/
+      capability_validation_status: not_applicable_checkpoint
+      reviewed_tasks:
+    * task_016_integrate_single_adaptive_gating_layer
+    * task_017_null_vs_adaptive_paired_evaluation
+      minimum_gate_passed: null
+      target_gate_passed: null
+      stretch_gate_status: pending
+      failure_class: pending
+      decision: pending
+      next_allowed_task:
+      on_pass: project_core_goal_reached
+      on_fail_no_behavior_change: task_016_integrate_single_adaptive_gating_layer
+      on_fail_no_causal_benefit: task_017_null_vs_adaptive_paired_evaluation
+      on_fail_core_regression: task_010_rewrite_defend_attack_transition_logic
+      <<<END_FILE>>>
+
+<<<FILE: docs/experiments/real_match_validation_protocol.md>>>
+
+# 真实对局验证协议
+
+状态：active
+更新日期：2026-04-23
+适用范围：所有 gameplay capability 与 research contribution 相关任务
+直接依赖：
+
+* docs/foundation/04_research_direction/research_direction_decision.md
+* docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
+* docs/plans/active/research_master_task_queue.yaml
+
+## 一、协议目的
+
+本协议不是为了规定一个僵硬的固定场次数，而是为了把“什么必须跑真实 SC2、什么不能跑、什么算有效证据、什么只能算诊断、什么情况下必须 rerun、repair 或 stop”写清楚。
+
+本协议直接解决旧 Phase B 暴露出的四类问题：
+
+1. 运行窗口不公平时，能力结论被误写。
+2. diagnostic signal 被误写成 capability success。
+3. batch / paired evaluation 的规模与 claim 不匹配。
+4. checkpoint 没有一个统一、可复用的证据语言。
+
+## 二、总则
+
+1. 任何 gameplay capability claim，必须来自真实 SC2。
+2. 任何 research contribution claim，必须来自真实 SC2 的 paired evaluation。
+3. 任何 real-match run，必须带有 code provenance、config snapshot、match result、replay、telemetry summary。
+4. 任何 claim 的验证规模，必须由它要验证的对象决定，而不是拍脑袋写一个固定场次。
+5. 任何 evidence 若不能回答“它验证了什么、没验证什么、下一步是否允许继续”，就不是合格 evidence。
+
+## 三、什么任务必须跑真实 SC2
+
+以下任务必须跑真实 SC2，不能只靠单元测试、dry-run 或静态推理：
+
+### 1. build chain 相关 claim
+
+包括但不限于：
+
+1. Gateway ready
+2. Assimilator / Cybernetics Core 的真实机会窗口
+3. opening build progression 是否真的成立
+4. build stall 是否来自真实 gameplay，而不是 runner / config 问题
+
+原因：
+这些都是 gameplay capability，不是代码存在性。
+它们只有在真实时间推进、真实资源流、真实地图与敌方存在的条件下才有意义。
+
+它们验证什么：
+真实 build progression 是否成立、是否被公平暴露、是否具备后续 production 前提。
+
+它们不验证什么：
+不验证 baseline strength，不验证 adaptive effect，不验证 broader generalization。
+
+### 2. army production 相关 claim
+
+包括但不限于：
+
+1. combat-unit production
+2. own_army_count>0
+3. continued production
+4. rally based on real army
+
+原因：
+如果不跑真实 SC2，就无法判断第一支 army 是否真的出现、是否只是命令发出、是否受 supply / gas / tech / runtime 限制影响。
+
+它们验证什么：
+友军 army 是否真实存在，以及 production 链条是否可进入战术阶段。
+
+它们不验证什么：
+不验证 defend / attack 是否稳定，不验证 Level 1 baseline 是否接受。
+
+### 3. tactical / combat 相关 claim
+
+包括但不限于：
+
+1. defend_order
+2. attack_order
+3. friendly combat
+4. regroup / fallback
+5. target selection in contact
+
+原因：
+这些 claim 的本质是“army 在真实敌我接触中如何行为”，离开真实对局无法判断。
+
+它们验证什么：
+战术 order 是否建立在真实 army、真实敌情、真实接敌上。
+
+它们不验证什么：
+不自动等价于 batch-level baseline strength，也不自动等价于 research contribution。
+
+### 4. baseline strength 或 Level claim
+
+包括但不限于：
+
+1. Level 1 playable baseline
+2. repeated wins against designated easy slice
+3. medium slice 可用性
+4. broader opponent slice 稳定性
+
+原因：
+这些结论天然属于多局、真实对局层级，不能靠 probe、unit test 或单局印象得出。
+
+它们验证什么：
+某个 baseline 在指定 claim slice 上是否真的具备重复性与可玩性。
+
+它们不验证什么：
+不自动证明 adaptive effect，不自动外推到更广泛的对手池。
+
+### 5. adaptive / opponent-model claim
+
+包括但不限于：
+
+1. continue_scouting 被 adaptive gate 改变
+2. defensive_posture 被 adaptive gate 改变
+3. first_attack_timing 被 adaptive gate 改变
+4. adaptive layer 带来 outcome / robustness / failure-class 改善
+
+原因：
+research contribution 的核心是“这层 adaptive 逻辑是否真实改变了 gameplay，并且这种改变是否有收益”。
+不跑真实 paired evaluation，就没有因果可归因性。
+
+它们验证什么：
+behavior delta、causal effect、研究特色是否成立。
+
+它们不验证什么：
+不自动证明 broader-pool generalization，除非另外跑 extension batch。
+
+## 四、什么任务不能跑真实 SC2
+
+以下任务不应消耗真实 SC2 预算；即使跑了，也不能用其结果做 gameplay 或 research claim：
+
+### 1. 文档、分类、计划、协议任务
+
+包括：
+
+1. 研究方向重写
+2. plan / queue / protocol 更新
+3. asset reclassification
+4. README / docs 重写
+
+原因：
+这些任务的正确性取决于事实一致性与逻辑一致性，不取决于对局结果。
+
+### 2. 纯静态代码与配置任务
+
+包括：
+
+1. schema 改动
+2. config role 重命名
+3. runner provenance 字段补齐
+4. artifact 路径或 manifest 结构调整
+
+原因：
+这类任务应该先通过静态检查、单元测试、dry-run 证明自己没有破坏执行合同。
+过早消耗真实对局只会浪费预算。
+
+### 3. 离线分析与报告整理任务
+
+包括：
+
+1. 读取已有 artifacts 生成报告
+2. failure-class 排序
+3. checkpoint 证据归档
+4. replay 标注与索引整理
+
+原因：
+这些工作依赖已有 evidence，不应伪装成新 evidence。
+
+### 4. 尚未满足前置能力的下游任务
+
+包括：
+
+1. build chain 未过时去跑 army / tactical batch
+2. army 未过时去跑 friendly combat claim
+3. Level 1 baseline 未过时去跑 adaptive paired evaluation
+
+原因：
+这类 real run 即使执行，也只会得到“missing prerequisite”的废证据，不能提升主线确定性。
+
+## 五、什么任务在当前阶段禁止跑真实 SC2
+
+“不能跑”与“当前阶段禁止跑”不同。
+
+以下任务在技术上可以跑，但在当前主线阶段被禁止，因为它们会污染结论：
+
+1. 在 baseline 未接受前，跑 broader opponent pool 展示 batch。
+2. 在 adaptive feature 未冻结前，边改 baseline 边做 paired evaluation。
+3. 在 dominant failure class 未修完前，同时跑多个修复方向的大 batch。
+4. 用 debug config 做 capability claim。
+5. 用 research prototype 直接混入 mainline real eval。
+
+## 六、证据包要求
+
+一组有效 real-match evidence，至少必须包含：
+
+1. code provenance
+
+   * 提交标识、工作区状态或等价可追溯信息
+2. config snapshot
+
+   * bot config
+   * evaluation config
+   * map / opponent slice
+3. match result
+4. replay
+5. telemetry / event summary
+6. phase-specific report
+7. capability_validation_status 或 failure_class
+
+若缺少其中任意关键项，本次 evidence 不能直接支持 capability claim。
+
+### 为什么需要这套证据包
+
+它验证什么：
+
+1. run 的确发生了；
+2. run 属于哪个代码 / 配置版本；
+3. claim 与 run 可以一一对应；
+4. 后续 checkpoint 能审计 run，而不是靠口述。
+
+它不验证什么：
+
+1. 不自动验证阶段目标已完成；
+2. 不自动证明稳定性；
+3. 不自动证明研究因果性。
+
+## 七、验证单元定义
+
+### 1. probe
+
+定义：
+probe 是为一个单一 capability 或 blocker 设计的最小真实验证单元。
+
+一个 probe 不等于“永远一局”。
+当 claim 需要至少一次真实机会窗口、一次真实接敌、或一次真实行为触发时，probe 的规模是“拿到这次有效机会所需的最小运行集合”。
+
+为什么需要这种规模：
+因为 probe 的目标是回答“这个能力是否存在、是否被公平暴露、失败属于哪一类”，而不是回答稳定性。
+
+probe 验证什么：
+
+1. capability existence
+2. fair opportunity
+3. failure class
+4. 是否有资格进入下一阶段
+
+probe 不验证什么：
+
+1. 稳定性
+2. repeated wins
+3. 研究因果效果
+4. broader generalization
+
+### 2. batch
+
+定义：
+batch 是围绕一个已存在的 capability，检查其在指定 claim slice 上是否具有重复性、覆盖性或稳定性的真实评测集合。
+
+batch 的规模由三个维度共同决定：
+
+1. 要覆盖的 opponent slice
+2. 要覆盖的 map slice
+3. probe 暴露出的结果方差
+
+为什么需要这种规模：
+因为稳定性与覆盖性不是单 probe 能回答的问题。
+如果 claim 是“已经达到 Level 1 playable baseline”，就必须让 batch 去回答“这是不是可重复现象”。
+
+batch 验证什么：
+
+1. 某个 capability 是否稳定
+2. 某个 baseline 是否在指定切片上具备重复性
+3. dominant failure class 是什么
+
+batch 不验证什么：
+
+1. 单个设计改动的因果贡献
+2. adaptive layer 的可归因效果
+3. 对更广泛对手池的自动外推
+
+### 3. paired evaluation
+
+定义：
+paired evaluation 是 control 与 treatment 的成对真实评测。
+在本项目中，control 通常是 baseline_playable，treatment 通常是 adaptive_research。
+两者除研究变量外，其余条件必须尽量一致。
+
+paired evaluation 至少要在以下维度上匹配：
+
+1. map slice
+2. opponent slice
+3. baseline core version
+4. evaluation contract
+5. artifact schema
+
+为什么需要这种规模：
+因为 research claim 不是“这个 bot 好像更强”，而是“这个 adaptive layer 引起了可归因的行为差异，并带来收益”。
+
+paired evaluation 验证什么：
+
+1. behavior delta
+2. causal effect
+3. 研究特色是否成立
+
+paired evaluation 不验证什么：
+
+1. 自动证明 broader-pool generalization
+2. 自动证明所有 adaptive policy 都有效
+3. 自动替代 baseline acceptance
+
+## 八、什么是 capability validation
+
+capability validation 同时满足以下条件，缺一不可：
+
+1. claim 本身有明确对象
+
+   * 例如 Gateway ready、own_army_count>0、friendly combat、Level 1 baseline、adaptive behavior delta
+2. prerequisite 已满足
+
+   * 例如未有 army 时不能验证 friendly combat
+3. 机会窗口公平
+
+   * 例如 build-chain claim 不可在短窗口中被强行下结论
+4. 证据包完整
+5. 采用了与 claim 相匹配的验证单元
+
+   * probe、batch 或 paired evaluation
+6. checkpoint 对该 claim 明确给出 accepted / not accepted 结论
+
+capability validation 验证什么：
+某个能力在真实、公平、可追溯条件下成立。
+
+它不验证什么：
+
+1. 它不自动升级为下一层能力；
+2. 它不自动证明研究贡献；
+3. 它不自动替代 broader-slice 结论。
+
+## 九、什么是 diagnostic only
+
+以下情形都属于 diagnostic only，而不是 capability validated：
+
+1. 只看到 command telemetry，没有 ready / completion 证据。
+2. own_army_count=0 时出现的 defend / attack / combat 相关信号。
+3. 有 event、有 report、有 replay，但 prerequisite 未满足。
+4. run 因 runtime / config 问题提前截断，只能证明 blocker，不足以证明能力。
+5. opponent-model 只改变了 response tag，没有改变 gameplay gate。
+6. batch 或 paired evaluation 的 artifact 完整，但 claim 与验证单元不匹配。
+
+diagnostic only 验证什么：
+哪里有信号、哪里有 blocker、下一步应该修哪一类问题。
+
+它不验证什么：
+目标能力本身是否成立。
+
+## 十、什么是 insufficient_duration
+
+insufficient_duration 的定义不是“时间短”这么简单，而是：
+
+在当前 claim 所需的最小公平机会窗口尚未满足之前，run 已经结束，而且这个结束本身并不能自然地回答该 claim。
+
+例子：
+
+1. 想验证 Gateway ready，但窗口还没走到，run 就因为错误配置提前结束。
+2. 想验证 friendly combat，但 army 尚未形成、接敌窗口尚未出现，run 就被截断。
+3. 想验证 paired adaptive effect，但其中一边 run 持续时间不足以让相关门控实际触发。
+
+insufficient_duration 验证什么：
+当前证据不能公平回答该 claim，先别下 gameplay 结论。
+
+它不验证什么：
+
+1. 不证明能力失败；
+2. 不证明能力成功；
+3. 不等价于 logic failure。
+
+## 十一、什么是 invalid evidence
+
+以下任一情形出现，该 evidence 直接判为 invalid：
+
+1. 缺 replay
+2. 缺 match result
+3. 缺 config snapshot
+4. code / config provenance 不可追溯
+5. 同一 batch 中混入了不同逻辑版本但未声明
+6. 用 debug config 跑 capability claim
+7. human manual intervention 改变了 run 行为
+8. runner / telemetry / replay 记录互相冲突
+9. paired evaluation 中 control 与 treatment 不可比
+10. 已知 prerequisite 未满足却继续把 run 当目标证据
+11. report 结论与 raw evidence 不一致
+
+invalid evidence 验证什么：
+只验证了一件事：这组证据不能用。
+
+它不验证什么：
+任何 gameplay 或 research 结论。
+
+## 十二、什么是 rerun
+
+rerun 指的是：
+
+在不改变 claim、或只做最小合法修正的情况下，重新执行与原任务同级的验证单元，以修复 invalid evidence 或确认边界性结果。
+
+### rerun 适用场景
+
+1. invalid evidence
+2. paired run 中一侧缺失
+3. batch 中某个切片 artifact 损坏
+4. borderline 结果需要最小确认
+
+### rerun 不适用场景
+
+1. 已明确 logic failure，却不愿修代码
+2. prerequisite 未满足，却希望靠多跑几局蒙混过去
+3. 想扩大样本来掩盖错误分类
+
+## 十三、什么是 repair
+
+repair 指的是：
+
+针对已明确的 dominant failure class，做一次范围受控的代码、配置或验证设计修正，然后回到与该 failure class 对应的最小必要验证单元。
+
+### repair 必须满足
+
+1. repair 目标唯一明确
+2. repair 范围受控
+3. repair 之后必须 rerun
+4. repair 不得偷偷引入第二个研究变量
+
+### repair 验证什么
+
+它验证什么：
+当前 failure class 是否被有效处理。
+
+它不验证什么：
+
+1. 不自动验证整个 phase 成功；
+2. 不自动允许跳过 checkpoint；
+3. 不自动允许进入更高 phase。
+
+## 十四、什么是 stop
+
+stop 是正式停止前进，不是“先记一下”。
+
+以下情形必须 stop：
+
+1. checkpoint minimum gate 未通过
+2. evidence invalid 且尚未 rerun
+3. prerequisite regression 被发现
+4. 当前 phase 的 dominant failure class 未被 repair
+5. baseline 未接受却有人试图进入 adaptive phase
+6. adaptive paired evaluation 期间 baseline core 仍在漂移
+
+stop 之后允许的动作只有三类：
+
+1. rerun
+2. repair
+3. return_to_prior_phase
+
+不允许“先往后跑一点看看”。
+
+## 十五、验证规模如何选择
+
+本协议不提供一个全局固定场次数字。
+验证规模必须由 claim 类型决定。
+
+### 1. 当 claim 是“能力是否存在”
+
+使用 probe。
+
+为什么需要这个规模：
+要回答 existence，只需要最小有效机会窗口，不需要先追求广泛重复。
+
+它验证什么：
+能力有没有、窗口公不公平、failure class 是什么。
+
+它不验证什么：
+稳定性与强度。
+
+### 2. 当 claim 是“能力是否稳定”
+
+使用 batch。
+
+为什么需要这个规模：
+稳定性只能在代表性切片上被观察，probe 无法覆盖方差。
+
+它验证什么：
+重复性、覆盖性、dominant failure class。
+
+它不验证什么：
+单一设计改动的因果贡献。
+
+### 3. 当 claim 是“adaptive layer 是否带来因果效果”
+
+使用 paired evaluation。
+
+为什么需要这个规模：
+研究结论必须有 control / treatment 可比性，不能只看单边强不强。
+
+它验证什么：
+behavior delta、causal effect、研究特色是否成立。
+
+它不验证什么：
+broader-pool 泛化。
+
+### 4. 当 claim 是“可否对外展示或扩展到更广切片”
+
+使用 extension batch。
+
+为什么需要这个规模：
+展示与扩展关心边界与覆盖，而不是只关心核心因果命题本身。
+
+它验证什么：
+已接受结论在更广切片上的边界。
+
+它不验证什么：
+不会反向替代 core claim 的成立。
+
+## 十六、失败类别到动作的映射
+
+### invalid_evidence
+
+动作：
+rerun same claim，保持代码不变。
+
+### insufficient_duration
+
+动作：
+先修 runtime / evaluation contract，再回到原 claim。
+
+### missing_prerequisite
+
+动作：
+回退到前一阶段 capability，不得继续下游验证。
+
+### logic_failure
+
+动作：
+做受控 repair，然后 rerun 对应 probe 或 batch。
+
+### stability_failure
+
+动作：
+在当前阶段做 focused repair 或 confirmation，不得偷换成 broader claim。
+
+### no_behavior_change
+
+动作：
+只针对 adaptive gate repair，不得扩大 paired eval 规模掩盖问题。
+
+### no_causal_benefit
+
+动作：
+冻结结论为“adaptive effect 未接受”，然后决定是否继续单变量 repair。
+
+### regression
+
+动作：
+立刻回到上一个通过 checkpoint 的 control 版本，禁止在漂移状态下继续评测。
+
+## 十七、当前仓库的直接适用约束
+
+1. 旧 Phase B 产出的短窗口 run，一律不能作为 build-chain、army、combat、Level 1 baseline 的 capability validation。
+2. Phase B-R duration probe 只证明“窗口公平性前提已恢复一次”，不自动证明任何 gameplay capability。
+3. rule-based opponent model 当前只到 telemetry / response-tag 基线，不得在 paired evaluation 之前写成 adaptive success。
+4. debug config 只允许用于 debug，不得再出现在正式 capability report 或 research report 中。
+
+## 十八、checkpoint 输出要求
+
+每次 checkpoint 必须显式写：
+
+1. reviewed_tasks
+2. minimum_gate_passed
+3. target_gate_passed
+4. stretch_gate_status
+5. evidence_paths
+6. capability_validation_status
+7. failure_class
+8. decision
+9. next_allowed_task
+
+其中：
+
+* minimum_gate_passed 决定能否继续前进；
+* target_gate_passed 决定本阶段是否真正达到设计目标；
+* stretch_gate_status 决定是否为扩展阶段提供低风险起点；
+* next_allowed_task 必须是具体 repair、rerun、prior-phase return 或 accepted_continue。
+
+## 十九、协议的最终作用
+
+本协议不是让项目变保守，而是防止项目继续把“跑过了”“记下了”“看起来有信号”误写成“能力成立”。
+
+从本协议生效起，任何真实对局验证都必须明确回答：
+
+1. 它验证了什么；
+2. 它没有验证什么；
+3. 它属于 probe、batch 还是 paired evaluation；
+4. 它是 capability validated、diagnostic only、insufficient_duration 还是 invalid evidence；
+5. 它之后允许继续、必须 repair、还是必须 stop。
+   <<<END_FILE>>>

@@ -1,6 +1,11 @@
 # Phase L1: Playable Competitive Core
 
-Status: planned.
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+
+Legacy note: retained as historical phase planning context only. It must not be
+used as the current execution authority.
 
 ## Goal
 

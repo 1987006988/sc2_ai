@@ -1,6 +1,11 @@
 # Phase B-R: Playable Competitive Core Revalidation
 
-Status: planned.
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+
+Legacy note: retained as historical revalidation context only. It must not be
+used as the current execution authority.
 
 Task queue: `docs/plans/active/phase_b_revalidation_task_queue.yaml`
 

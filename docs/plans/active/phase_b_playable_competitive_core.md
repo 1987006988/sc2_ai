@@ -1,7 +1,13 @@
 # Phase B: Playable Competitive Core
 
-Status: not accepted. Original task queue exhausted, but objective not accepted.
-Superseded for revalidation by
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+
+Legacy note: original objective was not accepted; this file remains historical
+evidence only and must not drive current execution.
+
+Previous revalidation chain:
 `docs/plans/active/phase_b_revalidation_playable_core.md`.
 
 Task queue: `docs/plans/active/phase_b_playable_competitive_core_task_queue.yaml`

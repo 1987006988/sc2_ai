@@ -1,6 +1,8 @@
 # Phase A Manual Trigger
 
-Status: active.
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
 
 Queue: `docs/plans/active/phase_a_task_queue.yaml`
 

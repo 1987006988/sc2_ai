@@ -1,8 +1,13 @@
 # Ladder-Ready Adaptive SC2 Bot Roadmap
 
-Status: superseded / integrated on 2026-04-22.
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
 
-Superseded by: `docs/plans/active/ladder_competitive_adaptive_sc2_bot_plan.md`
+Legacy note: retained as historical roadmap context only. It must not be used
+as the current execution authority.
+
+Previous supersession chain: `docs/plans/active/ladder_competitive_adaptive_sc2_bot_plan.md`
 
 Reason: ladder readiness is necessary but too low as the project goal. The active target is now a ladder-competitive adaptive Protoss bot that can beat defined baseline opponents and validate ability through repeated real bot-vs-bot matches.
 

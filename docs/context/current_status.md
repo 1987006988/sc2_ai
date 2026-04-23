@@ -1,5 +1,42 @@
 # Current Status
 
+## Research Control Files
+
+The first-round GPT Pro core control files were imported from `docs/pro.txt` on
+2026-04-24. The second-round execution-recipe files were imported from
+`docs/pro2.txt` on 2026-04-24. Together they now form the complete active
+research control layer:
+
+- `docs/foundation/04_research_direction/research_direction_decision.md`
+- `docs/foundation/04_research_direction/retain_rewrite_drop_matrix.md`
+- `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+- `docs/plans/active/research_master_task_queue.yaml`
+- `docs/experiments/real_match_validation_protocol.md`
+- `docs/plans/active/phase_playable_core_rebuild.md`
+- `docs/plans/active/phase_adaptive_response_research.md`
+- `docs/experiments/checkpoint_acceptance_spec.md`
+- `docs/agents/codex_execution_rules_research_mode.md`
+- `docs/templates/task_recipe_template.md`
+- `docs/experiments/failure_repair_playbook.md`
+
+Import status:
+
+- first_round_imported: complete
+- second_round_imported: complete
+- partial_imported: none
+
+Current source-of-truth status:
+
+- upgraded from candidate draft set to complete control layer;
+- old active-plan files remain in the repository as historical background only;
+- old phase queues and manual triggers are no longer execution authority;
+- the next allowed execution entrypoint is
+  `docs/plans/active/research_master_task_queue.yaml`.
+
+Legacy/historical plan separation is indexed in:
+
+- `docs/plans/legacy_index.md`
+
 ## Phase
 
 Phase 1D and Phase 1E foundation work is complete. Phase 1F demo packaging and standalone Phase L0 execution planning are paused.
@@ -47,15 +84,15 @@ Research directories are isolated and contain no production dependencies.
 
 ## Current Priority
 
-- treat original Phase B as diagnostic evidence, not as an accepted
-  playable-core milestone;
-- do not create Phase C yet;
-- execute Phase B-R task queue one task at a time, starting with duration-window
-  contract and runtime-window parameterization;
-- fix the real-match duration window first, then rerun Gateway-ready, Cyber
-  Core, combat-unit production, attack/defend, combat, and small-eval probes;
-- keep Phase A evidence as infrastructure/data foundation and Phase B evidence
-  as build/order/combat-signal evidence, not bot-strength evidence.
+- keep the newly imported research control layer as the only execution
+  authority;
+- treat old Phase A / Phase B / Phase B-R plans and queues as historical
+  context, not as current task sources;
+- do not resume any legacy queue;
+- prepare to start the new mainline from
+  `docs/plans/active/research_master_task_queue.yaml`;
+- keep Phase A evidence as infrastructure/data foundation and earlier Phase B
+  evidence as historical diagnostics rather than accepted capability proof.
 
 ## Decisions Landed
 

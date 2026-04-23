@@ -1,0 +1,3582 @@
+文件路径：docs/plans/active/phase_playable_core_rebuild.md
+
+# Phase Playable Core Rebuild
+
+状态：active
+更新日期：2026-04-23
+进入条件：`checkpoint_A_start_gate` 已通过
+离开条件：`checkpoint_E_level1_baseline_gate` 已通过
+直接依赖：
+
+* `docs/foundation/04_research_direction/research_direction_decision.md`
+* `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+* `docs/plans/active/research_master_task_queue.yaml`
+* `docs/experiments/real_match_validation_protocol.md`
+* `docs/experiments/checkpoint_acceptance_spec.md`
+
+## 1. 阶段目标
+
+本阶段的唯一目标，是把项目从“能够跑真实 SC2、有 telemetry、有长窗口”推进到“真正可玩的 non-adaptive baseline”。
+
+本阶段结束时，必须至少具备以下真实能力：
+
+1. opening build chain 成立。
+2. Gateway ready 成立。
+3. combat-unit production 成立。
+4. `own_army_count > 0` 成立。
+5. rally / defend / attack 至少部分成立，而且不建立在假 army 上。
+6. `friendly combat` 有真实验证机会，并且不再只剩 enemy-visible signal。
+7. easy slice 上的 small eval 不再只是 diagnostic-only，而是能支撑 Level 1 baseline 决策。
+
+本阶段只处理两类内容：
+
+1. infrastructure -> gameplay capability 的转化；
+2. gameplay capability 的真实验收。
+
+本阶段不处理：
+
+1. adaptive research claim；
+2. learned opponent model；
+3. broader pool 展示；
+4. ladder 竞争力叙述；
+5. README 包装。
+
+## 2. 当前执行前提
+
+本文件默认以下前提已经成立：
+
+1. 真实本地对局可启动。
+2. replay / result / telemetry 可落盘。
+3. 长窗口运行前提已经被重新验证过一次。
+4. 旧 Phase B 的命令级信号不能再当作能力通过。
+5. 当前 gameplay 主线仍以 `src/sc2bot/runtime/game_loop.py` 为中心，尚未形成成熟的 manager 分层。
+
+如果以上任一项不成立，本阶段不得开始，必须先回到 `phase_r0_execution_freeze` 相关任务修复合同问题。
+
+## 3. 本阶段的文件边界和代码边界
+
+### 3.1 opening build chain 主要边界
+
+主要实现文件：
+
+* `src/sc2bot/runtime/game_loop.py`
+* `src/sc2bot/config/schema.py`
+* `configs/bot/phase_b_revalidation_gameplay.yaml`
+* `configs/bot/baseline_playable.yaml`（本阶段必须创建并冻结）
+* `tests/unit/test_build_progression_contract.py`
+* `tests/unit/test_game_loop.py`
+
+职责说明：
+
+* `game_loop.py` 目前是 opening、tech chain、combat-unit production、worker scout、supply sustain、defense execution 的真实主逻辑边界。
+* build chain 修复优先在这里做，不要先为了“结构更漂亮”把逻辑打散到多个 manager。
+* `schema.py` 是配置字段合法性的真实边界；任何新配置字段必须先在这里落盘。
+* `baseline_playable.yaml` 是本阶段正式 gameplay config；`debug.yaml` 不是。
+
+### 3.2 production chain 和 army presence 主要边界
+
+主要实现文件：
+
+* `src/sc2bot/runtime/game_loop.py`
+* `src/sc2bot/managers/macro_manager.py`（仅在确有必要承接 build / production ownership 时修改）
+* `src/sc2bot/config/schema.py`
+* `tests/unit/test_game_loop.py`
+* `tests/unit/test_telemetry_schema.py`
+
+职责说明：
+
+* combat-unit production 的成功不是 `train_command_issued`，而是友军单位真实出现，且 `own_army_count` 或等价证据发生变化。
+* rally 只能建立在 army 真实存在之上。
+
+### 3.3 tactical order 和 friendly combat 主要边界
+
+主要实现文件：
+
+* `src/sc2bot/managers/tactical_manager.py`
+* `src/sc2bot/runtime/game_loop.py`
+* `src/sc2bot/config/schema.py`
+* `tests/unit/test_tactical_manager.py`
+* `tests/unit/test_game_loop.py`
+
+职责说明：
+
+* `tactical_manager.py` 负责 rally / defend / attack 计划选择与 combat event 分类。
+* `game_loop.py` 负责把战术计划接到真实执行与 telemetry 上。
+* 任何 `own_army_count=0` 时发出的 order，都不能作为战术能力证据。
+
+### 3.4 telemetry、evaluation、report 边界
+
+主要文件：
+
+* `evaluation/runner/run_match.py`
+* `evaluation/runner/run_batch.py`
+* `evaluation/runner/collect_results.py`
+* `evaluation/metrics/failure_accounting.py`
+* `data/logs/evaluation/...`
+* `artifacts/reports/...`
+
+正式 probe / batch config 文件命名必须固定为：
+
+* `configs/evaluation/r1_build_chain_probe.yaml`
+* `configs/evaluation/r2_army_presence_probe.yaml`
+* `configs/evaluation/r3_tactical_probe.yaml`
+* `configs/evaluation/r4_baseline_easy_pool_batch.yaml`
+* `configs/evaluation/r4_baseline_confirmation.yaml`
+
+正式 gameplay bot config 文件命名必须固定为：
+
+* `configs/bot/baseline_playable.yaml`
+
+禁止在本阶段使用：
+
+* `configs/bot/debug.yaml` 进行 capability claim
+* `configs/bot/opponent_model_*` 进行 playable baseline 验收
+
+## 4. 本阶段的统一证据口径
+
+### 4.1 什么只算代码完成
+
+同时满足以下条件时，才算代码完成：
+
+1. 目标代码已修改并保存；
+2. 相关 unit tests 或最小集成测试通过；
+3. 配置字段与代码路径一致；
+4. 新增 telemetry / event 字段能被静态检查或本地最小运行看到。
+
+代码完成不等于 diagnostic completed。
+代码完成更不等于 capability validated。
+
+### 4.2 什么只算 diagnostic completed
+
+以下都只算 diagnostic completed：
+
+1. 看到 `Gateway build command issued`，但没有 ready 证据。
+2. 看到 `train_command_issued`，但没有 unit created 或 `own_army_count` 增长。
+3. 看到 `army_order`，但 `own_army_count=0`。
+4. 看到 `combat_event_detected`，但它只对应 enemy visible，没有友军接敌。
+5. 真实运行结束了，但机会窗口不公平或证据缺失。
+
+### 4.3 什么才算 capability validated
+
+同时满足以下条件时，才算 capability validated：
+
+1. 对应 claim 的 prerequisite 已满足；
+2. 对应 claim 的机会窗口公平；
+3. 证据包完整；
+4. 证据不是 command-only；
+5. probe / batch 类型与 claim 匹配；
+6. 对应 checkpoint 明确接受。
+
+### 4.4 本阶段的证据包最低要求
+
+每次 real probe 或 batch 至少必须有：
+
+1. `summary.json` 或等价 batch 汇总；
+2. `match_result.json`；
+3. `telemetry/events.jsonl`；
+4. `match.SC2Replay`；
+5. `replay_metadata.json`；
+6. code / config provenance；
+7. 本阶段对应报告；
+8. queue 中的 `capability_validation_status` 更新。
+
+缺任一关键项时，默认判为 `invalid_evidence`。
+
+### 4.5 统一的 artifact 检查顺序
+
+每次失败先按下面顺序查，不要跳：
+
+1. `docs/plans/active/research_master_task_queue.yaml`
+2. `data/logs/evaluation/<run>/summary.json`
+3. `data/logs/evaluation/<run>/reallaunch-*/match_result.json`
+4. `data/logs/evaluation/<run>/reallaunch-*/telemetry/events.jsonl`
+5. `data/logs/evaluation/<run>/reallaunch-*/replay_metadata.json`
+6. `data/logs/evaluation/<run>/reallaunch-*/match.SC2Replay`
+7. `artifacts/reports/<phase_report>/report.md`
+
+先确认 evidence 是否有效，再判断是不是 gameplay 失败。
+
+## 5. 不能再犯的错误
+
+1. `command telemetry` 不能代替 `structure ready`。
+2. `train_command_issued` 不能代替 `combat unit exists`。
+3. `own_army_count=0` 时不能声称 `tactical validated`。
+4. `enemy combat signal` 不能代替 `friendly combat`。
+5. `insufficient_duration` 不能判成 `logic_failure`。
+6. `artifact missing` 不能判成 `gameplay failure`。
+7. `diagnostic completed` 不能写成 `capability validated`。
+8. `debug.yaml` 不能出现在正式 capability 报告里。
+9. 不能用扩大样本来掩盖 prerequisite 未满足。
+10. 不能在 build chain 未过时跑 army / tactical acceptance。
+11. 不能在 baseline 未接受时开始 adaptive 研究。
+
+## 6. 子阶段与 task 映射
+
+本阶段按以下固定顺序执行，不允许跳步：
+
+1. 子阶段 P1：build chain repair 与 build-chain probe
+
+   * `task_004_rebuild_opening_build_chain_logic`
+   * `task_005_real_build_chain_probe`
+   * `checkpoint_B_build_chain_gate`
+
+2. 子阶段 P2：production chain repair
+
+   * `task_007_rewrite_combat_unit_production_and_rally_logic`
+
+3. 子阶段 P3：army presence validation
+
+   * `task_008_real_army_presence_probe`
+   * `checkpoint_C_army_core_gate`
+
+4. 子阶段 P4：tactical order enablement
+
+   * `task_010_rewrite_defend_attack_transition_logic`
+
+5. 子阶段 P5：friendly combat validation
+
+   * `task_011_real_tactical_probe`
+   * `checkpoint_D_tactical_core_gate`
+
+6. 子阶段 P6：small eval acceptance
+
+   * `task_013_baseline_easy_pool_batch_evaluation`
+   * `task_014_baseline_repair_or_confirmation`
+   * `checkpoint_E_level1_baseline_gate`
+
+## 7. 子阶段执行手册
+
+## P1：build chain repair 与 build-chain probe
+
+### 目标
+
+把 opening build progression 从旧 Phase B 的 command-level 诊断状态，推进到可被真实 probe 审核的 capability-level build chain。
+
+### 前置条件
+
+1. `checkpoint_A_start_gate` 已通过。
+2. `configs/bot/baseline_playable.yaml` 已由 `task_002` 创建。
+3. `baseline_playable.yaml` 的 `runtime.max_game_loop` 已冻结为正式 long-window 值，不能退回 2600。
+4. `configs/evaluation/r1_build_chain_probe.yaml` 已存在并指向 `baseline_playable.yaml`。
+
+### 输入
+
+* `src/sc2bot/runtime/game_loop.py`
+* `src/sc2bot/config/schema.py`
+* `configs/bot/phase_b_revalidation_gameplay.yaml`
+* `configs/bot/baseline_playable.yaml`
+* `configs/evaluation/r1_build_chain_probe.yaml`
+* `tests/unit/test_build_progression_contract.py`
+* `tests/unit/test_game_loop.py`
+* 旧 Phase B evidence audit
+
+### 输出
+
+* opening build-chain 修复代码
+* `baseline_playable.yaml`
+* `r1_build_chain_probe.yaml`
+* `artifacts/reports/r1_build_chain_probe/report.md`
+* queue 与 handoff 更新
+
+### 执行动作
+
+1. 先确认 `baseline_playable.yaml` 不是从 `debug.yaml` 复制而来，而是从 `phase_b_revalidation_gameplay.yaml` 派生。
+2. 在 `game_loop.py` 中确认 opening 行为仍由单一可追踪路径负责；如果需要抽取 helper，只允许抽成 build-chain helper，不允许做大规模架构改写。
+3. 确保 Gateway、Assimilator、Cybernetics Core 三段都能输出足以区分以下状态的 telemetry：
+
+   * `attempt`
+   * `skipped`
+   * `failed`
+   * `success`
+   * prerequisite / blocker reason
+4. 如果没有显式 `Gateway ready` 证据路径，先补证据路径，再跑 probe。允许的 ready 证据来源按优先级排列如下：
+
+   * 显式 ready-count telemetry；
+   * 后续 tech 事件中 `gateway_ready_count > 0`；
+   * replay 中结构完成，且与 telemetry 时间线一致。
+5. 先跑静态 / 单元测试，再跑 real probe。
+6. real probe 只回答 build chain 是否成立，不回答 army / tactical / baseline strength。
+
+### minimum gate
+
+1. `Gateway ready` 在有效 real probe 中被验证，或者
+2. 在公平机会窗口内，明确给出无歧义 blocker classification。
+
+注意：
+“只有 gateway build command”不通过 minimum gate。
+“因为 evidence 缺失而看不清 ready”也不通过 minimum gate。
+
+### target gate
+
+1. `Assimilator` 与 `Cybernetics Core` 机会窗口已被公平暴露；
+2. 已记录到 `attempt / skip / fail / success` 及原因；
+3. 可以清楚区分是 prereq 不满足、duration 不足，还是 logic failure。
+
+### stretch gate
+
+1. 出现 first combat-unit production-ready signal；
+2. opening 结构已经可以直接承接 production phase，不需要下一子阶段重写 opening 逻辑。
+
+### 失败分类
+
+* `invalid_evidence`
+* `insufficient_duration`
+* `missing_prerequisite`
+* `build_chain_logic_failure`
+* `telemetry_contract_gap`
+* `config_drift`
+
+### repair 入口
+
+* 主 repair 入口：`task_004_rebuild_opening_build_chain_logic`
+* 如果是 duration / config 合同问题：返回 `task_002_lock_runtime_eval_contract_and_config_roles`
+* 如果只是证据缺失：原样 rerun `task_005_real_build_chain_probe`
+
+### 不能做什么
+
+1. 不能在 P1 报告里写 army 已成立。
+2. 不能用 command-only telemetry 通过 P1。
+3. 不能把 P1 的 run 拿去写 tactical 结论。
+4. 不能用 short-window 或 debug config 补跑。
+
+### 不允许进入 P2 的条件
+
+任一条件出现都不得进入 P2：
+
+1. `checkpoint_B_build_chain_gate` 未通过；
+2. `Gateway ready` 未被验证且 blocker 不清楚；
+3. `actual_game_time_sufficient = no`；
+4. `baseline_playable.yaml` 仍不稳定；
+5. 证据包不完整。
+
+## P2：production chain repair
+
+### 目标
+
+让 combat-unit production、continued production、rally eligibility 在代码与 telemetry 上都可追踪，并为真实 army validation 提供稳定前提。
+
+### 前置条件
+
+1. `checkpoint_B_build_chain_gate` 已通过。
+2. opening build chain 已具备向 production 推进的前提。
+3. `baseline_playable.yaml` 已冻结 build-chain 相关字段，避免 P2 一边修生产一边漂移 opening。
+
+### 输入
+
+* `src/sc2bot/runtime/game_loop.py`
+* `src/sc2bot/managers/macro_manager.py`（仅在 build / production ownership 需要收敛时使用）
+* `src/sc2bot/managers/tactical_manager.py`（仅用于 rally eligibility，不用于战术验收）
+* `src/sc2bot/config/schema.py`
+* `configs/bot/baseline_playable.yaml`
+* `tests/unit/test_game_loop.py`
+* `tests/unit/test_telemetry_schema.py`
+
+### 输出
+
+* combat-unit production 修复代码
+* rally eligibility 修复代码
+* production telemetry 完整化
+* army probe 所需配置和测试准备
+
+### 执行动作
+
+1. 明确 `combat-unit production` 的成功定义是“单位真实出现”，不是“发出 train 命令”。
+2. 在 `game_loop.py` 中整理 `_safe_combat_unit_production` 相关前提判断，至少要能区分：
+
+   * `gateway_ready_count`
+   * `cybernetics_core_ready_count`
+   * `idle_gateway_count`
+   * affordability
+   * unsupported unit name
+3. 确保 `own_army_count` 的提取和落盘是可检查的；如果 state extraction 不可信，先修 extraction，不得直接跑 P3。
+4. rally 逻辑只能在 `own_army_count > 0` 或等价单位存在条件下进入“可执行”状态。
+5. 只修 production 与 rally prerequisite，不要提前写 defend / attack success。
+
+### minimum gate
+
+1. 代码层面能明确区分 `train_command_issued` 与 `unit exists`；
+2. `own_army_count` 或等价 army existence 证据路径已存在；
+3. rally eligibility 不会在无 army 时误触发。
+
+### target gate
+
+1. continued production 有显式可追踪路径；
+2. 第一支 army 出现后，rally 不再依赖偶发副作用；
+3. production failure 可以明确指向 supply、gas、idle gateway 或 tech prerequisite。
+
+### stretch gate
+
+1. production path 已能支撑简单的 zealot / stalker 分流；
+2. 下一子阶段只需要 real validation，不需要再重写生产主链。
+
+### 失败分类
+
+* `production_logic_failure`
+* `state_extraction_failure`
+* `supply_block_unhandled`
+* `tech_prerequisite_regression`
+* `config_drift`
+
+### repair 入口
+
+* 主 repair 入口：`task_007_rewrite_combat_unit_production_and_rally_logic`
+* 如果 opening 回归：返回 P1 / `task_004`
+* 如果只是 tests 不足：先补 tests，再不允许进入 P3
+
+### 不能做什么
+
+1. 不能在 P2 结束时声称 army validated。
+2. 不能因为看到 `train_command_issued` 就判定 production 成立。
+3. 不能把 rally 日志当 army existence 证据。
+4. 不能在这个子阶段引入 adaptive gating。
+
+### 不允许进入 P3 的条件
+
+1. `unit exists` 与 `train command` 仍无法区分；
+2. `own_army_count` 证据路径不可信；
+3. rally 仍会在 `own_army_count=0` 时触发；
+4. opening build-chain 被回归破坏。
+
+## P3：army presence validation
+
+### 目标
+
+在真实 SC2 中确认友军 army 真实出现，而不是停留在 production 命令层。
+
+### 前置条件
+
+1. P2 minimum gate 与 target gate 已满足。
+2. `configs/evaluation/r2_army_presence_probe.yaml` 已创建并指向 `baseline_playable.yaml`。
+3. P1 build-chain 结果仍然有效。
+
+### 输入
+
+* `configs/bot/baseline_playable.yaml`
+* `configs/evaluation/r2_army_presence_probe.yaml`
+* `src/sc2bot/runtime/game_loop.py`
+* `data/logs/evaluation/...`
+* `artifacts/reports/r2_army_presence_probe/report.md`
+
+### 输出
+
+* real army probe artifacts
+* army presence 报告
+* `checkpoint_C_army_core_gate` 所需 evidence
+
+### 执行动作
+
+1. 使用 `baseline_playable.yaml` 跑 real army presence probe。
+2. 重点检查以下证据链：
+
+   * combat-unit production event
+   * `own_army_count` 变化
+   * replay 中实际单位出现
+   * rally event 是否建立在真实 army 之上
+3. 若 `own_army_count` 仍为 0，先判断是 production 没成功、state extraction 错、还是 run 无效，不要直接判 tactical 失败。
+4. 只有在 evidence 完整、duration 充分的前提下，才允许判断 army presence 是否成立。
+
+### minimum gate
+
+1. 有效 real probe 中 `own_army_count > 0`；
+2. replay 中可复核友军战斗单位出现；
+3. `match_result.json`、`events.jsonl`、replay、provenance 完整。
+
+### target gate
+
+1. army presence 不是一次性偶发；
+2. 至少存在最小必要 rerun 或同类证据，表明第一支 army 的出现可复现；
+3. rally 行为建立在真实 army 之上。
+
+### stretch gate
+
+1. 第一支 army 之后出现受控移动；
+2. production 没有立刻塌回 `own_army_count=0` 的伪稳定态。
+
+### 失败分类
+
+* `invalid_evidence`
+* `insufficient_duration`
+* `missing_prerequisite`
+* `production_logic_failure`
+* `state_extraction_failure`
+* `army_transient_only`
+
+### repair 入口
+
+* 主 repair 入口：`task_007_rewrite_combat_unit_production_and_rally_logic`
+* 若 build chain 回归：返回 P1 / `task_004`
+* 若只是 evidence invalid：rerun `task_008_real_army_presence_probe`
+
+### 不能做什么
+
+1. 不能因为有 rally event 就写 army 已存在。
+2. 不能因为某个单位短暂出现一帧就夸大为 army core 稳定成立。
+3. 不能跳过 `checkpoint_C_army_core_gate` 直接做 tactical 结论。
+
+### 不允许进入 P4 的条件
+
+1. `checkpoint_C_army_core_gate` 未通过；
+2. `own_army_count > 0` 没被真实验证；
+3. rally 仍不能与真实 army 绑定；
+4. army 只在无效证据里出现。
+
+## P4：tactical order enablement
+
+### 目标
+
+让 defend / attack / rally 的触发逻辑建立在真实 army 和真实前置之上，而不是仅在 telemetry 中看起来发生了。
+
+### 前置条件
+
+1. `checkpoint_C_army_core_gate` 已通过。
+2. 友军 army 已被真实验证。
+3. `tactical_manager.py` 的现有逻辑已被审查，明确知道当前哪些路径会产生假 order。
+
+### 输入
+
+* `src/sc2bot/managers/tactical_manager.py`
+* `src/sc2bot/runtime/game_loop.py`
+* `src/sc2bot/config/schema.py`
+* `configs/bot/baseline_playable.yaml`
+* `tests/unit/test_tactical_manager.py`
+* `tests/unit/test_game_loop.py`
+
+### 输出
+
+* defend / attack / rally 逻辑修复
+* tactical reason 字段完善
+* 真实 tactical probe 准备完成
+
+### 执行动作
+
+1. 把 defend / attack / rally 的合法触发条件写清楚：
+
+   * `own_army_count > 0`
+   * attack 只在 army / time / enemy location 前置满足时允许
+   * defend 只在有威胁上下文时允许
+2. 在 `tactical_manager.py` 中显式输出 `reason`，不得只输出 order 类型。
+3. 在 `game_loop.py` 中确保 `army_order` 与 tactical reason 被真实落盘。
+4. 若当前逻辑会在 `own_army_count=0` 时生成 `attack_order` 或 `defend_order`，必须先修完再进入 P5。
+
+### minimum gate
+
+1. 静态和最小集成测试表明无 army 时不会出合法 tactical order；
+2. tactical reason 字段完整；
+3. rally / defend / attack 三类计划至少有明确可区分输出。
+
+### target gate
+
+1. tactic plan 能把 army 从“存在”推进到“受控移动”；
+2. 攻防切换不再只依赖单个 if/else 的偶然命中；
+3. 下一个 real tactical probe 能明确回答“为什么没打起来”。
+
+### stretch gate
+
+1. regroup / fallback 原因也已准备好；
+2. P5 失败时可以直接归因，不需要回头补 telemetry。
+
+### 失败分类
+
+* `tactical_logic_failure`
+* `reason_field_missing`
+* `army_prerequisite_regression`
+* `config_threshold_mismatch`
+
+### repair 入口
+
+* 主 repair 入口：`task_010_rewrite_defend_attack_transition_logic`
+* 若 army prerequisite 回归：返回 P2 / `task_007`
+
+### 不能做什么
+
+1. 不能在 P4 静态完成后声称 tactical validated。
+2. 不能用 `enemy visible` 替代合法 defend。
+3. 不能在本子阶段偷偷改 baseline 的 build / production 主逻辑。
+
+### 不允许进入 P5 的条件
+
+1. `own_army_count=0` 时仍可能出 tactical order；
+2. tactical reason 不完整；
+3. 当前逻辑无法区分“无威胁”和“有威胁但无 army”；
+4. attack / defend 仍依赖隐式副作用。
+
+## P5：friendly combat validation
+
+### 目标
+
+在真实 SC2 中验证合法 tactical order 和 friendly combat，不再只剩 enemy-visible signal。
+
+### 前置条件
+
+1. P4 minimum 和 target 已满足。
+2. `configs/evaluation/r3_tactical_probe.yaml` 已创建。
+3. army presence 仍然稳定，不存在新回归。
+
+### 输入
+
+* `configs/bot/baseline_playable.yaml`
+* `configs/evaluation/r3_tactical_probe.yaml`
+* `src/sc2bot/managers/tactical_manager.py`
+* `src/sc2bot/runtime/game_loop.py`
+* tactical probe artifacts
+
+### 输出
+
+* `r3_tactical_probe` artifacts
+* `artifacts/reports/r3_tactical_probe/report.md`
+* `checkpoint_D_tactical_core_gate` 所需 evidence
+
+### 执行动作
+
+1. 跑 real tactical probe。
+2. 检查以下证据链是否闭环：
+
+   * `army_order`
+   * `own_army_count`
+   * target / reason
+   * `combat_event_detected` 或等价事件
+   * replay 中友军接敌
+3. 如果只有 `enemy combat signal`，先判断是否没有友军 army、没有合法 order、还是接敌位置 / 时机问题。
+4. 没有 friendly combat 时，默认不能进入 P6；只有 `checkpoint_D` 明确写出“允许以近邻形态进入 P6”时，才允许例外放行。
+
+### minimum gate
+
+1. 至少一种合法 tactical order 在真实对局中成立；
+2. 该 order 发生时 `own_army_count > 0`；
+3. 证据包完整。
+
+### target gate
+
+1. `friendly combat` 被真实验证；
+2. replay 与 telemetry 一致表明友军 army 参与接敌；
+3. 不再依赖 enemy-visible 作为主要战斗结论。
+
+### stretch gate
+
+1. defend 与 attack 两种行为都能在有效窗口中观察到；
+2. 若只观察到一种行为，报告中必须写出另一种行为缺失的原因和 repair 入口。
+
+### 失败分类
+
+* `invalid_evidence`
+* `insufficient_duration`
+* `missing_prerequisite`
+* `tactical_logic_failure`
+* `no_contact_under_valid_conditions`
+* `enemy_only_combat_signal`
+* `army_regression`
+
+### repair 入口
+
+* 主 repair 入口：`task_010_rewrite_defend_attack_transition_logic`
+* 若 army 回归：返回 P2 / `task_007`
+* 若仅证据缺失：rerun `task_011_real_tactical_probe`
+
+### 不能做什么
+
+1. 不能把 `enemy_only_combat_signal` 写成 `friendly combat validated`。
+2. 不能因为看到了 attack tag 就写战术成功。
+3. 不能跳过 `checkpoint_D_tactical_core_gate` 进入 baseline batch。
+
+### 不允许进入 P6 的条件
+
+1. `checkpoint_D_tactical_core_gate` 未通过；
+2. 合法 tactical order 未验证；
+3. friendly combat 仍完全缺失，且无明确 checkpoint 豁免说明；
+4. army prerequisite 回归。
+
+## P6：small eval acceptance
+
+### 目标
+
+证明 `baseline_playable` 已经不再是 survival scaffold，而是可被真实 batch 审核的 Level 1 playable baseline。
+
+### 前置条件
+
+1. `checkpoint_D_tactical_core_gate` 已通过。
+2. `configs/maps/baseline_easy_pool_maps.yaml` 已从现有 easy map slice 冻结出来。
+3. `configs/opponents/baseline_easy_pool.yaml` 已从现有 easy opponent slice 冻结出来。
+4. `configs/evaluation/r4_baseline_easy_pool_batch.yaml` 与 `configs/evaluation/r4_baseline_confirmation.yaml` 已创建。
+5. baseline build / production / tactical 主逻辑版本冻结，不允许 batch 中途继续漂移。
+
+### 输入
+
+* `configs/bot/baseline_playable.yaml`
+* `configs/maps/baseline_easy_pool_maps.yaml`
+* `configs/opponents/baseline_easy_pool.yaml`
+* `configs/evaluation/r4_baseline_easy_pool_batch.yaml`
+* `configs/evaluation/r4_baseline_confirmation.yaml`
+* `evaluation/runner/run_batch.py`
+* `evaluation/metrics/failure_accounting.py`
+
+### 输出
+
+* baseline batch artifacts
+* confirmation / repair artifacts
+* `artifacts/reports/r4_baseline_easy_pool/report.md`
+* `artifacts/reports/r4_baseline_repair_or_confirmation/report.md`
+* `checkpoint_E_level1_baseline_gate` 所需 evidence
+
+### 执行动作
+
+1. 用 frozen easy slice 跑正式 baseline batch。
+2. 报告中必须把以下三类内容分开写：
+
+   * infrastructure 是否正常；
+   * gameplay capability 是否成立；
+   * research contribution 是否不适用。
+3. batch 结束后，先做 dominant failure class 排序，再决定是进入一次 focused repair 还是 confirmation rerun。
+4. 若 target 已经通过，只允许做最小 confirmation，不允许扩大 scope。
+5. 若 target 未通过，只能修 dominant failure class，不允许同时修多个方向。
+
+### minimum gate
+
+1. batch 中不存在系统性 prerequisite regression；
+2. bot 已经不只是诊断体；
+3. 至少出现一场无争议的真正胜利，或同强度的极强 near-win，并且有完整 gameplay evidence 支撑。
+
+### target gate
+
+1. easy slice 上出现重复性 outcome 证据；
+2. outcome 与 gameplay evidence 一致；
+3. baseline 已可作为后续 adaptive paired evaluation 的 control。
+
+### stretch gate
+
+1. medium slice 或更难切片出现非退化对局；
+2. dominant failure class 收敛为少数明确问题，而非系统性混乱。
+
+### 失败分类
+
+* `invalid_evidence`
+* `diagnostic_only_batch`
+* `build_chain_regression`
+* `production_regression`
+* `tactical_regression`
+* `stability_failure`
+* `confirmation_conflict`
+
+### repair 入口
+
+* 轻微不稳定：`task_014_baseline_repair_or_confirmation`
+* tactical regression：返回 P4 / `task_010`
+* army / production regression：返回 P2 / `task_007`
+* build-chain regression：返回 P1 / `task_004`
+
+### 不能做什么
+
+1. 不能在 P6 才开始补 prerequisite。
+2. 不能把 small eval 的存在当成 accepted baseline。
+3. 不能扩大对手池来掩盖 easy slice 未通过。
+4. 不能在 baseline batch 中混入 adaptive 逻辑。
+5. 不能把单局亮点写成 batch 结论。
+
+### 不允许离开本阶段的条件
+
+1. `checkpoint_E_level1_baseline_gate` 未通过；
+2. batch 仍以 diagnostic-only 为主；
+3. dominant failure class 未处理；
+4. baseline control 版本仍在漂移。
+
+## 8. 本阶段的 release 规则
+
+只有满足以下条件，才允许离开 playable core rebuild 阶段：
+
+1. P1 到 P6 对应 checkpoint 全部通过；
+2. `baseline_playable.yaml` 已冻结为 accepted control；
+3. Level 1 baseline 的结论来自 real batch，而不是单 probe；
+4. 所有 claim 都已在 queue 中被标成正确的 `capability_validation_status`；
+5. `docs/handoffs/latest.md` 已明确下一阶段是 `phase_adaptive_response_research`，而不是继续补 playable baseline 的未完成项。
+
+本阶段结束后，项目才允许进入 research contribution 阶段。
+在此之前，任何 opponent-model、belief-state、adaptive response 的工作都不得进入 mainline claim。
+
+文件路径：docs/plans/active/phase_adaptive_response_research.md
+
+# Phase Adaptive Response Research
+
+状态：active
+更新日期：2026-04-23
+进入条件：`checkpoint_E_level1_baseline_gate` 已通过
+离开条件：`checkpoint_F_adaptive_research_gate` 已通过
+直接依赖：
+
+* `docs/foundation/04_research_direction/research_direction_decision.md`
+* `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+* `docs/plans/active/research_master_task_queue.yaml`
+* `docs/experiments/real_match_validation_protocol.md`
+* `docs/experiments/checkpoint_acceptance_spec.md`
+
+## 1. 本阶段只做一个研究问题
+
+本阶段唯一允许的研究问题是：
+
+在已接受的 `baseline_playable` 之上，是否可以构造一个 `scouting-conditioned belief state`，并让这个 belief state 只驱动少量、可解释、可归因的 `response gate`，从而在 matched paired evaluation 中产生真实行为差异，并在指定 slice 上带来方向一致的 outcome / robustness / failure-class 改善。
+
+本阶段禁止把问题重新扩大成泛化的 “opponent modeling”。
+
+本阶段不允许新增第二个研究特色。
+
+## 2. 为什么只允许一个 research feature
+
+只允许一个 research feature，原因不是保守，而是为了因果清晰：
+
+1. 当前仓库刚从 playable baseline 阶段过渡过来，baseline 仍然宝贵且脆弱。
+2. 当前最值得回答的问题不是“还能加多少花样”，而是“这一层 belief-driven response 到底有没有真实作用”。
+3. 一旦同时引入 build order 重写、单位构成变化、micro 调整、LLM 决策或 learned model，就会失去可归因性。
+4. 当前仓库已经有 `ScoutingObservation`、`OpponentPrediction`、`StrategyManager.select_response` 这些最小骨架；belief-driven response 是最贴近现有资产、最容易被证伪的方向。
+
+## 3. 本阶段允许和禁止的内容
+
+### 3.1 允许
+
+1. 构造 typed belief state。
+2. belief state 由 live scouting 和当前 game state 联合更新。
+3. belief state 只影响少量 response gate。
+4. paired control / treatment evaluation。
+5. behavior delta 与 outcome delta 分开判定。
+
+### 3.2 禁止
+
+1. learned opponent model。
+2. replay learning。
+3. 全局 build order 重写。
+4. 单位 composition policy 重写。
+5. expansion 逻辑重写。
+6. micro policy 重写。
+7. broader-pool 展示驱动。
+8. 用 telemetry 丰富度替代研究成功。
+
+## 4. 文件边界和代码边界
+
+### 4.1 belief state 的边界
+
+首选新增文件：
+
+* `src/sc2bot/domain/belief_state.py`
+
+已有输入边界：
+
+* `src/sc2bot/domain/observations.py`
+* `src/sc2bot/domain/game_state.py`
+* `src/sc2bot/opponent_model/interface.py`
+* `src/sc2bot/opponent_model/null_model.py`
+* `src/sc2bot/opponent_model/rule_based_model.py`
+
+说明：
+
+* belief state 必须是 typed object，不允许在 `strategy_manager.py` 里直接用 ad-hoc dict 作为长期主线结构。
+* `ScoutingObservation` 继续负责 live scouting 事实。
+* `OpponentPrediction` 继续负责模型输出。
+* `BeliefState` 负责把“事实”和“推断”收束到一个可行动对象。
+
+### 4.2 response layer 的边界
+
+主要文件：
+
+* `src/sc2bot/managers/strategy_manager.py`
+* `src/sc2bot/managers/tactical_manager.py`
+* `src/sc2bot/runtime/game_loop.py`
+* `configs/bot/baseline_playable.yaml`
+* `configs/bot/adaptive_research.yaml`
+
+说明：
+
+* `strategy_manager.py` 负责 belief -> gate 决策。
+* `tactical_manager.py` 负责被允许的战术门控接入。
+* `game_loop.py` 负责把 scouting gate 和 execution gate 接到真实行为。
+* `adaptive_research.yaml` 是 treatment config；`baseline_playable.yaml` 是 control config。
+
+### 4.3 evaluation 与 report 的边界
+
+建议固定以下文件名：
+
+* `configs/evaluation/r5_paired_control.yaml`
+* `configs/evaluation/r5_paired_treatment.yaml`
+* `artifacts/reports/r5_paired_adaptive_eval/report.md`
+* `data/logs/evaluation/r5_paired_adaptive_eval/control/`
+* `data/logs/evaluation/r5_paired_adaptive_eval/treatment/`
+
+说明：
+
+* 当前 runner 是单 bot_config 批运行；paired evaluation 应以两套 sibling config 组织，再在报告层面对齐。
+* 不允许靠人工记忆去配对 control 和 treatment；必须在报告中显式写出 pair mapping。
+
+## 5. belief state 的精确定义
+
+## 5.1 belief state 的字段分类
+
+### A. 来自 live scouting 的状态字段
+
+这些字段直接来自 `ScoutingObservation`，属于事实状态，不属于推断：
+
+1. `enemy_units_seen`
+2. `enemy_structures_seen`
+3. `enemy_expansions_seen`
+4. `first_enemy_seen_time`
+5. `last_enemy_seen_time`
+6. `seen_enemy_structures`
+7. `seen_enemy_combat_units`
+8. `enemy_expansion_seen`
+9. `possible_tech_signal`
+10. `possible_rush_signal`
+11. `observation_confidence`
+
+这些字段的作用：
+
+* 描述“看到了什么”和“多久没看到了”；
+* 作为 belief update 的输入；
+* 自身不能直接当 response gate 的唯一依据，必须与 game state 和 prediction 合并。
+
+### B. 来自当前 game state 的状态字段
+
+这些字段来自 `GameState`，属于当前局面状态，不是模型推断：
+
+1. `game_time`
+2. `known_enemy_start_location`
+3. `visible_enemy_units_count`
+4. `visible_enemy_structures_count`
+5. `own_army_count`
+6. `own_workers_count`
+7. `minerals`
+8. `vespene`
+9. `supply_used`
+10. `supply_cap`
+11. `own_townhalls_count`
+
+这些字段的作用：
+
+* 描述 bot 当前能否安全继续 scout、是否适合 move-out、是否已经有军队基础；
+* 为 response gate 提供安全边界；
+* 不能被 treatment 任意重写。
+
+### C. 来自 opponent model 的推断字段
+
+这些字段来自 `OpponentPrediction`，属于推断，不属于事实状态：
+
+1. `opening_type`
+2. `rush_risk`
+3. `tech_risk`
+4. `enemy_army_estimate`
+5. `confidence`
+6. `signals`
+7. `recommended_response_tags`
+
+这些字段的作用：
+
+* 提供“现在更像 rush、tech 还是信息不足”的推断；
+* 允许进入 belief aggregation；
+* 不允许直接绕过 gate 设计去重写全局策略。
+
+### D. telemetry 辅助字段
+
+这些字段允许存在，但不能单独构成研究 claim：
+
+1. `model_name`
+2. `prediction_mode`
+3. `belief_version`
+4. `decision_trace_id`
+5. `gate_trace_id`
+6. `debug_reason_chain`
+
+这些字段的作用：
+
+* 帮助排查和解释；
+* 帮助 paired report 对齐；
+* 不能作为“adaptive 成功”的主要证据。
+
+## 5.2 建议的 BeliefState 字段集合
+
+`BeliefState` 应至少包含以下字段，并显式标明哪类是状态、哪类是推断：
+
+### 状态字段
+
+1. `belief_time`
+2. `scout_freshness_seconds`
+3. `enemy_contact_known`
+4. `enemy_expansion_seen`
+5. `enemy_combat_seen`
+6. `enemy_tech_signal_seen`
+7. `known_enemy_start_location_available`
+8. `own_army_ready`
+9. `first_attack_currently_eligible`
+
+### 推断字段
+
+1. `rush_risk`
+2. `tech_risk`
+3. `information_confidence`
+4. `information_gap_high`
+5. `defensive_bias_active`
+6. `scout_continuation_recommended`
+7. `first_attack_timing_bias`
+
+### telemetry 辅助字段
+
+1. `model_name`
+2. `prediction_mode`
+3. `signal_summary`
+4. `decision_trace_id`
+
+## 5.3 belief 如何更新
+
+每个 game loop 固定按以下顺序更新，不允许跨层乱改：
+
+1. 构建 `GameState`。
+2. 构建或刷新 `ScoutingObservation`。
+3. 用当前 opponent model 得到 `OpponentPrediction`。
+4. 将 `GameState`、`ScoutingObservation`、`OpponentPrediction` 合并成 `BeliefState`。
+5. 用 `BeliefState` 决定 response gate。
+6. 记录 `strategy_response` 与 `adaptive_gate_applied` telemetry。
+
+禁止做法：
+
+1. 直接让 `OpponentPrediction.recommended_response_tags` 控制行为；
+2. 跳过 `BeliefState`，把 tag 直接塞进 `game_loop.py`；
+3. 在 paired evaluation 中让 control 和 treatment 使用不同的 update 顺序。
+
+## 6. response layer 的精确定义
+
+## 6.1 response 最小集合
+
+本阶段只允许以下三个 gate：
+
+1. `continue_scouting_gate`
+2. `defensive_posture_gate`
+3. `first_attack_timing_gate`
+
+除此之外，不允许新增第四个 gate。
+
+## 6.2 每个 gate 的允许作用范围
+
+### A. `continue_scouting_gate`
+
+允许影响：
+
+* `_safe_worker_scout` 是否在低信息状态下继续执行；
+* 是否在信息过旧时补一次 scout；
+* scout 是否在“可安全继续”的条件下延长最小持续时间。
+
+不允许影响：
+
+* scout 单位类型切换；
+* 多 scout 并发；
+* 自定义探路算法；
+* 全图搜索策略。
+
+### B. `defensive_posture_gate`
+
+允许影响：
+
+* 在高 rush risk 或高不确定性时，是否压制过早 move-out；
+* army 是否优先保持 base-side posture；
+* tactical planning 是否先走 defend-hold 分支。
+
+不允许影响：
+
+* build order 改写；
+* 建筑位置重写；
+* 单位 composition 重写；
+* micro 行为重写。
+
+### C. `first_attack_timing_gate`
+
+允许影响：
+
+* 首轮 attack order 的延后、保持或有限度提前；
+* `attack_game_time_threshold` 或等价 attack eligibility 的运行时偏置；
+* move-out 是否因 belief state 而推迟。
+
+不允许影响：
+
+* attack target selection 的整体逻辑；
+* 多波次攻击策略；
+* 全局战略切换；
+* 在 `own_army_count=0` 时绕过 prerequisite 强行进攻。
+
+## 6.3 response 不能过大
+
+为了避免 response layer 变成“全局策略重写器”，本阶段禁止以下行为：
+
+1. 通过 belief state 修改 worker economy。
+2. 通过 belief state 修改 pylon / gateway / cyber build order。
+3. 通过 belief state 改 zealot / stalker 生产优先级。
+4. 通过 belief state 改扩张逻辑。
+5. 通过 belief state 改 micro。
+6. 通过 belief state 改地图特化脚本。
+
+如果某项修改超出以上三个 gate，必须单独建新研究阶段，不得混入本阶段。
+
+## 7. control / treatment 设计
+
+## 7.1 control 是什么
+
+control 固定为：
+
+* `configs/bot/baseline_playable.yaml`
+
+control 的要求：
+
+1. 它必须是 `checkpoint_E` 接受过的 baseline control。
+2. 它必须保持 build / production / tactical core 冻结。
+3. 它可以继续记录 scouting、prediction、strategy telemetry，但 response gate 必须全部处于 neutral。
+4. 不允许在 paired evaluation 期间继续修 baseline。
+
+## 7.2 treatment 是什么
+
+treatment 固定为：
+
+* `configs/bot/adaptive_research.yaml`
+
+treatment 的要求：
+
+1. 它必须直接派生自 `baseline_playable.yaml`。
+2. 除 adaptive gate 所需差异外，其余字段必须保持一致。
+3. 允许变化的配置范围仅限：
+
+   * `opponent_model.mode`
+   * `opponent_model.intervention_mode`
+   * 与 belief / gate 明确相关的新字段
+4. 不允许借 treatment 顺便修 baseline core。
+
+## 7.3 control 和 treatment 必须保持一致的部分
+
+以下部分必须严格一致：
+
+1. 代码版本
+2. build chain
+3. production chain
+4. tactical core
+5. map slice
+6. opponent slice
+7. evaluation contract
+8. telemetry schema
+9. artifact 目录结构
+10. checkpoint 口径
+
+若以上任一项不一致，paired evaluation 默认判为 `invalid_evidence`。
+
+## 7.4 paired evaluation 该怎么组织
+
+paired evaluation 按以下固定顺序执行：
+
+1. 冻结 control baseline；
+2. 创建 `r5_paired_control.yaml` 和 `r5_paired_treatment.yaml`；
+3. 保证两者使用相同 maps / opponents / repeats / output schema；
+4. 先跑 control，再跑 treatment，或反过来都可以，但 pair mapping 必须显式写入报告；
+5. 报告中必须一一列出每个 pair：
+
+   * map
+   * opponent
+   * control artifact path
+   * treatment artifact path
+   * behavior delta
+   * outcome delta
+   * failure-class delta
+6. 先判断 behavior 是否真的改变，再判断 outcome 是否改善。
+
+## 7.5 什么才算 “adaptive 改变了行为”
+
+至少满足以下任一项，且有 paired 对照，才算 behavior change：
+
+1. control 停止侦察，而 treatment 在低信息状态下继续侦察，并有真实 scout 行为差异；
+2. treatment 在高 rush risk 下进入防守姿态，而 control 没有；
+3. treatment 的首轮 `attack_order` 时间相对 control 发生可解释偏移；
+4. paired report 中能明确指出 gate 触发 -> 行为变化 -> 对局差异的链条。
+
+以下都不算 behavior change：
+
+1. `strategy_response` tag 变了，但游戏内没有行为差异；
+2. telemetry 更多了；
+3. report 更丰富了；
+4. 单次偶然 move-out timing 差异，且没有 gate trace 支撑。
+
+## 8. claim 边界
+
+## 8.1 可以说的 claim
+
+1. “在指定 paired slice 上，adaptive gate 改变了继续侦察行为。”
+2. “在指定 paired slice 上，adaptive gate 使首轮出击时机更晚 / 更早。”
+3. “在指定 paired slice 上，adaptive gate 降低了某类 failure class。”
+4. “在指定 paired slice 上，behavior delta 与 outcome 改善方向一致。”
+
+## 8.2 不能说的 claim
+
+1. “opponent modeling 已经成功。”
+2. “telemetry richer，因此 adaptive 成功。”
+3. “单次 anecdotal win 说明有研究贡献。”
+4. “treatment 更强，所以 belief state 正确。”
+5. “对更广泛对手池也有效。”（除非另有 extension batch）
+6. “研究贡献已经成立。”（除非 `checkpoint_F` 通过）
+
+## 8.3 behavior change 和 outcome improvement 必须分开判定
+
+判定顺序固定如下：
+
+1. 先判 paired evidence 是否有效；
+2. 再判是否存在 behavior delta；
+3. 最后才判是否有 outcome / robustness / failure-class improvement。
+
+如果只有 outcome 差异、没有 behavior delta，不能接受研究 claim。
+如果只有 behavior delta、没有 outcome 改善，可以接受“adaptive effect existed”，但不能接受“research contribution passed”。
+
+## 9. 本阶段的执行顺序
+
+## 9.1 work package A：冻结 control / treatment 合同
+
+必须完成：
+
+1. `baseline_playable.yaml` 冻结；
+2. `adaptive_research.yaml` 创建；
+3. paired control / treatment eval config 创建；
+4. paired report 模板准备完毕。
+
+本包未完成时，不允许写 adaptive code。
+
+## 9.2 work package B：实现 belief state
+
+必须完成：
+
+1. `BeliefState` 类型定义；
+2. `ScoutingObservation` + `GameState` + `OpponentPrediction` 的合并逻辑；
+3. belief telemetry 输出；
+4. state / inference / telemetry-only 字段分离清楚。
+
+本包未完成时，不允许进入 response gate wiring。
+
+## 9.3 work package C：接入 bounded response gate
+
+必须完成：
+
+1. `continue_scouting_gate` 接到真实 scout 行为；
+2. `defensive_posture_gate` 接到真实 posture 行为；
+3. `first_attack_timing_gate` 接到真实 move-out timing 行为；
+4. control 与 treatment 的差异被限制在允许范围内。
+
+本包未完成时，不允许进入 paired evaluation。
+
+## 9.4 work package D：paired evaluation
+
+必须完成：
+
+1. control 和 treatment 的 paired artifacts 完整；
+2. behavior delta 先被审核；
+3. outcome / robustness / failure-class delta 再被审核；
+4. `checkpoint_F_adaptive_research_gate` 决定通过或不通过。
+
+## 10. minimum / target / stretch
+
+## 10.1 minimum
+
+minimum 定义：
+
+1. adaptive layer 已不再是 telemetry-only；
+2. 至少一个 gate 改变了真实行为；
+3. baseline core 没被 treatment 破坏；
+4. paired evidence 有效。
+
+minimum 所需真实证据：
+
+1. control / treatment 两侧完整 artifact；
+2. 行为差异的时间线证据；
+3. replay 或 telemetry 中的真实 scout / posture / attack timing 差异；
+4. queue 中 `capability_validation_status` 不再是 `diagnostic_only`。
+
+## 10.2 target
+
+target 定义：
+
+1. behavior delta 与 outcome / robustness / failure-class 改善方向一致；
+2. paired report 能清楚归因到 adaptive gate；
+3. `checkpoint_F` 正式接受研究结论。
+
+target 所需真实证据：
+
+1. matched pair 列表完整；
+2. 每个 load-bearing pair 都可追溯；
+3. 至少一个方向上的收益不是 anecdotal；
+4. control / treatment 比较中没有 config drift 或 core drift。
+
+## 10.3 stretch
+
+stretch 定义：
+
+1. 效果在多于一个 slice 上保持同方向，或
+2. 三个允许 gate 中有两个以上能稳定工作，且仍然是同一个研究特色。
+
+stretch 所需真实证据：
+
+1. 第二个 slice 的 paired evidence；
+2. 或第二个 gate 的稳定 paired behavior delta；
+3. 不得引入新的 research feature。
+
+## 11. 本阶段的失败入口
+
+### adaptive 只改 telemetry，不改行为
+
+返回：
+
+* `task_016_integrate_single_adaptive_gating_layer`
+
+### control 和 treatment 不可比
+
+返回：
+
+* paired eval config 冻结工作；
+* 必要时 rerun `task_017_null_vs_adaptive_paired_evaluation`
+
+### 有 behavior change，但没有 outcome benefit
+
+先结论冻结为：
+
+* `adaptive effect observed`
+* `research contribution not accepted`
+
+然后决定是否继续：
+
+* 若 dominant 问题是 gate 过弱：返回 `task_016`
+* 若 dominant 问题是 eval design：返回 `task_017` 重新组织 paired slice
+
+### treatment 破坏 baseline core
+
+立即回退到：
+
+* `checkpoint_E` 接受过的 control 版本
+
+不得带着漂移 baseline 继续做 paired evaluation。
+
+## 12. 本阶段的完成定义
+
+只有同时满足以下条件，本阶段才算完成：
+
+1. `checkpoint_F_adaptive_research_gate` 通过；
+2. paired evidence 明确显示 behavior delta；
+3. paired evidence 明确显示方向一致的收益或鲁棒性改进；
+4. 研究特色仍然只有一个；
+5. 所有 claim 都保持在本文件允许的边界之内。
+
+未满足以上条件时，项目最多只能说“已有 accepted playable baseline”，不能说“已有研究贡献”。
+
+文件路径：docs/experiments/checkpoint_acceptance_spec.md
+
+# Checkpoint Acceptance Specification
+
+状态：active
+更新日期：2026-04-23
+适用范围：所有 `research_master_task_queue.yaml` 中的 checkpoint 任务
+直接依赖：
+
+* `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+* `docs/plans/active/research_master_task_queue.yaml`
+* `docs/experiments/real_match_validation_protocol.md`
+
+## 1. checkpoint 的职责
+
+checkpoint 不是总结会，也不是写报告的形式动作。
+checkpoint 的职责只有三个：
+
+1. 审核前几个任务是否真正达到计划目标；
+2. 严格区分 `task completed`、`diagnostic completed`、`capability validated`；
+3. 决定是否允许进入后续任务。
+
+checkpoint 不能做的事：
+
+1. 不能替代 real evidence；
+2. 不能替代 phase gate；
+3. 不能因为“看起来差不多”而放行；
+4. 不能为缺失的 evidence 补写成功叙述。
+
+## 2. 什么时候必须 checkpoint
+
+### 2.1 固定规则
+
+每 3 个任务必须有一个 checkpoint。
+
+默认结构是：
+
+1. 实现 / 修复任务
+2. 真实验证任务
+3. checkpoint 任务
+
+不允许把第 3 个 checkpoint 省略掉。
+
+### 2.2 天然必须 checkpoint 的任务组
+
+以下任务组天然需要 checkpoint：
+
+1. build chain repair -> build-chain probe -> build-chain checkpoint
+2. production repair -> army probe -> army checkpoint
+3. tactical repair -> tactical probe -> tactical checkpoint
+4. baseline batch -> repair / confirmation -> baseline checkpoint
+5. adaptive gate integration -> paired evaluation -> research checkpoint
+
+### 2.3 为什么 checkpoint 不能省略
+
+因为前两个任务最多只能说明：
+
+* 代码改了；
+* 跑过了；
+* 有一些信号了。
+
+只有 checkpoint 才负责回答：
+
+* minimum gate 到底过没过；
+* target gate 到底过没过；
+* 这次证据是 capability validated 还是 diagnostic only；
+* 下一步到底是继续、repair、重做还是回退。
+
+## 3. checkpoint 的输入
+
+每次 checkpoint 必须读取以下输入，缺一不可：
+
+1. 当前 checkpoint 的 `reviewed_tasks`
+2. 每个 reviewed task 的 queue 条目
+3. reviewed task 对应的 code / config provenance
+4. reviewed task 对应的 real artifacts
+5. 对应 phase 报告
+6. 对应 phase 的 minimum / target / stretch gate 定义
+7. `real_match_validation_protocol.md`
+8. 相关 prior checkpoint 结论
+
+如果输入不全，checkpoint 默认不能放行。
+
+## 4. checkpoint 输出的固定字段
+
+每个 checkpoint 任务必须写出以下固定字段，不允许删减：
+
+1. `reviewed_tasks`
+2. `evidence_paths`
+3. `minimum_gate_passed`
+4. `target_gate_passed`
+5. `stretch_gate_status`
+6. `actual_game_time_sufficient`
+7. `capability_validation_status`
+8. `failure_class`
+9. `decision`
+10. `next_allowed_task`
+
+## 5. 每个字段的定义
+
+### 5.1 `reviewed_tasks`
+
+定义：
+本次 checkpoint 真正审核的任务列表。
+
+要求：
+
+1. 必须与 queue 中 `requires` 对齐；
+2. 不允许漏掉关键前置任务；
+3. 不允许把未完成任务写进来冒充已审核。
+
+### 5.2 `evidence_paths`
+
+定义：
+支持本次 checkpoint 结论的真实文件路径列表。
+
+要求：
+
+1. 必须指向具体 artifact、report 或 queue 记录；
+2. 不能只写目录名而没有可追溯文件；
+3. 如果 evidence path 为空，checkpoint 默认不通过。
+
+推荐最小集合：
+
+* `data/logs/evaluation/.../summary.json`
+* `data/logs/evaluation/.../reallaunch-*/match_result.json`
+* `data/logs/evaluation/.../reallaunch-*/telemetry/events.jsonl`
+* `data/logs/evaluation/.../reallaunch-*/match.SC2Replay`
+* `artifacts/reports/<phase>/report.md`
+* `artifacts/reports/checkpoints/<checkpoint_id>.md`
+
+### 5.3 `minimum_gate_passed`
+
+允许值：
+
+* `true`
+* `false`
+
+含义：
+是否具备进入下一阶段的最低资格。
+
+判定规则：
+
+1. prerequisite 满足；
+2. evidence 有效；
+3. 机会窗口公平；
+4. claim 与验证单元匹配；
+5. reviewed_tasks 至少达到 minimum gate。
+
+少一项都不能写 `true`。
+
+### 5.4 `target_gate_passed`
+
+允许值：
+
+* `true`
+* `false`
+
+含义：
+该 phase 是否真正达到设计目标。
+
+注意：
+`minimum_gate_passed = true` 不自动推出 `target_gate_passed = true`。
+
+### 5.5 `stretch_gate_status`
+
+允许值：
+
+* `passed`
+* `failed`
+* `not_attempted`
+* `pending`
+
+含义：
+stretch 是否达到，是否给后续阶段带来额外低风险起点。
+
+### 5.6 `actual_game_time_sufficient`
+
+允许值：
+
+* `yes`
+* `no`
+* `not_applicable`
+* `ambiguous`
+
+定义：
+reviewed evidence 是否在与 claim 对应的公平机会窗口内完成。
+
+判定规则：
+
+1. 对静态 / 文档任务：`not_applicable`
+2. 对 probe：
+
+   * 若有效 run 已达到该 claim 的最小公平机会窗口，写 `yes`
+   * 若在窗口前结束，写 `no`
+3. 对 batch：
+
+   * 若所有 load-bearing runs 都足够，写 `yes`
+   * 若任一 load-bearing run 不足够，写 `no`
+4. 对 paired evaluation：
+
+   * 只有 control / treatment 双侧都足够，才写 `yes`
+   * 只要一侧不足，写 `no`
+5. 若 evidence 混乱、无法判定，写 `ambiguous`
+
+`actual_game_time_sufficient = no` 时，不允许把结果写成 gameplay failure，除非另有独立逻辑证据。
+
+### 5.7 `capability_validation_status`
+
+允许值建议固定为：
+
+* `not_applicable`
+* `task_completed_only`
+* `diagnostic_completed`
+* `capability_validated_minimum`
+* `capability_validated_target`
+* `invalid_evidence`
+* `blocked_pending_prerequisite`
+
+含义：
+本次 checkpoint 对 reviewed tasks 能给出的最高能力判定级别。
+
+### 5.8 `failure_class`
+
+定义：
+本次 checkpoint 识别出的主导失败类型。
+
+允许使用的主类：
+
+* `none`
+* `invalid_evidence`
+* `insufficient_duration`
+* `missing_prerequisite`
+* `logic_failure`
+* `stability_failure`
+* `regression`
+* `no_behavior_change`
+* `no_causal_benefit`
+* `scope_mixed_needs_split`
+
+要求：
+
+1. 必须是主导失败；
+2. 不允许写成模糊描述，如“还需要优化”；
+3. 如果没有失败，写 `none`。
+
+### 5.9 `decision`
+
+允许值固定为：
+
+* `accepted_continue`
+* `repair_and_rerun`
+* `rework_required`
+* `blocked`
+* `split_required`
+* `return_to_prior_phase`
+
+禁止出现任何自由文本 decision。
+
+### 5.10 `next_allowed_task`
+
+定义：
+checkpoint 后唯一允许执行的下一个 queue task 或分支映射。
+
+要求：
+
+1. 必须具体到 task id；
+2. 若存在多条失败路径，必须显式写成分支映射；
+3. 不允许写“继续看看”；
+4. 如果 decision 不是 `accepted_continue`，`next_allowed_task` 必须指向 repair、rerun、split 或 prior phase 任务。
+
+## 6. decision 的精确定义
+
+### 6.1 `accepted_continue`
+
+只在以下条件同时满足时允许：
+
+1. `minimum_gate_passed = true`
+2. reviewed evidence 有效
+3. 当前 phase 的 prerequisite 没有回归
+4. queue 中没有更早 blocked 的前序问题
+
+含义：
+允许进入下一阶段。
+
+### 6.2 `repair_and_rerun`
+
+适用条件：
+
+1. 失败类型明确；
+2. repair 范围可控；
+3. 仍在当前 phase 内解决最合理。
+
+含义：
+先修 dominant failure，再回原验证单元。
+
+### 6.3 `rework_required`
+
+适用条件：
+
+1. 任务看似完成，但产物不符合计划目标；
+2. 代码边界、配置边界或报告结构需要重做；
+3. 当前任务没有形成可接受的输入给下一任务。
+
+含义：
+当前任务本身必须重做，不能简单 rerun。
+
+### 6.4 `blocked`
+
+适用条件：
+
+1. evidence 无效；
+2. prerequisite 未满足；
+3. actual game time 不足；
+4. reviewed_tasks 本身缺失关键输入。
+
+含义：
+不得继续执行后续阶段。
+
+### 6.5 `split_required`
+
+适用条件：
+
+1. 一个任务里混入了实现、真实评测、报告三件事；
+2. 根因不清，需要先拆出 debug task；
+3. reviewed evidence 无法支持单一 decision。
+
+含义：
+先拆任务，再执行。
+
+### 6.6 `return_to_prior_phase`
+
+适用条件：
+
+1. 发现前一 phase 的 prerequisite 回归；
+2. 当前 phase 的失败实际上来自更早 phase；
+3. 若继续当前 phase，只会产出更多 diagnostic-only。
+
+含义：
+显式回到 prior phase，不允许留在当前 phase 硬跑。
+
+## 7. checkpoint 的判定流程
+
+每次 checkpoint 必须按以下顺序判断，不允许跳步骤：
+
+1. 确认 `reviewed_tasks` 是否全部处于可审核状态；
+2. 确认 evidence package 是否完整；
+3. 判断 `actual_game_time_sufficient`；
+4. 判断 prerequisite 是否满足；
+5. 判断 reviewed tasks 只到 `task completed`、`diagnostic completed` 还是 `capability validated`；
+6. 逐一比较 minimum / target / stretch gate；
+7. 确定 `failure_class`；
+8. 确定 `decision`；
+9. 写出 `next_allowed_task`；
+10. 更新 queue 和 checkpoint report。
+
+若第 2 步失败，则后面不能直接判 gameplay failure。
+若第 3 步失败，则后面不能把结果写成 logic failure。
+若第 4 步失败，则后面不能放行。
+
+## 8. 什么情况下 minimum gate 算通过
+
+minimum gate 同时满足以下条件才算通过：
+
+1. 当前 checkpoint 的关键 prerequisite 已满足；
+2. reviewed evidence 完整且有效；
+3. 对应 claim 的验证单元正确；
+4. reviewed tasks 至少完成 phase 的最低能力目标；
+5. 不存在把 diagnostic 当 capability 的偷换。
+
+示例：
+
+* build-chain checkpoint：只有看到 gateway command，不算 minimum 通过；
+* army checkpoint：没有 `own_army_count > 0`，minimum 不通过；
+* tactical checkpoint：只有 enemy visible，没有合法 own-army order，minimum 不通过；
+* adaptive checkpoint：只有 tag 改变，没有 behavior delta，minimum 不通过。
+
+## 9. 什么情况下 target gate 算通过
+
+target gate 通过要求：
+
+1. minimum 已通过；
+2. 当前 phase 的核心目标已经被直接证据支持；
+3. 不需要再靠“解释性文字”补逻辑；
+4. 下一阶段能在不返工当前主链的情况下开始。
+
+target 通过不要求 stretch 一定通过。
+
+## 10. 什么情况下只能判 diagnostic completed
+
+出现以下任一情形时，只能判 `diagnostic_completed`：
+
+1. 只有 command telemetry；
+2. `own_army_count=0` 时出现 tactical signal；
+3. `friendly combat` 缺失，只剩 `enemy visible`；
+4. actual game time 不足，但仍有一些中间信号；
+5. telemetry 存在，但与 replay / result 对不上；
+6. behavior tag 改了，但 paired behavior 没变。
+
+## 11. 什么情况下必须拦截后续阶段
+
+出现以下任一情形时，checkpoint 必须拦截：
+
+1. `minimum_gate_passed = false`
+2. `actual_game_time_sufficient = no`
+3. `capability_validation_status = invalid_evidence`
+4. prerequisite regression
+5. reviewed task scope 混乱，需要拆分
+6. baseline 未接受，却试图进入 adaptive phase
+7. control / treatment 不可比，却试图宣称 research 结论
+
+## 12. checkpoint 的常见错误
+
+以下错误必须在 checkpoint 审核时主动防止：
+
+1. 只看 task status，不看 evidence。
+2. 只看 telemetry 是否存在，不看它证明了什么。
+3. 只看单次 run，却在做 batch / paired claim。
+4. 忽略 opportunity window。
+5. 忽略 `own_army_count` prerequisite。
+6. 忽略 friendly combat prerequisite。
+7. 用报告 closeout 语言替代 gate 判断。
+8. 发现 evidence 缺失后仍继续做逻辑结论。
+9. 不写 `failure_class`，导致下一步 repair 无入口。
+10. checkpoint 明知 minimum 未过，却仍把后续任务保持为可执行。
+
+## 13. checkpoint report 的文件要求
+
+每次 checkpoint 除了更新 queue，还必须写单独报告：
+
+* `artifacts/reports/checkpoints/<checkpoint_id>.md`
+
+该报告至少包含：
+
+1. reviewed tasks 概览
+2. evidence package 完整性检查
+3. actual game time sufficiency 判定
+4. minimum / target / stretch 判定
+5. capability_validation_status
+6. failure_class
+7. decision
+8. next_allowed_task
+
+checkpoint 报告与 queue 字段必须一致。
+若两者冲突，以更保守的结论为准，并立即修正冲突。
+
+## 14. checkpoint 的最终原则
+
+checkpoint 只做一件事：
+把“执行过了”变成“是否真的被接受”。
+
+如果 evidence 不能支持 acceptance，checkpoint 就必须拦。
+如果 prerequisite 未满足，checkpoint 就必须退。
+如果根因不清，checkpoint 就必须拆。
+如果 minimum 没过，checkpoint 就不能放行。
+
+文件路径：docs/agents/codex_execution_rules_research_mode.md
+
+# Codex Execution Rules Research Mode
+
+状态：active
+更新日期：2026-04-23
+适用对象：在本仓库内执行 mainline 任务的 Codex
+直接依赖：
+
+* `docs/plans/active/research_master_task_queue.yaml`
+* `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+* `docs/experiments/real_match_validation_protocol.md`
+* `docs/experiments/checkpoint_acceptance_spec.md`
+
+## 1. 总原则
+
+Codex 在 research mode 下不是自由探索者，而是受 queue 和 checkpoint 约束的执行器。
+
+Codex 的首要责任不是“多做事”，而是：
+
+1. 按正确顺序做正确的事；
+2. 不把 diagnostic 写成 validated；
+3. 不在错误阶段消耗真实 SC2 预算；
+4. 不在 checkpoint 未通过时擅自推进。
+
+## 2. 每轮执行的固定起始动作
+
+每一轮开始时，Codex 必须按以下顺序执行：
+
+1. 打开 `docs/plans/active/research_master_task_queue.yaml`
+2. 确认 `active_next_task`
+3. 读取该 task 的：
+
+   * `requires`
+   * `status`
+   * `validation_level_required`
+   * `quota_risk`
+   * `data_source`
+   * `real_validation_status`
+4. 确认最近一个 checkpoint 的 `decision`
+5. 确认本轮任务是否允许跑真实 SC2
+6. 确认是否存在 blocked prerequisite
+7. 确认本轮任务是否超出单轮可控范围
+
+如果以上任一项没有确认，本轮不得动手改代码或跑评测。
+
+## 3. 一次只做一个任务
+
+默认规则：
+
+* 一次只做一个 queue task。
+
+例外规则：
+
+* paired evaluation 任务本身可以包含 control / treatment 两个 sibling runs，但它们仍属于同一个 queue task。
+* checkpoint 任务可以读取多个 reviewed task，但它本身仍是一个 queue task。
+
+禁止做法：
+
+1. 同轮同时推进两个 pending task。
+2. 一边修当前任务，一边提前做下一个任务的 real eval。
+3. 在 queue 未授权时，顺手补 unrelated docs / research prototype。
+
+## 4. Codex 每轮必须确认的四件事
+
+### 4.1 `requires` 是否满足
+
+只要有一个 `requires` 未满足，就必须停。
+
+### 4.2 `validation_level_required` 是否匹配
+
+* 需要 L1 的任务，不要跑真实 SC2 冒充完成；
+* 需要 L3 / L4 的任务，不要只写代码或报告就标完成；
+* 需要 L5 的 checkpoint，不要只写一句“通过”。
+
+### 4.3 本轮是否允许跑真实 SC2
+
+必须同时满足：
+
+1. 该任务的验证级别要求真实 SC2；
+2. `real_match_validation_protocol.md` 允许此类任务在当前阶段跑真实 SC2；
+3. prerequisite 已满足；
+4. 当前没有 blocked checkpoint。
+
+### 4.4 本轮是否会造成 scope 膨胀
+
+如果一个任务同时混有：
+
+1. 代码实现；
+2. 真实评测；
+3. 报告 / queue / handoff 更新；
+
+并且根因还不清楚，则必须先拆，不得直接一口气做完。
+
+## 5. Codex 做完任务后必须更新的内容
+
+每轮任务结束后，Codex 必须更新：
+
+1. `docs/plans/active/research_master_task_queue.yaml`
+2. `docs/handoffs/latest.md`
+3. 本任务对应的 phase report
+4. 若是 real eval，还要确认 artifact 路径已落盘
+
+queue 至少要更新的字段：
+
+1. `status`
+2. `actual_validation_level`
+3. `real_validation_status`
+4. `evidence_paths`
+5. `capability_validation_status`
+
+如果是 checkpoint，还必须更新：
+
+1. `reviewed_tasks`
+2. `minimum_gate_passed`
+3. `target_gate_passed`
+4. `stretch_gate_status`
+5. `actual_game_time_sufficient`
+6. `failure_class`
+7. `decision`
+8. `next_allowed_task`
+
+如果没有完成这些更新，本轮任务不能算完成。
+
+## 6. Codex 不允许做的事情
+
+1. 不允许跳过 queue task。
+2. 不允许擅自改 `active_next_task` 指向下一个阶段。
+3. 不允许把 `diagnostic_completed` 写成 `capability_validated`。
+4. 不允许因为“看起来差不多”就把 task 标 `completed`。
+5. 不允许在 checkpoint 未通过时继续执行后续 task。
+6. 不允许擅自扩大任务范围。
+7. 不允许把 `research/` 目录里的 prototype 拖进 mainline。
+8. 不允许用 `debug.yaml` 做 capability claim。
+9. 不允许在 baseline 未冻结时做 adaptive paired eval。
+10. 不允许在 paired eval 中同时改 control 和 treatment 的 baseline core。
+11. 不允许用更大的 batch 掩盖 prerequisite 未满足。
+12. 不允许跳过 handoff 更新。
+13. 不允许把 artifact 缺失的 run 当证据使用。
+14. 不允许为了节省时间而省略 checkpoint。
+
+## 7. Codex 在什么情况下必须停
+
+出现以下任一情况时，Codex 必须 stop，而不是继续：
+
+1. `requires` 未满足；
+2. 最近 checkpoint 的 `decision` 不是 `accepted_continue`；
+3. 当前任务需要 real SC2，但协议不允许；
+4. evidence 不够；
+5. probe 跑完仍无法判定；
+6. 机会窗口不足；
+7. replay / result / telemetry 缺失；
+8. scope 已经膨胀到单轮不可控；
+9. 当前任务 `quota_risk = high`，且根因不清；
+10. control / treatment 不可比；
+11. 当前问题明显来自 prior phase。
+
+stop 后允许的动作只有：
+
+1. 更新 queue 为 blocked / split_required / return_to_prior_phase；
+2. 写 handoff；
+3. 创建或指向 repair / rerun / split 入口。
+
+stop 后不允许继续改 unrelated 代码。
+
+## 8. Codex 在什么情况下必须 split task
+
+出现以下任一情形，Codex 必须拆任务：
+
+1. 一个任务会超出单轮可控额度；
+2. 一个任务里混了实现、真实评测、报告三种事情；
+3. 根因不明确，需要先做 debug / evidence triage；
+4. 当前 task 的 real eval 要求依赖尚未冻结的 config；
+5. paired eval 还没完成 control / treatment contract 冻结；
+6. 当前 task 实际上包含两个不同 failure class。
+
+split 的结果应写成：
+
+1. queue 中的 `decision: split_required`
+2. `failure_class: scope_mixed_needs_split`
+3. `next_allowed_task` 指向更小的 repair / debug / contract task
+
+没有 split，就不能继续执行混合任务。
+
+## 9. Codex 在什么情况下必须 rerun
+
+出现以下任一情况，Codex 必须 rerun 同级验证单元，而不是直接改代码：
+
+1. `invalid_evidence`
+2. artifact 不完整
+3. paired run 中一侧缺失
+4. actual game time 不足，但逻辑尚未被公平暴露
+5. config 漂移导致本次 run 不可比
+6. control / treatment 不可比
+7. summary / replay / telemetry 之间记录冲突
+8. report 结论与 raw evidence 不一致
+
+rerun 时必须保持：
+
+1. claim 不变；
+2. 主逻辑版本不变；
+3. 修复仅限 evidence / contract；
+4. rerun 原因写入 handoff 和 report。
+
+## 10. Codex 在什么情况下必须创建 repair task
+
+出现以下任一情况，Codex 必须进入或创建 repair 路径：
+
+1. Gateway ready 一直不成立；
+2. Cyber Core 不出现；
+3. Zealot / Stalker 不出现；
+4. `own_army_count` 一直为 0；
+5. attack / defend 从未发生；
+6. 只有 enemy combat signal，没有 friendly combat；
+7. small eval 全是 diagnostic；
+8. adaptive 只改 telemetry，不改行为；
+9. paired A/B 没有真实差异；
+10. 当前 failure class 明确，且 rerun 不会产生新信息。
+
+repair task 必须满足：
+
+1. 只修一个 dominant failure class；
+2. 修完后必须 rerun 相应 probe / batch；
+3. 不得偷偷扩大为新 feature；
+4. 必须更新 queue 的 `failure_class` 和 `next_allowed_task`。
+
+## 11. Codex 在什么情况下必须 return_to_prior_phase
+
+出现以下任一情况，Codex 必须回到 prior phase：
+
+1. build-chain regression 出现在 army / tactical 阶段；
+2. army prerequisite regression 出现在 tactical / batch 阶段；
+3. baseline core regression 出现在 adaptive 阶段；
+4. 当前 phase 的 failure 实际来自更早 phase；
+5. 继续当前 phase 只会得到更多 diagnostic-only。
+
+回退时必须显式写：
+
+1. `decision: return_to_prior_phase`
+2. `next_allowed_task` 指向 prior phase repair task
+3. `docs/handoffs/latest.md` 中写明回退原因
+
+## 12. Codex 的 real-match 纪律
+
+任何 real-match task 开始前，Codex 必须确认：
+
+1. `bot_config` 指向正式 config，而不是 `debug.yaml`
+2. `evaluation config` 指向正确的 output_dir
+3. map / opponent slice 与当前 claim 匹配
+4. evidence 落盘路径明确
+5. 若是 paired eval，control / treatment 路径成对明确
+
+任何 real-match task 结束后，Codex 必须确认：
+
+1. `summary.json` 存在
+2. `match_result.json` 存在
+3. `telemetry/events.jsonl` 存在
+4. `match.SC2Replay` 存在
+5. provenance 可追溯
+6. 结果已写回 report / queue / handoff
+
+## 13. Codex 的状态标记纪律
+
+### `completed`
+
+只能表示：
+任务动作完成。
+
+不能表示：
+能力已验证。
+
+### `diagnostic_completed`
+
+只能表示：
+任务跑出了有价值的中间信号或 blocker 分类。
+
+不能表示：
+minimum gate 已过。
+
+### `capability_validated`
+
+只能在以下条件同时满足时使用：
+
+1. prerequisite 满足；
+2. evidence 有效；
+3. actual game time 足够；
+4. claim 与验证单元匹配；
+5. checkpoint 接受。
+
+没有 checkpoint 的情况下，Codex 不得单方面写 “validated”。
+
+## 14. Codex 的文档更新纪律
+
+### 每轮必须更新 `docs/handoffs/latest.md`
+
+必须写清：
+
+1. 当前 task id
+2. 本轮实际完成内容
+3. 产生的 artifacts
+4. 失败分类或 capability 结论
+5. 下一允许任务
+
+### 每轮必须更新 report
+
+report 必须回答：
+
+1. 这轮验证了什么；
+2. 没验证什么；
+3. 结果属于 `task completed`、`diagnostic completed` 还是 `capability validated`；
+4. 若失败，dominant failure class 是什么；
+5. 下一步是 rerun、repair、split 还是回退。
+
+## 15. 最终执行纪律
+
+Codex 在 research mode 下必须遵守下面这条总规则：
+
+先保证顺序正确，再追求进度；
+先保证证据有效，再追求结论；
+先保证 baseline 成立，再追求 adaptive claim；
+先保证 checkpoint 放行，再进入下一个 task。
+
+文件路径：docs/templates/task_recipe_template.md
+
+# Task Recipe Template
+
+状态：active
+更新日期：2026-04-23
+适用范围：mainline task 的具体执行 recipe
+直接依赖：
+
+* `docs/plans/active/research_master_task_queue.yaml`
+* `docs/experiments/real_match_validation_protocol.md`
+* `docs/experiments/checkpoint_acceptance_spec.md`
+* `docs/agents/codex_execution_rules_research_mode.md`
+
+## 第一部分：通用模板
+
+## 1. recipe 基本信息
+
+任务名称：
+队列任务 ID：
+任务分类：`infrastructure` / `gameplay capability` / `research contribution`
+验证级别要求：
+是否允许真实 SC2：
+对应 phase：
+对应 checkpoint：
+
+## 2. 任务目的
+
+用一句话写清本任务要回答的唯一问题。
+
+要求：
+
+1. 不要写成泛目标；
+2. 不要同时回答两个不同层级的问题；
+3. 若本任务是 real probe，目的必须是 capability claim，不是“顺便看看”。
+
+## 3. 背景原因
+
+写清：
+
+1. 为什么这个任务现在必须做；
+2. 它依赖前面哪个任务；
+3. 它若不做，会阻塞后面哪个任务；
+4. 上一次失败或 open hypothesis 是什么。
+
+## 4. 前置检查
+
+执行前必须逐项确认：
+
+1. `research_master_task_queue.yaml` 中该任务就是 `active_next_task` 或 checkpoint 放行后的 `next_allowed_task`
+2. `requires` 全部满足
+3. 最近一个 checkpoint 没有 blocked 状态
+4. 本任务的 `validation_level_required` 已理解
+5. 本任务是否允许跑真实 SC2 已核对
+6. 需要的 config 文件存在
+7. 需要的 tests 文件存在
+8. output_dir 不会覆盖不可追溯旧证据
+9. 若是 paired eval，control / treatment 可比
+
+若任一项不满足，recipe 必须 stop，不得继续。
+
+## 5. 输入文件
+
+列出必须打开和阅读的文件。至少要包括：
+
+1. queue 条目
+2. 本阶段计划文件
+3. 本任务要修改的代码文件
+4. 本任务要读取的配置文件
+5. 对应的 tests
+6. 若是 repair，上一轮失败报告与 artifact
+
+## 6. 输出文件
+
+列出本任务结束后必须产出的文件。至少要包括：
+
+1. 修改后的代码 / 配置文件
+2. 真实评测 artifact 路径
+3. phase report
+4. queue 更新
+5. handoff 更新
+
+## 7. 执行步骤
+
+### 第一步做什么
+
+写清：
+
+1. 先开哪个文件；
+2. 先核对哪个字段；
+3. 先确认哪个 prerequisite。
+
+### 第二步做什么
+
+写清：
+
+1. 改哪些文件；
+2. 每个文件改什么；
+3. 哪些字段不能动。
+
+### 第三步做什么
+
+写清：
+
+1. 跑哪些测试或命令；
+2. 生成哪些 artifact；
+3. 到哪里检查结果。
+
+若任务需要更多步骤，继续按第四步、第五步写，不要跳步。
+
+## 8. 改哪些文件
+
+按文件逐项列出：
+
+文件路径：
+修改目标：
+允许改动范围：
+禁止改动范围：
+
+必须至少覆盖：
+
+1. 代码文件
+2. config 文件
+3. evaluation config
+4. report 文件
+5. queue 与 handoff
+
+## 9. 跑哪些命令
+
+按顺序列出。
+
+要求：
+
+1. 命令必须可直接执行；
+2. 先静态 / 单元测试，再 real eval；
+3. 若需要生成 config，先保存文件，再跑命令；
+4. 若任务不允许跑真实 SC2，不能写 real-match 命令。
+
+## 10. 预期看到什么
+
+按 artifact 写清：
+
+1. `summary.json` 应该出现什么；
+2. `match_result.json` 应该出现什么；
+3. `events.jsonl` 应该出现什么；
+4. replay 中应该看到什么；
+5. 哪些信号只算 diagnostic；
+6. 哪些信号才算 capability evidence。
+
+## 11. minimum pass
+
+写清：
+
+1. 本任务最低算通过时必须看到什么；
+2. 哪些证据缺一不可；
+3. 哪些条件只要不满足就不能写 pass。
+
+## 12. target pass
+
+写清：
+
+1. 本任务理想目标是什么；
+2. target 比 minimum 多证明了什么；
+3. target 若未达成，是否允许继续由 checkpoint 决定。
+
+## 13. stretch
+
+写清：
+
+1. stretch 代表什么额外价值；
+2. 没有 stretch 仍可接受；
+3. 不能把 stretch 偶发达成夸大成 target。
+
+## 14. 失败时先查什么
+
+固定顺序建议：
+
+1. queue 条目
+2. 当前任务报告
+3. `summary.json`
+4. `match_result.json`
+5. `telemetry/events.jsonl`
+6. `replay_metadata.json`
+7. `match.SC2Replay`
+8. 配置文件
+9. 对应代码路径
+
+不要先拍脑袋改代码。
+
+## 15. 如果失败如何分流
+
+至少要分为：
+
+1. `invalid_evidence`
+2. `insufficient_duration`
+3. `missing_prerequisite`
+4. `logic_failure`
+5. `stability_failure`
+6. `no_behavior_change`
+7. `regression`
+
+并且要写清每类失败对应：
+
+* rerun
+* repair
+* split
+* return_to_prior_phase
+
+## 16. 什么时候必须 stop
+
+写清 stop 条件，例如：
+
+1. `requires` 未满足；
+2. checkpoint 未放行；
+3. evidence 缺失；
+4. paired 不可比；
+5. 当前任务 scope 超出单轮可控；
+6. prerequisite 未满足。
+
+## 17. 什么时候必须 rerun
+
+写清 rerun 条件，例如：
+
+1. artifact 不完整；
+2. duration 不足；
+3. output_dir 污染；
+4. control / treatment 一侧缺失；
+5. replay / telemetry 冲突。
+
+## 18. 什么时候必须开 repair task
+
+写清 repair 触发条件，例如：
+
+1. 逻辑失败已明确；
+2. rerun 不会带来新信息；
+3. dominant failure class 唯一明确；
+4. 当前问题无法通过重新采证解决。
+
+## 19. 完成后必须更新哪些文档
+
+固定至少更新：
+
+1. `docs/plans/active/research_master_task_queue.yaml`
+2. `docs/handoffs/latest.md`
+3. 本任务 phase report
+4. 如有 checkpoint，更新 checkpoint report
+
+## 第二部分：完整示例
+
+以下给出一个完整、可直接使用的 recipe 示例。
+
+任务名称：real build chain probe
+队列任务 ID：`task_005_real_build_chain_probe`
+任务分类：`gameplay capability`
+验证级别要求：`L3`
+是否允许真实 SC2：允许
+对应 phase：`phase_r1_build_chain_core`
+对应 checkpoint：`checkpoint_B_build_chain_gate`
+
+## 1. 任务目的
+
+在真实 SC2 中回答两个问题：
+
+1. `Gateway ready` 是否在公平机会窗口内成立；
+2. `Assimilator / Cybernetics Core` 的机会窗口是否被公平暴露，并能被明确分类。
+
+本任务不回答 army、tactical、small eval 或 adaptive 问题。
+
+## 2. 背景原因
+
+旧 Phase B 只验证到了 gateway command 层，且曾被 116 秒左右短窗口截断。
+本任务是 build-chain 真实重验证的唯一 probe。
+如果本任务不能形成清晰结论，后续 production 和 army 任务都不允许开始。
+
+## 3. 前置检查
+
+执行前按顺序确认：
+
+1. 打开 `docs/plans/active/research_master_task_queue.yaml`
+2. 确认 `active_next_task = task_005_real_build_chain_probe`，或者最近 checkpoint 的 `next_allowed_task.on_pass = task_005_real_build_chain_probe`
+3. 确认 `task_004_rebuild_opening_build_chain_logic.status = completed`
+4. 确认 `task_004.actual_validation_level >= L1`
+5. 确认 `configs/bot/baseline_playable.yaml` 已存在
+6. 打开 `configs/bot/baseline_playable.yaml`，确认：
+
+   * `runtime.max_game_loop` 不是 `2600`
+   * `telemetry.enabled = true`
+   * `telemetry.verbose = true`
+   * 本文件不是 `debug.yaml`
+7. 打开 `configs/evaluation/r1_build_chain_probe.yaml`，确认：
+
+   * `evaluation.bot_config = configs/bot/baseline_playable.yaml`
+   * `evaluation.launch_mode = real_launch`
+   * `evaluation.output_dir = data/logs/evaluation/r1_build_chain_probe`
+   * `evaluation.repeats = 1`
+8. 确认 `tests/unit/test_build_progression_contract.py`、`tests/unit/test_game_loop.py`、`tests/unit/test_telemetry_schema.py` 存在
+9. 若 `baseline_playable.yaml` 或 `r1_build_chain_probe.yaml` 不存在，本任务必须 stop，返回创建 config 的前序任务
+
+## 4. 输入文件
+
+必须先打开这些文件：
+
+1. `docs/plans/active/research_master_task_queue.yaml`
+2. `docs/experiments/real_match_validation_protocol.md`
+3. `docs/plans/active/phase_playable_core_rebuild.md`
+4. `configs/bot/phase_b_revalidation_gameplay.yaml`
+5. `configs/bot/baseline_playable.yaml`
+6. `configs/evaluation/phase_b_revalidation_duration_probe.yaml`
+7. `configs/evaluation/r1_build_chain_probe.yaml`
+8. `src/sc2bot/runtime/game_loop.py`
+9. `src/sc2bot/config/schema.py`
+10. `tests/unit/test_build_progression_contract.py`
+11. `tests/unit/test_game_loop.py`
+12. `tests/unit/test_telemetry_schema.py`
+
+## 5. 输出文件
+
+本任务结束后必须有：
+
+1. `data/logs/evaluation/r1_build_chain_probe/summary.json`
+2. `data/logs/evaluation/r1_build_chain_probe/reallaunch-*/match_result.json`
+3. `data/logs/evaluation/r1_build_chain_probe/reallaunch-*/telemetry/events.jsonl`
+4. `data/logs/evaluation/r1_build_chain_probe/reallaunch-*/replay_metadata.json`
+5. `data/logs/evaluation/r1_build_chain_probe/reallaunch-*/match.SC2Replay`
+6. `artifacts/reports/r1_build_chain_probe/report.md`
+7. `docs/plans/active/research_master_task_queue.yaml` 更新
+8. `docs/handoffs/latest.md` 更新
+
+## 6. 执行步骤
+
+### 第一步：确认 config 和 telemetry 合同
+
+先打开：
+
+* `configs/bot/baseline_playable.yaml`
+* `configs/evaluation/r1_build_chain_probe.yaml`
+* `src/sc2bot/runtime/game_loop.py`
+
+检查并确认：
+
+1. `baseline_playable.yaml` 的 `runtime.max_game_loop` 保持正式 long-window 值；
+2. `r1_build_chain_probe.yaml` 指向 `baseline_playable.yaml`；
+3. `game_loop.py` 中 build-chain telemetry 至少能提供：
+
+   * gateway build attempt / success / failed / skipped
+   * tech structure attempt / success / failed / skipped
+   * reason 字段
+4. 若没有任何可用的 `Gateway ready` 证据路径，先在 `game_loop.py` 中补显式 ready-count 或等价 downstream ready 证据，再继续。
+
+不能跳过这一步。
+如果连 ready 证据路径都没有，本任务最多只能产出 diagnostic-only。
+
+### 第二步：跑静态与单元测试
+
+按顺序执行：
+
+1. `python -m pytest tests/unit/test_build_progression_contract.py`
+2. `python -m pytest tests/unit/test_game_loop.py`
+3. `python -m pytest tests/unit/test_telemetry_schema.py`
+
+预期：
+
+1. build progression contract 不报错；
+2. game_loop 改动没有破坏现有入口；
+3. telemetry schema 与当前落盘字段一致。
+
+如果测试失败：
+
+* stop real probe；
+* 将失败归入 `rework_required` 或 `repair_and_rerun`；
+* 返回 `task_004_rebuild_opening_build_chain_logic`。
+
+### 第三步：运行 real build chain probe
+
+执行：
+
+`python -m evaluation.runner.run_batch --config configs/evaluation/r1_build_chain_probe.yaml`
+
+执行后确认：
+
+1. `data/logs/evaluation/r1_build_chain_probe/summary.json` 存在；
+2. 至少有一个 `reallaunch-*` 目录；
+3. 每个 `reallaunch-*` 下至少有：
+
+   * `match_result.json`
+   * `telemetry/events.jsonl`
+   * `replay_metadata.json`
+   * `match.SC2Replay`
+
+若缺任一关键项，本次 probe 直接判为 `invalid_evidence`，不要继续做逻辑判断。
+
+### 第四步：读取 artifact 并做第一轮判定
+
+按顺序打开：
+
+1. `summary.json`
+2. `match_result.json`
+3. `telemetry/events.jsonl`
+4. `replay_metadata.json`
+5. `match.SC2Replay`
+
+必须检查的内容：
+
+#### 在 `summary.json` 中确认
+
+1. run 名称正确；
+2. output_dir 正确；
+3. 只包含本次 probe 的 runs；
+4. 没混入旧 run。
+
+#### 在 `match_result.json` 中确认
+
+1. `bot_config` 指向 `configs/bot/baseline_playable.yaml`
+2. 不是 `debug.yaml`
+3. `requested_game_time_limit_seconds` 与 long-window probe 一致
+4. 未出现明显 config drift
+
+#### 在 `events.jsonl` 中确认
+
+至少检查：
+
+1. 是否有 gateway build 相关事件
+2. 是否有 tech structure 相关事件
+3. gateway 相关事件的 `outcome` 和 `reason`
+4. 后续 tech 事件中是否出现 `gateway_ready_count > 0`
+5. 是否能看到 assimilator / cyber 的 `attempt / skipped / failed / success`
+
+#### 在 replay 中确认
+
+1. 是否真的建成 Gateway
+2. 如果 telemetry 中有 ready 证据，replay 是否支持
+3. 如果 Cyber 未出现，是否因为 Gateway 根本没 ready，还是因为别的原因
+
+### 第五步：写结论，不要越界
+
+minimum pass 只有以下两种合法情形：
+
+1. 有效 evidence 下，`Gateway ready` 被真实验证；
+2. 有效 evidence 下，Gateway 没 ready，但 blocker classification 明确且机会窗口公平。
+
+以下情形不算 minimum pass：
+
+1. 只有 `build_command_issued`
+2. replay 缺失
+3. telemetry 缺失
+4. 机会窗口不足
+5. `bot_config` 漂移
+
+target pass 需要额外满足：
+
+1. Assimilator / Cyber 机会窗口被公平暴露；
+2. `events.jsonl` 能说明是 `missing_prerequisite`、`insufficient_duration` 还是 `logic_failure`；
+3. 报告中能写清下一步是 production phase 还是 repair。
+
+stretch 仅在以下情况成立：
+
+1. 出现 first combat-unit production-ready signal；
+2. 或出现 clear handoff 说明 build chain 无需再改也可进入 production。
+
+## 7. 每个文件改什么
+
+### `configs/bot/baseline_playable.yaml`
+
+必须确认或修改：
+
+1. `bot.name`
+2. `bot.strategy`
+3. `runtime.max_game_loop`
+4. `telemetry.enabled`
+5. `telemetry.verbose`
+
+本任务不允许改：
+
+1. 自适应相关 treatment 字段
+2. non-build-chain 的战术核心逻辑
+
+### `configs/evaluation/r1_build_chain_probe.yaml`
+
+必须确认或修改：
+
+1. `evaluation.name`
+2. `evaluation.bot_config`
+3. `evaluation.maps_config`
+4. `evaluation.opponents_config`
+5. `evaluation.repeats`
+6. `evaluation.output_dir`
+7. `evaluation.run_id`
+8. `evaluation.isolate_runs`
+9. `evaluation.fail_on_crash`
+
+### `src/sc2bot/runtime/game_loop.py`
+
+本任务允许修改：
+
+1. build-chain telemetry contract
+2. ready evidence path
+3. build-chain reason 字段
+
+本任务不允许修改：
+
+1. tactical research logic
+2. adaptive behavior
+3. broader refactor
+
+### `artifacts/reports/r1_build_chain_probe/report.md`
+
+必须写出：
+
+1. config provenance
+2. artifact completeness
+3. actual game time sufficiency
+4. gateway ready verdict
+5. assimilator / cyber verdict
+6. capability_validation_status
+7. failure_class
+8. next step
+
+### `docs/plans/active/research_master_task_queue.yaml`
+
+必须更新：
+
+1. `task_005.status`
+2. `task_005.actual_validation_level`
+3. `task_005.real_validation_status`
+4. `task_005.evidence_paths`
+5. `task_005.capability_validation_status`
+
+### `docs/handoffs/latest.md`
+
+必须更新：
+
+1. 当前任务名称
+2. 本轮 probe 的 artifact 路径
+3. minimum / target 结论
+4. 若失败，dominant failure class
+5. 下一允许任务
+
+## 8. 预期看到什么
+
+### minimum pass 预期
+
+1. `summary.json` 存在
+2. `match_result.json` 指向 `baseline_playable.yaml`
+3. `events.jsonl` 里至少有完整 gateway build 事件链
+4. `Gateway ready` 有明确证据，或者 blocker classification 无歧义
+5. replay 与 telemetry 不冲突
+
+### target pass 预期
+
+1. `gateway_ready_count > 0` 已被看到，或 replay 明确支持 Gateway completed
+2. `Assimilator` 和 `Cybernetics Core` 的机会被公平暴露
+3. 原因链可清楚区分：
+
+   * `insufficient_duration`
+   * `missing_prerequisite`
+   * `build_chain_logic_failure`
+
+### stretch 预期
+
+1. 后续出现 production-ready signal
+2. build chain 报告足以直接支持进入 P2 / P3
+
+## 9. 失败时先查什么
+
+按以下顺序，不要跳：
+
+1. queue 中 `task_005.requires` 是否满足
+2. `summary.json`
+3. `match_result.json` 的 `bot_config`
+4. `events.jsonl` 是否完整
+5. replay 是否存在
+6. `baseline_playable.yaml` 是否被误改
+7. `game_loop.py` 是否根本没输出 ready-compatible evidence
+
+## 10. 如果失败如何分流
+
+### 情形 A：artifact 缺失
+
+分类：
+`invalid_evidence`
+
+动作：
+原样 rerun `task_005_real_build_chain_probe`
+
+### 情形 B：actual game time 不足
+
+分类：
+`insufficient_duration`
+
+动作：
+返回配置 / runtime 合同修复，不要判逻辑失败
+
+### 情形 C：只有 gateway command，没有 ready
+
+若 evidence 不足：
+`telemetry_contract_gap`
+
+动作：
+先补 ready evidence path，再 rerun
+
+若 evidence 完整但仍不 ready：
+`build_chain_logic_failure`
+
+动作：
+返回 `task_004_rebuild_opening_build_chain_logic`
+
+### 情形 D：Gateway ready 已经成立，但 Assimilator / Cyber 仍不出现
+
+分类：
+`missing_prerequisite` 或 `build_chain_logic_failure`
+
+动作：
+返回 `task_004_rebuild_opening_build_chain_logic`
+
+## 11. 什么时候必须 stop
+
+1. `task_004` 未完成
+2. `baseline_playable.yaml` 不存在
+3. `r1_build_chain_probe.yaml` 指向错误 bot config
+4. unit tests 没过
+5. artifact 缺失但尚未 rerun
+6. actual game time 不足但你还想下 gameplay 结论
+
+## 12. 什么时候必须 rerun
+
+1. `summary.json` 缺失
+2. replay 缺失
+3. `match_result.json` 指向错误 config
+4. output_dir 混入旧 run
+5. 只有 evidence 问题，没有新逻辑信息
+
+## 13. 什么时候必须开 repair task
+
+1. `Gateway ready` 持续不成立；
+2. `gateway_ready_count` 证据路径缺失；
+3. `Assimilator / Cyber` 在公平窗口内持续不出现；
+4. rerun 后仍无法区分 prereq 与 logic failure。
+
+repair 入口固定为：
+
+* `task_004_rebuild_opening_build_chain_logic`
+
+## 14. 完成后必须更新哪些文档
+
+1. `docs/plans/active/research_master_task_queue.yaml`
+2. `docs/handoffs/latest.md`
+3. `artifacts/reports/r1_build_chain_probe/report.md`
+
+若本任务是 checkpoint 前的验证任务，不得在本 recipe 中直接把下一阶段改成可执行；必须等 `checkpoint_B_build_chain_gate` 决定。
+
+文件路径：docs/experiments/failure_repair_playbook.md
+
+# Failure Repair Playbook
+
+状态：active
+更新日期：2026-04-23
+适用范围：playable core 与 adaptive response 阶段的失败排查、修复和重跑
+直接依赖：
+
+* `docs/plans/active/research_master_task_queue.yaml`
+* `docs/plans/active/phase_playable_core_rebuild.md`
+* `docs/plans/active/phase_adaptive_response_research.md`
+* `docs/experiments/real_match_validation_protocol.md`
+* `docs/experiments/checkpoint_acceptance_spec.md`
+
+## 1. 使用规则
+
+每次失败都先按以下顺序处理，不允许直接拍脑袋修代码：
+
+1. 先判 evidence 是否有效；
+2. 再判 actual game time 是否足够；
+3. 再判 prerequisite 是否满足；
+4. 最后才判 logic failure。
+
+任何 repair 都只修一个 dominant failure class。
+任何 repair 之后都必须回到最小必要验证单元重跑。
+若 repair 后发现 prior phase prerequisite 回归，立即回 prior phase，不要继续当前 phase。
+
+## 2. repair task 对照表
+
+* build chain 类问题：回 `task_004_rebuild_opening_build_chain_logic`
+* duration / config 合同问题：回 `task_002_lock_runtime_eval_contract_and_config_roles`
+* production / army 类问题：回 `task_007_rewrite_combat_unit_production_and_rally_logic`
+* tactical / friendly combat 类问题：回 `task_010_rewrite_defend_attack_transition_logic`
+* baseline batch 稳定性问题：回 `task_014_baseline_repair_or_confirmation`
+* adaptive gate 问题：回 `task_016_integrate_single_adaptive_gating_layer`
+* paired eval 可比性或证据问题：回 `task_017_null_vs_adaptive_paired_evaluation`
+
+## 3. Failure Case 1：对局窗口不足
+
+### 现象
+
+1. run 很早结束；
+2. key claim 还没到最小公平机会窗口；
+3. 旧式短窗口症状再次出现；
+4. build / combat / paired 结论都说不清。
+
+### 常见原因
+
+1. `bot_config` 实际仍指向 `debug.yaml`
+2. `runtime.max_game_loop` 被错误改回低值
+3. evaluation config 指错 bot config
+4. control / treatment 其中一侧持续时间不足
+5. output_dir 混乱，误读了旧 run
+
+### 先查哪些 artifact
+
+1. `summary.json`
+2. `match_result.json`
+3. `replay_metadata.json`
+4. `preflight.json`
+5. `launch_path_diagnostics.json`（若存在）
+
+### 再查哪些配置
+
+1. `configs/bot/debug.yaml`
+2. `configs/bot/baseline_playable.yaml`
+3. `configs/bot/adaptive_research.yaml`
+4. 当前 `configs/evaluation/*.yaml`
+
+重点检查：
+
+* `runtime.max_game_loop`
+* `evaluation.bot_config`
+* `evaluation.output_dir`
+* `evaluation.run_id`
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/runtime/game_loop.py`
+2. `evaluation/runner/run_match.py`
+3. `src/sc2bot/config/schema.py`
+
+### 如何区分
+
+* 若 artifact 缺失或配置指错：`invalid_evidence`
+* 若 artifact 完整，但在公平机会窗口前正常结束：`insufficient_duration`
+* 若时间足够却仍无进展：继续查 prerequisite 或 logic
+* 若 paired 一侧足够一侧不足：paired `invalid_evidence` 或 `insufficient_duration`
+
+### 修复动作
+
+1. 修 evaluation config 指向
+2. 修 `baseline_playable.yaml` / `adaptive_research.yaml` 的 `runtime.max_game_loop`
+3. 清理错误 output_dir 或换新 run_id
+4. 不改 gameplay 代码，除非已确认退出逻辑本身有 bug
+
+### 修复后必须重跑哪一步
+
+* 原 task 的同级 probe / batch / paired eval
+
+### 重跑仍失败时转向
+
+* `task_002_lock_runtime_eval_contract_and_config_roles`
+* 不允许继续当前 gameplay / research phase
+
+## 4. Failure Case 2：Gateway command 有但 Gateway-ready 没有
+
+### 现象
+
+1. `events.jsonl` 中有 gateway build attempt 或 success
+2. replay 或下游事件里看不到 Gateway ready
+3. report 只能说 command 发过了
+
+### 常见原因
+
+1. 只记录了 command telemetry，没有 ready 证据路径
+2. Pylon / probe / resource prerequisite 不稳
+3. 建造位置失败或异常
+4. run 结束得太早，Gateway 还没建完
+5. build chain 逻辑重复发命令但没进入稳定完成状态
+
+### 先查哪些 artifact
+
+1. `summary.json`
+2. `match_result.json`
+3. `telemetry/events.jsonl`
+4. `match.SC2Replay`
+
+重点查：
+
+* gateway build 事件的 `outcome`
+* gateway build 事件的 `reason`
+* 后续 tech 事件是否包含 `gateway_ready_count > 0`
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+
+重点字段：
+
+* `build_order.gateway_min_probe_count`
+* `build_order.gateway_min_game_time`
+* `build_order.pylon_supply_buffer`
+* `runtime.worker_gather`
+* `runtime.supply_sustain`
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/runtime/game_loop.py`
+
+   * `_safe_gateway_build`
+   * `_record_gateway_build`
+2. 与 gateway skip reason 相关逻辑
+3. 若 build chain 已抽取 helper，则查对应 helper
+
+### 如何区分
+
+* 若 run 在完成前结束：`insufficient_duration`
+* 若没有 Pylon / 资源 / probe 前置：`missing_prerequisite`
+* 若 command 成功但 ready 始终无从确认：`telemetry_contract_gap`
+* 若 command 反复发出但结构始终没稳定完成：`build_chain_logic_failure`
+* 若 replay 缺失：`invalid_evidence`
+
+### 修复动作
+
+1. 若是 evidence gap，先补 `Gateway ready` 证据路径
+2. 若是前置问题，修 build-chain prerequisite
+3. 若是 placement / exception，修 build 逻辑和错误处理
+4. 不允许直接把 command 当 ready
+
+### 修复后必须重跑哪一步
+
+* `task_005_real_build_chain_probe`
+
+### 重跑仍失败时转向
+
+* `task_004_rebuild_opening_build_chain_logic`
+
+## 5. Failure Case 3：Cyber Core 不出现
+
+### 现象
+
+1. Gateway 似乎已经有进展；
+2. `Cybernetics Core` 相关事件始终没有成功；
+3. 生产链停在 gas / cyber 之前。
+
+### 常见原因
+
+1. Gateway 其实没 ready
+2. Assimilator 没建成或 gas 不可用
+3. `cybernetics_core_enabled = false`
+4. 资源或建造位置不足
+5. run 只够看到 gateway，不够看到 cyber
+
+### 先查哪些 artifact
+
+1. `telemetry/events.jsonl`
+2. `match.SC2Replay`
+3. `match_result.json`
+
+重点查：
+
+* `tech_structure_build` 中 `structure_name = assimilator`
+* `tech_structure_build` 中 `structure_name = cybernetics_core`
+* `gateway_ready_count`
+* `pending_count`
+* `existing_count`
+* `reason`
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+
+重点字段：
+
+* `build_order.assimilator_enabled`
+* `build_order.cybernetics_core_enabled`
+* `runtime.worker_gather`
+* `runtime.supply_sustain`
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/runtime/game_loop.py`
+
+   * `_safe_assimilator_build`
+   * `_safe_cybernetics_core_build`
+   * `_record_tech_structure_build`
+
+### 如何区分
+
+* `gateway_ready_count = 0`：`missing_prerequisite`
+* run 在 cyber 公平机会前结束：`insufficient_duration`
+* evidence 缺失：`invalid_evidence`
+* 条件满足但仍反复失败：`build_chain_logic_failure`
+
+### 修复动作
+
+1. 若 Gateway 未 ready，先回 Gateway 问题，不要直接修 cyber
+2. 若 Assimilator 未建成，先修 gas 路径
+3. 若 config 关闭了 cyber，修 config
+4. 若 logic 明显错误，修 `_safe_cybernetics_core_build`
+
+### 修复后必须重跑哪一步
+
+* `task_005_real_build_chain_probe`
+
+### 重跑仍失败时转向
+
+* `task_004_rebuild_opening_build_chain_logic`
+
+## 6. Failure Case 4：Zealot / Stalker 不出现
+
+### 现象
+
+1. `combat_unit_production` 有 attempt 或 success
+2. replay 中却看不到对应战斗单位
+3. `own_army_count` 没增长
+
+### 常见原因
+
+1. 只有 `train_command_issued`，没有 unit created
+2. `idle_gateway_count = 0`
+3. `gateway_ready_count = 0`
+4. `cybernetics_core_ready_count = 0`，导致 stalker 不可生产
+5. supply block 或资源不足
+6. unit type 配置不支持
+
+### 先查哪些 artifact
+
+1. `telemetry/events.jsonl`
+2. `match.SC2Replay`
+3. `match_result.json`
+
+重点查 `combat_unit_production` 事件中的：
+
+* `outcome`
+* `reason`
+* `unit_name`
+* `gateway_ready_count`
+* `cybernetics_core_ready_count`
+* `idle_gateway_count`
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+
+重点字段：
+
+* `build_order.zealot_production_priority`
+* `build_order.stalker_production_priority`
+* `runtime.supply_sustain`
+* `runtime.supply_sustain_threshold`
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/runtime/game_loop.py`
+
+   * `_safe_combat_unit_production`
+   * `_combat_unit_type`
+   * `_record_combat_unit_production`
+
+### 如何区分
+
+* 若 `gateway_ready_count = 0`：前置问题，回 build chain
+* 若 `cybernetics_core_ready_count = 0` 且 unit 是 stalker：前置问题
+* 若 `idle_gateway_count = 0`：生产逻辑 / 调度问题
+* 若 `cannot_afford_unit`：资源或经济前置问题
+* 若 replay 缺失：`invalid_evidence`
+* 若 run 过短：`insufficient_duration`
+
+### 修复动作
+
+1. 先确认单位真实出现的证据路径，不要只盯着 `train_command_issued`
+2. 解决 idle gateway、资源、tech prerequisite
+3. 若只需要最小 playable baseline，优先保证最容易稳定出现的第一批单位
+4. 不要在这里引入复杂 composition 系统
+
+### 修复后必须重跑哪一步
+
+* 先重跑 `task_008_real_army_presence_probe`
+
+### 重跑仍失败时转向
+
+* `task_007_rewrite_combat_unit_production_and_rally_logic`
+* 若 tech prerequisite 回归，则回 `task_004`
+
+## 7. Failure Case 5：own_army_count 一直为 0
+
+### 现象
+
+1. 生产链似乎在运行；
+2. report 却始终显示 `own_army_count = 0`；
+3. tactical probe 因无 army 无法成立。
+
+### 常见原因
+
+1. 生产实际上没成功
+2. unit 出现了，但 state extraction 错
+3. unit 刚出现就死亡
+4. run 还没到 army 出现窗口
+5. replay 存在，但 telemetry 对不上
+
+### 先查哪些 artifact
+
+1. `telemetry/events.jsonl`
+2. `match.SC2Replay`
+3. `summary.json`
+
+重点看：
+
+* `combat_unit_production`
+* `game_state`
+* `army_order`
+* replay 中是否确有友军战斗单位
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+
+重点字段：
+
+* `build_order.zealot_production_priority`
+* `build_order.stalker_production_priority`
+* `runtime.army_defense`
+* supply / gather 相关字段
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/runtime/game_loop.py`
+2. `src/sc2bot/domain/game_state.py`
+3. `build_game_state_from_bot_ai` 或等价 state 构建路径
+
+### 如何区分
+
+* replay 中无单位：生产失败，`production_logic_failure`
+* replay 中有单位，telemetry 仍为 0：`state_extraction_failure`
+* replay 中有单位但立即死亡：可能是 `tactical` 或 `positioning` 问题
+* run 太短：`insufficient_duration`
+* artifact 缺失：`invalid_evidence`
+
+### 修复动作
+
+1. 先确认问题是“单位没生成”还是“计数没记录”
+2. 如果是 state extraction 错，先修 extraction，不要直接改 tactical
+3. 如果单位出现但立即死，先看 rally / positioning，再考虑 tactical
+
+### 修复后必须重跑哪一步
+
+* `task_008_real_army_presence_probe`
+
+### 重跑仍失败时转向
+
+* `task_007_rewrite_combat_unit_production_and_rally_logic`
+* 若发现 opening 回归，则回 `task_004`
+
+## 8. Failure Case 6：attack / defend order 没有
+
+### 现象
+
+1. army 已存在；
+2. `attack_order` 和 `defend_order` 始终不出现；
+3. tactical probe 没法形成正结论。
+
+### 常见原因
+
+1. `attack_army_supply_threshold` 或 `attack_game_time_threshold` 太高
+2. `known_enemy_start_location` 不可用
+3. defend 触发条件过严
+4. `tactical_manager.py` 只会返回 rally
+5. `game_loop.py` 没把 tactical plan 接到真实执行
+
+### 先查哪些 artifact
+
+1. `telemetry/events.jsonl`
+2. `match.SC2Replay`
+
+重点查：
+
+* `army_order`
+* `game_state`
+* `combat_event_skipped`
+* `strategy_response`（如果战术门控已接入）
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+
+重点字段：
+
+* `build_order.attack_army_supply_threshold`
+* `build_order.attack_game_time_threshold`
+* `build_order.defend_radius`
+* `runtime.army_defense`
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/managers/tactical_manager.py`
+2. `src/sc2bot/runtime/game_loop.py`
+
+### 如何区分
+
+* `own_army_count = 0`：不是 tactical 问题，是 prior phase prerequisite
+* army 有，enemy location 无：可能是 scouting / known enemy location 问题
+* army 有，阈值永远达不到：`config_threshold_mismatch`
+* army 有，条件满足但仍无 order：`tactical_logic_failure`
+* evidence 缺失：`invalid_evidence`
+
+### 修复动作
+
+1. 先把 `own_army_count` prerequisite 问题排除
+2. 再调 tactical threshold 和 reason logic
+3. 确保 `reason` 被落盘
+4. 不允许为了出 order 而绕过 army prerequisite
+
+### 修复后必须重跑哪一步
+
+* `task_011_real_tactical_probe`
+
+### 重跑仍失败时转向
+
+* `task_010_rewrite_defend_attack_transition_logic`
+* 若 army prerequisite 回归，回 `task_007`
+
+## 9. Failure Case 7：只有 enemy combat signal，没有 friendly combat
+
+### 现象
+
+1. `combat_event_detected` 存在；
+2. 但事件只是因为看见敌军；
+3. 友军实际未接敌或无 army。
+
+### 常见原因
+
+1. `tactical_manager.detect_combat_event` 对 enemy visible 太敏感
+2. `own_army_count = 0`
+3. army 存在但未接近敌军
+4. attack order / defend order 没有真正把军队带到接敌位置
+5. replay 与 telemetry 不一致
+
+### 先查哪些 artifact
+
+1. `telemetry/events.jsonl`
+2. `match.SC2Replay`
+
+重点查：
+
+* `combat_event_detected`
+* `combat_event_skipped`
+* `army_order`
+* `own_army_count`
+* `reason`
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+
+重点字段：
+
+* `build_order.attack_army_supply_threshold`
+* `build_order.attack_game_time_threshold`
+* `build_order.defend_radius`
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/managers/tactical_manager.py`
+
+   * combat event detection
+   * plan selection
+2. `src/sc2bot/runtime/game_loop.py`
+
+### 如何区分
+
+* `own_army_count = 0`：`missing_prerequisite`
+* 有 army、有 order、但位置始终不到：`tactical_logic_failure` 或 `no_contact_under_valid_conditions`
+* 只有 enemy visible 触发事件：`enemy_only_combat_signal`
+* replay 缺失：`invalid_evidence`
+
+### 修复动作
+
+1. 把 `friendly combat` 的判定与 `enemy visible` 分开
+2. 修 tactical order 到 contact 的路径
+3. 若 army 根本不存在，返回 prior phase
+
+### 修复后必须重跑哪一步
+
+* `task_011_real_tactical_probe`
+
+### 重跑仍失败时转向
+
+* `task_010_rewrite_defend_attack_transition_logic`
+* 或回 `task_007`
+
+## 10. Failure Case 8：replay / result / telemetry 缺失
+
+### 现象
+
+1. run 看起来跑过了；
+2. 但关键 artifact 缺一个或多个；
+3. 报告没法支撑 claim。
+
+### 常见原因
+
+1. output_dir 配置错误
+2. runner persistence 出错
+3. run 崩溃但未 fail-fast
+4. output 被旧 run 覆盖
+5. paired 一侧没落盘
+
+### 先查哪些 artifact
+
+1. `summary.json`
+2. 目录结构本身
+3. `match_result.json`
+4. `telemetry/events.jsonl`
+5. `match.SC2Replay`
+
+### 再查哪些配置
+
+1. 当前 `configs/evaluation/*.yaml`
+2. `output_dir`
+3. `run_id`
+4. `fail_on_crash`
+5. `isolate_runs`
+
+### 再查哪些代码路径
+
+1. `evaluation/runner/run_match.py`
+2. `evaluation/runner/run_batch.py`
+3. `evaluation/runner/collect_results.py`
+
+### 如何区分
+
+* 关键 artifact 缺失：直接 `invalid_evidence`
+* artifact 全在但内容冲突：仍是 `invalid_evidence`
+* paired 只有一侧缺失：paired `invalid_evidence`
+
+### 修复动作
+
+1. 修 output_dir / run_id / isolate_runs
+2. 修 persistence 合同
+3. 不改 gameplay 逻辑
+
+### 修复后必须重跑哪一步
+
+* 原 task 同级 rerun
+
+### 重跑仍失败时转向
+
+* `task_002_lock_runtime_eval_contract_and_config_roles`
+
+## 11. Failure Case 9：small eval 全是 diagnostic，不是 capability
+
+### 现象
+
+1. batch 跑完了；
+2. 报告里全是中间信号；
+3. 没有真实胜利、没有 stable gameplay evidence；
+4. checkpoint 无法接受 Level 1 baseline。
+
+### 常见原因
+
+1. 更早 phase 的 prerequisite 根本没过
+2. batch 扩大样本掩盖了前置缺口
+3. run 虽多，但全是 command-only、enemy-only、diagnostic-only
+4. baseline core 仍然只是 survival scaffold
+5. batch 设计本身没对准当前 claim
+
+### 先查哪些 artifact
+
+1. `summary.json`
+2. per-match `match_result.json`
+3. per-match `events.jsonl`
+4. `artifacts/reports/r4_baseline_easy_pool/report.md`
+
+### 再查哪些配置
+
+1. `configs/evaluation/r4_baseline_easy_pool_batch.yaml`
+2. `configs/maps/baseline_easy_pool_maps.yaml`
+3. `configs/opponents/baseline_easy_pool.yaml`
+4. `configs/bot/baseline_playable.yaml`
+
+### 再查哪些代码路径
+
+按 dominant failure class 选：
+
+1. build chain：`game_loop.py`
+2. production：`game_loop.py`
+3. tactical：`tactical_manager.py` + `game_loop.py`
+
+### 如何区分
+
+* evidence 缺失：`invalid_evidence`
+* time 不足：`insufficient_duration`
+* prerequisite 缺失：`missing_prerequisite`
+* 前置能力虽有一点信号但未 validated：`diagnostic_only_batch`
+* 行为不稳定：`stability_failure`
+
+### 修复动作
+
+1. 不要扩大 batch
+2. 找 dominant failure class
+3. 回对应 prior phase repair
+4. 若只是轻微不稳定，再用 `task_014` 做 focused repair / confirmation
+
+### 修复后必须重跑哪一步
+
+* 先重跑 `task_014_baseline_repair_or_confirmation`
+* 若 prior phase 失败，先回 prior phase，再重跑 `task_013`
+
+### 重跑仍失败时转向
+
+* 视 failure class 返回 `task_010`、`task_007` 或 `task_004`
+
+## 12. Failure Case 10：adaptive model 只改 telemetry，不改行为
+
+### 现象
+
+1. `strategy_response` 或 `recommended_response_tags` 变了；
+2. scout、posture、first attack timing 却没变；
+3. paired report 只有 tag delta，没有 behavior delta。
+
+### 常见原因
+
+1. `strategy_manager.py` 只输出 tag，没有把 gate 接入 gameplay
+2. `_safe_worker_scout`、tactical plan、attack timing 没读取 gate
+3. control / treatment 配置其实没差
+4. belief state 只做日志，不做行动偏置
+
+### 先查哪些 artifact
+
+1. `artifacts/reports/r5_paired_adaptive_eval/report.md`
+2. control / treatment 两侧 `events.jsonl`
+3. replay
+
+重点查：
+
+* `strategy_response`
+* `adaptive_gate_applied`（若已实现）
+* scout 行为差异
+* defend posture 差异
+* first attack timing 差异
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+2. `configs/bot/adaptive_research.yaml`
+3. `configs/evaluation/r5_paired_control.yaml`
+4. `configs/evaluation/r5_paired_treatment.yaml`
+
+重点字段：
+
+* `opponent_model.mode`
+* `opponent_model.intervention_mode`
+* 与 gate 相关的新字段
+
+### 再查哪些代码路径
+
+1. `src/sc2bot/managers/strategy_manager.py`
+2. `src/sc2bot/runtime/game_loop.py`
+3. `src/sc2bot/managers/tactical_manager.py`
+4. `src/sc2bot/domain/belief_state.py`（若已创建）
+
+### 如何区分
+
+* tag 变了、行为没变：`no_behavior_change`
+* control / treatment 根本一样：`invalid_evidence` 或 config drift
+* 行为似乎变了但没有 paired 对照：证据不足，不能写通过
+
+### 修复动作
+
+1. 把 gate 真正接到 `_safe_worker_scout`、defensive posture 或 first attack timing
+2. 保持改动只限允许的三个 gate
+3. 不要顺手改 build / production / unit composition
+
+### 修复后必须重跑哪一步
+
+* `task_017_null_vs_adaptive_paired_evaluation`
+
+### 重跑仍失败时转向
+
+* `task_016_integrate_single_adaptive_gating_layer`
+
+## 13. Failure Case 11：paired A/B 没有真实差异
+
+### 现象
+
+1. control / treatment 跑完了；
+2. paired report 看不到真实差异；
+3. 可能 outcome 也没差，或只差一点随机波动。
+
+### 常见原因
+
+1. adaptive gate 太弱
+2. treatment 没真正改变行为
+3. control / treatment 不可比
+4. 评测切片不触发相关 gate
+5. baseline core 在 paired 期间漂移
+
+### 先查哪些 artifact
+
+1. control `summary.json`
+2. treatment `summary.json`
+3. control / treatment `events.jsonl`
+4. `artifacts/reports/r5_paired_adaptive_eval/report.md`
+
+### 再查哪些配置
+
+1. `configs/bot/baseline_playable.yaml`
+2. `configs/bot/adaptive_research.yaml`
+3. `configs/evaluation/r5_paired_control.yaml`
+4. `configs/evaluation/r5_paired_treatment.yaml`
+
+### 再查哪些代码路径
+
+1. `strategy_manager.py`
+2. `game_loop.py`
+3. `tactical_manager.py`
+4. belief state 更新逻辑
+
+### 如何区分
+
+* control / treatment 不可比：`invalid_evidence`
+* tag 有差异，行为无差异：`no_behavior_change`
+* 行为有差异，但 outcome 无改善：`no_causal_benefit`
+* paired slice 根本不触发 gate：评测设计问题，需要更换 paired slice，但不得写通过
+
+### 修复动作
+
+1. 先确保 paired 可比
+2. 再确认至少一个 gate 会在该 slice 中被触发
+3. 若 behavior 仍无差异，增强 gate 接入而不是扩大结论
+4. 若 behavior 有差异但无收益，不要强行写 research success
+
+### 修复后必须重跑哪一步
+
+* `task_017_null_vs_adaptive_paired_evaluation`
+
+### 重跑仍失败时转向
+
+* 无行为差异：回 `task_016_integrate_single_adaptive_gating_layer`
+* 有行为差异但无收益：维持 “research contribution not accepted”，再决定是否继续 repair
+* 若 baseline 漂移：回 `checkpoint_E` 接受的 control 版本，并重新组织 paired eval
+
+## 14. 最终规则
+
+任何 failure 都必须回答下面五个问题之后，才能动手修：
+
+1. 这是 evidence 问题、duration 问题、prerequisite 问题还是 logic 问题？
+2. dominant failure class 是哪一个？
+3. 最小必要重跑是哪一步？
+4. repair 应该落在哪个 task？
+5. 如果 repair 后仍失败，应该回哪个 prior phase？
+
+如果这五个问题答不清，先不要改代码，先补分类。

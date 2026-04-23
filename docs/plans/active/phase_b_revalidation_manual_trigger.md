@@ -1,5 +1,9 @@
 # Phase B-R Manual Trigger
 
+Status: legacy_historical_reference
+Execution authority: no
+Superseded by: `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+
 Use this file when manually continuing Phase B-R:
 `docs/plans/active/phase_b_revalidation_task_queue.yaml`
 
