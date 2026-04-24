@@ -1,5 +1,33 @@
 # Current Status
 
+## Execution Sync Status
+
+As of 2026-04-25, the active execution state is:
+
+- active queue:
+  - `docs/plans/active/research_master_task_queue.yaml`
+- latest handoff:
+  - `docs/handoffs/latest.md`
+- current active next task:
+  - `task_010_rewrite_defend_attack_transition_logic`
+
+Latest checkpoint state:
+
+- `checkpoint_D_tactical_core_gate`
+  - `minimum_gate_passed = true`
+  - `target_gate_passed = false`
+  - `decision = repair_and_rerun`
+  - `failure_class = logic_failure`
+
+Repository sync check:
+
+- local `HEAD` and `origin/main` were verified as aligned during the latest
+  sync audit;
+- the active queue, latest handoff, and latest checkpoint report must be kept
+  in sync together when pushing future updates;
+- later pushes must not update only a report or only a handoff while leaving
+  the queue in an older state.
+
 ## Research Control Files
 
 The first-round GPT Pro core control files were imported from `docs/pro.txt` on

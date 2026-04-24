@@ -5,7 +5,7 @@ Task: `task_011_real_tactical_probe`
 
 ## Run
 
-- run dir: `data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30`
+- run dir: `data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f`
 - config: `configs/bot/baseline_playable.yaml`
 - opponent: `builtin_easy_terran`
 - map: `incorporeal_aie_v4`
@@ -30,22 +30,26 @@ Fair opportunity window was reached:
 
 Tactical-order signals:
 
-- `max_own_army_count = 10`
-- `attack_order_count = 350`
-- `defend_order_count = 125`
-- `army_rally_count = 992`
+- `max_own_army_count = 9`
+- `attack_order_count = 309`
+- `defend_order_count = 155`
+- `army_rally_count = 1001`
 - `combat_event_detected_count = 0`
 - `combat_event_skipped_count = 2401`
+- `tactical_order_execution_count = 2401`
+- `tactical_execution_applied_count = 0`
+- `tactical_execution_skipped_count = 2401`
 - `unit_created_detected_count = 10`
 - `army_presence_changed_count = 10`
 
 Interpretation:
 
 - at least one legal tactical order clearly occurred in a real match with `own_army_count > 0`
-- both `defend_order` and `attack_order` appeared in telemetry
+- both `defend_order` and `attack_order` appeared in planning telemetry
+- `tactical_order_execution` also ran on every step
+- but every execution-layer event stayed `outcome = skipped` with `execution_reason = no_army_available`
 - `combat_event_detected` never fired
-- the final combat-event payload stayed `planning_signal_without_execution_evidence`
-- this means tactical planning is active, but executed friendly-combat evidence is still absent in the current telemetry contract
+- the key discrepancy is now explicit: documented/planning state sees army presence, while the execution layer still sees no executable `self.army`
 
 ## Replay Cross-Check
 
@@ -58,13 +62,14 @@ Interpretation:
 
 Current best fit:
 
-- `logic_failure`
+- `state_extraction_or_army_classification_failure`
 
 Reasoning:
 
-- minimum tactical order evidence exists
-- but no executed friendly-combat evidence was recorded
-- the strongest remaining gap is not army existence; it is that the tactical execution / combat-evidence path still does not materialize beyond planning telemetry
+- minimum tactical-order evidence exists
+- documented `own_army_count` rose above zero
+- but execution-layer telemetry still reports `no_army_available`
+- the strongest remaining gap is now the mismatch between documented army existence and legacy executable army visibility, not broad tactical logic failure
 
 ## Minimum Gate
 
@@ -84,7 +89,8 @@ Reason:
 
 - `friendly combat` was not validated
 - `combat_event_detected_count = 0`
-- the last combat-event payload remained `planning_signal_without_execution_evidence`
+- `tactical_execution_applied_count = 0`
+- the execution layer still could not act on the documented army signal
 
 ## Stretch Gate
 
@@ -92,13 +98,15 @@ Reason:
 
 Reason:
 
-- while both defend and attack planning signals appeared, the probe still does not establish executed friendly combat or a replay-backed contact narrative
+- the probe still does not establish executed friendly combat or a replay-backed contact narrative
+- baseline batch would still be premature
 
 ## What This Proves
 
 - this rerun is valid L3 evidence
 - at least one legal tactical order occurred in a real match while `own_army_count > 0`
-- R3 minimum tactical-order evidence is now available for checkpoint review
+- the new execution-layer telemetry made the remaining blocker more precise
+- the dominant blocker is now explicitly the documented-vs-executable army mismatch
 
 ## What This Does Not Prove
 

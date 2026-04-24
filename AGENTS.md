@@ -129,3 +129,42 @@ A prototype may enter `src/sc2bot/` only if:
 - Update `docs/context/current_status.md` if the control state changed.
 - Add a lesson if a non-obvious failure or repeated pitfall was discovered.
 - Keep `docs/handoffs/latest.md` aligned with the current active control layer.
+
+## GitHub Sync Rule
+
+When pushing task progress to GitHub, do not sync a single conclusion file in
+isolation. Sync the full state bundle that makes the conclusion executable and
+auditable.
+
+Minimum sync bundle:
+
+1. active queue state
+
+- `docs/plans/active/research_master_task_queue.yaml`
+
+2. latest handoff
+
+- `docs/handoffs/latest.md`
+
+3. checkpoint/report artifact for the task or checkpoint
+
+- `artifacts/reports/checkpoints/<checkpoint>.md`
+- or `artifacts/reports/<phase>/report.md`
+- or `artifacts/reports/<phase>/<task>_static_validation.md`
+
+4. any code/config/tests changed by the task
+
+- relevant files under `src/`, `configs/`, `evaluation/`, `tests/`
+
+5. real-match summary/report files when the task is L3/L4
+
+- `data/logs/evaluation/<run>/summary.json`
+- matching `match_result.json`, `telemetry/events.jsonl`, replay metadata, and
+  replay/report references when those artifacts are part of the claim
+
+Before pushing, verify:
+
+- local `HEAD` and intended queue/handoff state agree;
+- `docs/handoffs/latest.md` names the same next task as the queue;
+- checkpoint/report conclusions match the queue decision fields;
+- no stale older checkpoint/handoff is being left as the apparent current state.

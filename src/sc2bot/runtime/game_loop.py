@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from sc2bot.config.schema import BuildOrderConfig, RuntimeConfig
-from sc2bot.domain.decisions import StrategyResponse
+from sc2bot.domain.decisions import StrategyResponse, TacticalPlan
 from sc2bot.domain.game_state import GameState
 from sc2bot.runtime.dependency_container import DependencyContainer
 
@@ -36,6 +36,9 @@ _TOWNHALL_TYPE_NAMES = {
 class GameLoop:
     container: DependencyContainer
     _last_strategy_response_key: tuple[str, str] | None = None
+    _latest_tactical_plan: TacticalPlan = field(
+        default_factory=lambda: TacticalPlan(name="uninitialized", strategy="unknown")
+    )
 
     def process_state(self, state: GameState) -> StrategyResponse:
         observations = self.container.scouting.update(state)
@@ -46,6 +49,7 @@ class GameLoop:
         )
         self.container.macro.update(state, decision)
         tactical_plan = self.container.tactical.plan(state, decision)
+        self._latest_tactical_plan = tactical_plan
         self.container.micro.execute(state, tactical_plan)
         self.container.telemetry.record("game_state", state.to_dict())
         self.container.telemetry.record("army_order", tactical_plan.to_dict())
@@ -260,6 +264,47 @@ def build_supply_sustain_payload(
         "supply_cap": int(supply_cap),
         "threshold": runtime.supply_sustain_threshold,
         "structure": runtime.supply_structure_name,
+    }
+
+
+def build_tactical_order_execution_payload(
+    plan: TacticalPlan,
+    state: GameState,
+    *,
+    outcome: str,
+    execution_reason: str,
+    applied_command_count: int,
+    target_position: tuple[float, float] | None = None,
+    target_unit_tag: int | None = None,
+) -> dict[str, object]:
+    """Build a post-execution tactical telemetry payload.
+
+    This payload is intentionally execution-layer telemetry. It is separate from
+    planning and combat-event inference so later probes can distinguish:
+    - plan emitted
+    - command applied to army
+    - contact/combat confirmed
+    """
+
+    return {
+        "outcome": outcome,
+        "execution_reason": execution_reason,
+        "plan_name": plan.name,
+        "army_order": plan.order,
+        "army_order_reason": plan.reason,
+        "defend_reason": plan.defend_reason,
+        "attack_reason": plan.attack_reason,
+        "regroup_reason": plan.regroup_reason,
+        "order_prerequisites_met": plan.order_prerequisites_met,
+        "plan_execution_evidence": plan.execution_evidence,
+        "applied_command_count": int(applied_command_count),
+        "own_army_count": state.own_army_count,
+        "visible_enemy_units_count": state.visible_enemy_units_count,
+        "visible_enemy_structures_count": state.visible_enemy_structures_count,
+        "target_position": list(target_position) if target_position else None,
+        "target_unit_tag": target_unit_tag,
+        "game_loop": state.game_loop,
+        "game_time": state.game_time,
     }
 
 
@@ -761,7 +806,9 @@ def build_python_sc2_local_bot(
                 state = build_game_state_from_bot_ai(self)
                 self._record_army_presence_transition(state)
                 strategy_response = game_loop.process_state(state)
-                await self._execute_survival_baseline(strategy_response)
+                await self._execute_survival_baseline(
+                    strategy_response, game_loop._latest_tactical_plan, state
+                )
                 exit_reason = self._exit_reason(iteration, state)
                 if exit_reason:
                     container.runtime_exit_reason = exit_reason
@@ -831,7 +878,12 @@ def build_python_sc2_local_bot(
                 return "max_game_time_reached"
             return None
 
-        async def _execute_survival_baseline(self, strategy_response: StrategyResponse) -> None:
+        async def _execute_survival_baseline(
+            self,
+            strategy_response: StrategyResponse,
+            tactical_plan: TacticalPlan,
+            state: GameState,
+        ) -> None:
             if runtime_config.worker_gather:
                 await self._safe_worker_gather()
             if runtime_config.worker_scout:
@@ -845,7 +897,7 @@ def build_python_sc2_local_bot(
             if runtime_config.worker_production:
                 await self._safe_worker_production()
             if runtime_config.army_defense:
-                await self._safe_army_defense(strategy_response)
+                await self._safe_army_defense(strategy_response, tactical_plan, state)
 
         async def _safe_worker_gather(self) -> None:
             if not self.mineral_field:
@@ -1440,9 +1492,46 @@ def build_python_sc2_local_bot(
                 return UnitTypeId.DRONE
             return None
 
-        async def _safe_army_defense(self, strategy_response: StrategyResponse) -> None:
+        def _record_tactical_order_execution(
+            self,
+            plan: TacticalPlan,
+            state: GameState,
+            *,
+            outcome: str,
+            execution_reason: str,
+            applied_command_count: int,
+            target_position: tuple[float, float] | None = None,
+            target_unit_tag: int | None = None,
+        ) -> None:
+            container.telemetry.record(
+                "tactical_order_execution",
+                build_tactical_order_execution_payload(
+                    plan,
+                    state,
+                    outcome=outcome,
+                    execution_reason=execution_reason,
+                    applied_command_count=applied_command_count,
+                    target_position=target_position,
+                    target_unit_tag=target_unit_tag,
+                ),
+            )
+
+        async def _safe_army_defense(
+            self,
+            strategy_response: StrategyResponse,
+            tactical_plan: TacticalPlan,
+            state: GameState,
+        ) -> None:
             army = getattr(self, "army", None)
             if not army:
+                self._record_tactical_order_execution(
+                    tactical_plan,
+                    state,
+                    outcome="skipped",
+                    execution_reason="no_army_available",
+                    applied_command_count=0,
+                    target_position=tactical_plan.target_position,
+                )
                 if should_apply_minimal_behavior(strategy_response):
                     record_minimal_behavior_intervention(
                         container.telemetry,
@@ -1451,6 +1540,17 @@ def build_python_sc2_local_bot(
                         outcome="skipped",
                         reason="no_army_available",
                     )
+                return
+            idle_units = list(army.idle)
+            if not idle_units:
+                self._record_tactical_order_execution(
+                    tactical_plan,
+                    state,
+                    outcome="skipped",
+                    execution_reason="no_idle_army_units",
+                    applied_command_count=0,
+                    target_position=tactical_plan.target_position,
+                )
                 return
             defensive_posture = (
                 should_apply_minimal_behavior(strategy_response)
@@ -1465,8 +1565,16 @@ def build_python_sc2_local_bot(
                     reason="defensive_posture",
                 )
                 target = self.townhalls.ready.first.position if self.townhalls.ready else self.start_location
-                for unit in army.idle:
+                for unit in idle_units:
                     unit.move(target)
+                self._record_tactical_order_execution(
+                    tactical_plan,
+                    state,
+                    outcome="applied",
+                    execution_reason="defensive_posture_move_applied",
+                    applied_command_count=len(idle_units),
+                    target_position=_position_tuple(target),
+                )
                 return
             if (
                 should_apply_minimal_behavior(strategy_response)
@@ -1479,12 +1587,55 @@ def build_python_sc2_local_bot(
                     outcome="telemetry_only",
                     reason="tech_alert",
                 )
-            if self.enemy_units:
+            if tactical_plan.order == "defend_order" and self.enemy_units:
                 target = self.enemy_units.closest_to(self.start_location)
-                for unit in army.idle:
+                target_position = _position_tuple(getattr(target, "position", None))
+                target_tag = getattr(target, "tag", None)
+                for unit in idle_units:
                     unit.attack(target)
+                self._record_tactical_order_execution(
+                    tactical_plan,
+                    state,
+                    outcome="applied",
+                    execution_reason="defend_order_attack_applied",
+                    applied_command_count=len(idle_units),
+                    target_position=target_position,
+                    target_unit_tag=int(target_tag) if target_tag is not None else None,
+                )
                 return
-            for unit in army.idle:
-                unit.move(self.start_location)
+            if tactical_plan.order == "attack_order" and tactical_plan.target_position is not None:
+                target = tactical_plan.target_position
+                for unit in idle_units:
+                    unit.attack(target)
+                self._record_tactical_order_execution(
+                    tactical_plan,
+                    state,
+                    outcome="applied",
+                    execution_reason="attack_order_command_applied",
+                    applied_command_count=len(idle_units),
+                    target_position=target,
+                )
+                return
+            target = tactical_plan.target_position or _position_tuple(self.start_location)
+            if target is None:
+                self._record_tactical_order_execution(
+                    tactical_plan,
+                    state,
+                    outcome="skipped",
+                    execution_reason="target_position_missing",
+                    applied_command_count=0,
+                    target_position=None,
+                )
+                return
+            for unit in idle_units:
+                unit.move(target)
+            self._record_tactical_order_execution(
+                tactical_plan,
+                state,
+                outcome="applied",
+                execution_reason=f"{tactical_plan.order}_move_applied",
+                applied_command_count=len(idle_units),
+                target_position=target,
+            )
 
     return ProjectBotAI()

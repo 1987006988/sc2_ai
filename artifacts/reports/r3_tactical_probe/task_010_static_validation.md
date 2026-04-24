@@ -22,6 +22,11 @@ distinguish:
   - `regroup_reason`
   - `order_prerequisites_met`
   - `execution_evidence`
+- runtime now records `tactical_order_execution` as a post-plan execution-layer
+  event so later probes can distinguish:
+  - plan emitted
+  - command applied to army
+  - contact/combat confirmed
 - `TacticalManager.plan(...)` now:
   - keeps `defend_order` / `attack_order` gated on `own_army_count > 0`
   - records explicit attack/defend/regroup reasons
@@ -41,13 +46,15 @@ PYTHONPATH=src:. python -m pytest tests/unit/test_tactical_manager.py tests/unit
 Result:
 
 ```text
-36 passed in 0.06s
+37 passed in 0.08s
 ```
 
 ## What This Proves
 
 - tactical order emission is now semantically cleaner and more auditable
 - no-army / planning-only situations no longer look like friendly combat success
+- runtime now exposes execution-layer command application telemetry separately
+  from planning and combat inference
 - later real probes can review defend/attack telemetry without conflating plan signals with executed combat
 
 ## What This Does Not Prove

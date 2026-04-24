@@ -23,6 +23,7 @@ from sc2bot.runtime.game_loop import (
     build_combat_unit_queue_payload,
     build_gateway_build_payload,
     build_minimal_behavior_intervention_payload,
+    build_tactical_order_execution_payload,
     build_supply_sustain_payload,
     build_tech_structure_payload,
     classify_army_presence_events,
@@ -37,7 +38,7 @@ from sc2bot.runtime.game_loop import (
     should_leave_after_sustain_limit,
     units_created_count_from_bot_ai,
 )
-from sc2bot.domain.decisions import StrategyResponse
+from sc2bot.domain.decisions import StrategyResponse, TacticalPlan
 from sc2bot.telemetry.event_logger import EventLogger
 
 
@@ -121,6 +122,60 @@ def test_build_minimal_behavior_intervention_payload_has_stable_shape():
         "selected_response_tag": "defensive_posture",
         "strategy_switch_reason": "rush_risk_high",
         "intervention_mode": "minimal_behavior",
+    }
+
+
+def test_build_tactical_order_execution_payload_has_stable_shape():
+    plan = TacticalPlan(
+        name="basic_attack_order",
+        strategy="default",
+        tags=("attack_order",),
+        order="attack_order",
+        reason="army_threshold_met_with_known_enemy_start",
+        attack_reason="army_threshold_met_with_known_enemy_start",
+        order_prerequisites_met=True,
+        execution_evidence="planning_only",
+        target_position=(90.0, 80.0),
+        own_army_count=5,
+        visible_enemy_units_count=1,
+    )
+    state = GameState(
+        game_loop=4000,
+        game_time=180.0,
+        own_army_count=5,
+        visible_enemy_units_count=1,
+        visible_enemy_structures_count=2,
+    )
+
+    payload = build_tactical_order_execution_payload(
+        plan,
+        state,
+        outcome="applied",
+        execution_reason="attack_order_command_applied",
+        applied_command_count=4,
+        target_position=(90.0, 80.0),
+        target_unit_tag=12345,
+    )
+
+    assert payload == {
+        "outcome": "applied",
+        "execution_reason": "attack_order_command_applied",
+        "plan_name": "basic_attack_order",
+        "army_order": "attack_order",
+        "army_order_reason": "army_threshold_met_with_known_enemy_start",
+        "defend_reason": None,
+        "attack_reason": "army_threshold_met_with_known_enemy_start",
+        "regroup_reason": None,
+        "order_prerequisites_met": True,
+        "plan_execution_evidence": "planning_only",
+        "applied_command_count": 4,
+        "own_army_count": 5,
+        "visible_enemy_units_count": 1,
+        "visible_enemy_structures_count": 2,
+        "target_position": [90.0, 80.0],
+        "target_unit_tag": 12345,
+        "game_loop": 4000,
+        "game_time": 180.0,
     }
 
 
