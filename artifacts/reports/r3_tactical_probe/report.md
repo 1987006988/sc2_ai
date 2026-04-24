@@ -1,11 +1,11 @@
-# R3 Tactical Probe Report
+﻿# R3 Tactical Probe Report
 
 Date: 2026-04-25
 Task: `task_011_real_tactical_probe`
 
 ## Run
 
-- run dir: `data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f`
+- run dir: `data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f`
 - config: `configs/bot/baseline_playable.yaml`
 - opponent: `builtin_easy_terran`
 - map: `incorporeal_aie_v4`
@@ -24,32 +24,42 @@ Task: `task_011_real_tactical_probe`
 
 Fair opportunity window was reached:
 
-- `max_game_time = 428.5714285714286`
+- `status = max_game_time_reached`
+- `result = Result.Defeat`
 - `runtime_max_game_loop = 9600`
 - `requested_game_time_limit_seconds = 459`
 
-Tactical-order signals:
+Tactical-order and execution-layer signals:
 
 - `max_own_army_count = 9`
-- `attack_order_count = 309`
-- `defend_order_count = 155`
-- `army_rally_count = 1001`
-- `combat_event_detected_count = 0`
-- `combat_event_skipped_count = 2401`
+- `max_documented_own_army_count = 9`
+- `max_execution_army_count = 9`
+- `max_execution_idle_army_count = 6`
+- `attack_order_count = 217`
+- `defend_order_count = 269`
+- `army_rally_count = 977`
+- `combat_event_detected_count = 13`
+- `combat_event_skipped_count = 4789`
 - `tactical_order_execution_count = 2401`
-- `tactical_execution_applied_count = 0`
-- `tactical_execution_skipped_count = 2401`
+- `tactical_execution_applied_count = 878`
+- `tactical_execution_skipped_count = 1523`
 - `unit_created_detected_count = 10`
 - `army_presence_changed_count = 10`
 
 Interpretation:
 
 - at least one legal tactical order clearly occurred in a real match with `own_army_count > 0`
-- both `defend_order` and `attack_order` appeared in planning telemetry
-- `tactical_order_execution` also ran on every step
-- but every execution-layer event stayed `outcome = skipped` with `execution_reason = no_army_available`
-- `combat_event_detected` never fired
-- the key discrepancy is now explicit: documented/planning state sees army presence, while the execution layer still sees no executable `self.army`
+- execution-layer telemetry is no longer stuck at `no_army_available`
+- `execution_army_source = self_units_combat_fallback` confirms the new fallback path was actually exercised
+- real command application now occurred:
+  - `army_rally_move_applied = 865`
+  - `defend_order_attack_applied = 7`
+  - `attack_order_command_applied = 6`
+- post-execution combat telemetry now also fired:
+  - `combat_event_detected_count = 13`
+  - detected reason = `execution_applied_with_enemy_contact`
+- the dominant blocker from earlier R3 probes is therefore resolved:
+  - execution-applied tactical behavior can now upgrade into a contact/combat-neighbor signal
 
 ## Replay Cross-Check
 
@@ -62,14 +72,14 @@ Interpretation:
 
 Current best fit:
 
-- `state_extraction_or_army_classification_failure`
+- `none`
 
 Reasoning:
 
 - minimum tactical-order evidence exists
-- documented `own_army_count` rose above zero
-- but execution-layer telemetry still reports `no_army_available`
-- the strongest remaining gap is now the mismatch between documented army existence and legacy executable army visibility, not broad tactical logic failure
+- execution-layer command application exists
+- combat confirmation no longer remains stuck at planning-only
+- the remaining replay caveat is non-blocking for this checkpoint, but still does not establish a replay-backed combat narrative on its own
 
 ## Minimum Gate
 
@@ -83,34 +93,35 @@ Reason:
 
 ## Target Gate
 
-`failed`
+`passed_with_replay_review_caveat`
 
 Reason:
 
-- `friendly combat` was not validated
-- `combat_event_detected_count = 0`
-- `tactical_execution_applied_count = 0`
-- the execution layer still could not act on the documented army signal
+- `combat_event_detected_count = 13`
+- detected reason is now `execution_applied_with_enemy_contact`
+- execution-layer command application and combat-neighbor confirmation now align in telemetry
+- replay-backed corroboration is still pending, so this is target evidence with a replay caveat rather than a full replay-reviewed combat narrative
 
 ## Stretch Gate
 
-`failed`
+`passed`
 
 Reason:
 
-- the probe still does not establish executed friendly combat or a replay-backed contact narrative
-- baseline batch would still be premature
+- tactical evidence is now strong enough to support entry into baseline batch
+- no prerequisite regression was observed
 
 ## What This Proves
 
 - this rerun is valid L3 evidence
 - at least one legal tactical order occurred in a real match while `own_army_count > 0`
-- the new execution-layer telemetry made the remaining blocker more precise
-- the dominant blocker is now explicitly the documented-vs-executable army mismatch
+- execution-layer command application now occurs against executable combat units
+- post-execution combat telemetry now detects `execution_applied_with_enemy_contact`
+- the `self.units` combat fallback plus post-execution combat assessment resolved the R3 tactical evidence-chain blocker
 
 ## What This Does Not Prove
 
-- it does not validate friendly combat
-- it does not prove replay-backed contact
+- it does not provide a replay-reviewed friendly combat narrative
+- it does not prove replay-backed contact independent of telemetry
 - it does not prove target-level tactical stability
 - it does not allow `attack_order` or `defend_order` alone to be treated as executed-combat evidence

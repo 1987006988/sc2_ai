@@ -27,10 +27,13 @@ from sc2bot.runtime.game_loop import (
     build_supply_sustain_payload,
     build_tech_structure_payload,
     classify_army_presence_events,
+    coerce_sc2_target_point,
     combat_unit_production_skip_reason,
     cybernetics_core_build_skip_reason,
     documented_army_count_from_bot_ai,
+    executable_combat_units_from_bot_ai,
     gateway_build_skip_reason,
+    idle_executable_combat_units_from_bot_ai,
     legacy_own_army_count_from_bot_ai,
     normalize_available_ability_names,
     record_minimal_behavior_intervention,
@@ -153,6 +156,12 @@ def test_build_tactical_order_execution_payload_has_stable_shape():
         outcome="applied",
         execution_reason="attack_order_command_applied",
         applied_command_count=4,
+        execution_army_count=5,
+        execution_idle_army_count=4,
+        execution_army_source="self_units_combat_fallback",
+        legacy_own_army_count=0,
+        documented_own_army_count=5,
+        combat_unit_count=0,
         target_position=(90.0, 80.0),
         target_unit_tag=12345,
     )
@@ -169,7 +178,13 @@ def test_build_tactical_order_execution_payload_has_stable_shape():
         "order_prerequisites_met": True,
         "plan_execution_evidence": "planning_only",
         "applied_command_count": 4,
+        "execution_army_count": 5,
+        "execution_idle_army_count": 4,
+        "execution_army_source": "self_units_combat_fallback",
         "own_army_count": 5,
+        "legacy_own_army_count": 0,
+        "documented_own_army_count": 5,
+        "combat_unit_count": 0,
         "visible_enemy_units_count": 1,
         "visible_enemy_structures_count": 2,
         "target_position": [90.0, 80.0],
@@ -778,6 +793,63 @@ def test_documented_army_count_prefers_documented_channel():
 
     assert legacy_own_army_count_from_bot_ai(bot) == 2
     assert documented_army_count_from_bot_ai(bot, fallback_count=2) == 3
+
+
+def test_coerce_sc2_target_point_uses_injected_point_class():
+    class FakePoint:
+        def __init__(self, value):
+            self.value = value
+
+    point = coerce_sc2_target_point((123.5, 24.5), point_cls=FakePoint)
+
+    assert isinstance(point, FakePoint)
+    assert point.value == (123.5, 24.5)
+
+
+def test_coerce_sc2_target_point_keeps_tuple_when_point_class_unavailable():
+    point = coerce_sc2_target_point((123.5, 24.5), point_cls=None)
+
+    assert point == (123.5, 24.5)
+
+
+def test_executable_combat_units_prefers_legacy_army_when_present():
+    class FakeUnit:
+        def __init__(self, tag: int, unit_name: str, *, is_idle: bool = True) -> None:
+            self.tag = tag
+            self.type_id = type("TypeID", (), {"name": unit_name.upper()})()
+            self.is_idle = is_idle
+            self.orders = ()
+
+    class FakeBot:
+        army = [FakeUnit(1, "zealot"), FakeUnit(2, "stalker", is_idle=False)]
+        units = [FakeUnit(1, "zealot"), FakeUnit(2, "stalker"), FakeUnit(3, "probe")]
+
+    units, source = executable_combat_units_from_bot_ai(FakeBot())
+
+    assert source == "legacy_army"
+    assert [unit.tag for unit in units] == [1, 2]
+
+
+def test_executable_combat_units_fall_back_to_self_units_combat_view():
+    class FakeUnit:
+        def __init__(self, tag: int, unit_name: str, *, is_idle: bool = True) -> None:
+            self.tag = tag
+            self.type_id = type("TypeID", (), {"name": unit_name.upper()})()
+            self.is_idle = is_idle
+            self.orders = ()
+
+    class FakeBot:
+        army = []
+        units = [FakeUnit(7, "stalker"), FakeUnit(8, "zealot"), FakeUnit(9, "probe")]
+
+    units, source = executable_combat_units_from_bot_ai(FakeBot())
+    executable, idle, idle_source = idle_executable_combat_units_from_bot_ai(FakeBot())
+
+    assert source == "self_units_combat_fallback"
+    assert [unit.tag for unit in units] == [7, 8]
+    assert idle_source == "self_units_combat_fallback"
+    assert [unit.tag for unit in executable] == [7, 8]
+    assert [unit.tag for unit in idle] == [7, 8]
 
 
 def test_units_created_count_reads_specific_unit_name():

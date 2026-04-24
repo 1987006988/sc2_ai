@@ -5,7 +5,7 @@ source_of_truth:
 - docs/foundation/04_research_direction/research_direction_decision.md
 - docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
 - docs/experiments/real_match_validation_protocol.md
-active_next_task: task_010_rewrite_defend_attack_transition_logic
+active_next_task: task_013_baseline_easy_pool_batch_evaluation
 execution_rules:
   checkpoint_every_n_tasks: 3
   checkpoint_failure_blocks_progress: true
@@ -795,12 +795,12 @@ phases:
     - 友军 army 回归缺失时退回 task_007 或 checkpoint_C
     evidence_paths:
     - data/logs/evaluation/r3_tactical_probe/summary.json
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/match_result.json
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/telemetry/events.jsonl
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/match.SC2Replay
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/launch_path_diagnostics.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/match_result.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/telemetry/events.jsonl
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/match.SC2Replay
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/launch_path_diagnostics.json
     - artifacts/reports/r3_tactical_probe/report.md
-    capability_validation_status: capability_validated_minimum
+    capability_validation_status: capability_validated_target
   - id: checkpoint_D_tactical_core_gate
     phase: phase_r3_tactical_core
     group: checkpoint
@@ -855,22 +855,22 @@ phases:
     - 不得保持后续任务为 pending 可执行状态；必须显式 blocked
     evidence_paths:
     - data/logs/evaluation/r3_tactical_probe/summary.json
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/match_result.json
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/telemetry/events.jsonl
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/match.SC2Replay
-    - data/logs/evaluation/r3_tactical_probe/reallaunch-1acc7c1f/launch_path_diagnostics.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/match_result.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/telemetry/events.jsonl
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/match.SC2Replay
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-d7ce499f/launch_path_diagnostics.json
     - artifacts/reports/r3_tactical_probe/report.md
     - artifacts/reports/checkpoints/checkpoint_D_tactical_core_gate.md
-    capability_validation_status: capability_validated_minimum
+    capability_validation_status: capability_validated_target
     reviewed_tasks:
     - task_010_rewrite_defend_attack_transition_logic
     - task_011_real_tactical_probe
     minimum_gate_passed: true
-    target_gate_passed: false
-    stretch_gate_status: failed
+    target_gate_passed: true
+    stretch_gate_status: passed
     actual_game_time_sufficient: yes
-    failure_class: logic_failure
-    decision: repair_and_rerun
+    failure_class: none
+    decision: accepted_continue
     next_allowed_task:
       on_pass: task_013_baseline_easy_pool_batch_evaluation
       on_fail_tactical_logic: task_010_rewrite_defend_attack_transition_logic

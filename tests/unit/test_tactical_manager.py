@@ -185,6 +185,44 @@ def test_build_combat_event_payload_marks_attack_plan_as_planning_only_without_e
     assert payload["target_position"] == [90.0, 80.0]
 
 
+def test_build_combat_event_payload_confirms_contact_after_execution_applied():
+    plan = TacticalPlan(
+        name="basic_attack_order",
+        strategy="default",
+        order="attack_order",
+        reason="army_threshold_met_with_known_enemy_start",
+        attack_reason="army_threshold_met_with_known_enemy_start",
+        order_prerequisites_met=True,
+        target_position=(90.0, 80.0),
+        own_army_count=4,
+    )
+    payload = build_combat_event_payload(
+        GameState(
+            game_loop=4000,
+            game_time=180.0,
+            known_enemy_start_location=(90.0, 80.0),
+            own_army_count=4,
+            visible_enemy_units_count=1,
+        ),
+        plan,
+        execution_context={
+            "outcome": "applied",
+            "execution_reason": "attack_order_command_applied",
+            "applied_command_count": 4,
+            "execution_army_count": 4,
+            "execution_idle_army_count": 2,
+            "execution_army_source": "self_units_combat_fallback",
+        },
+    )
+
+    assert payload["detected"] is True
+    assert payload["reason"] == "execution_applied_with_enemy_contact"
+    assert payload["execution_evidence_available"] is True
+    assert payload["execution_outcome"] == "applied"
+    assert payload["execution_reason"] == "attack_order_command_applied"
+    assert payload["execution_applied_count"] == 4
+
+
 def test_build_combat_event_payload_has_structured_no_combat_reason():
     plan = TacticalPlan(
         name="basic_army_rally",

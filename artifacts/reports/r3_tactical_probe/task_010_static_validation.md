@@ -27,6 +27,25 @@ distinguish:
   - plan emitted
   - command applied to army
   - contact/combat confirmed
+- execution-layer army selection no longer depends on legacy `self.army` alone:
+  - it still prefers legacy `self.army`
+  - but it now falls back to documented combat-unit visibility from
+    `self.units` for the currently supported combat-unit types
+  - execution telemetry now records `execution_army_source`,
+    `execution_army_count`, and `execution_idle_army_count`
+- execution-layer target coercion now converts stored tuple positions into
+  python-sc2 point targets before issuing `attack(...)` / `move(...)` commands
+  on army units
+- combat confirmation telemetry no longer depends only on pre-execution
+  planning state:
+  - runtime now records a post-execution combat-event assessment after command
+    application or skip
+  - post-execution payload carries execution outcome, execution reason, and
+    applied command count
+  - this lets later probes distinguish:
+    - planning-only signals
+    - execution applied with enemy contact
+    - execution skipped for a concrete reason
 - `TacticalManager.plan(...)` now:
   - keeps `defend_order` / `attack_order` gated on `own_army_count > 0`
   - records explicit attack/defend/regroup reasons
@@ -46,7 +65,7 @@ PYTHONPATH=src:. python -m pytest tests/unit/test_tactical_manager.py tests/unit
 Result:
 
 ```text
-37 passed in 0.08s
+42 passed in 0.06s
 ```
 
 ## What This Proves
@@ -55,6 +74,14 @@ Result:
 - no-army / planning-only situations no longer look like friendly combat success
 - runtime now exposes execution-layer command application telemetry separately
   from planning and combat inference
+- execution-layer telemetry can now distinguish:
+  - legacy army visible and executable
+  - documented combat units visible only through `self.units`
+  - genuinely no executable combat units
+- execution-layer command application no longer sends raw tuple targets to
+  python-sc2 army actions
+- post-execution combat-event telemetry can now elevate execution-applied
+  defend/attack signals above pure planning-only telemetry
 - later real probes can review defend/attack telemetry without conflating plan signals with executed combat
 
 ## What This Does Not Prove

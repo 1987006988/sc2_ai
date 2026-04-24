@@ -1,11 +1,18 @@
 """Tactical manager skeleton."""
 
+from collections.abc import Mapping
+
 from sc2bot.config.schema import BuildOrderConfig
 from sc2bot.domain.decisions import StrategyDecision, TacticalPlan
 from sc2bot.domain.game_state import GameState
 
 
-def build_combat_event_payload(state: GameState, plan: TacticalPlan) -> dict[str, object]:
+def build_combat_event_payload(
+    state: GameState,
+    plan: TacticalPlan,
+    *,
+    execution_context: Mapping[str, object] | None = None,
+) -> dict[str, object]:
     """Build conservative combat-event telemetry from visible state and tactical plan.
 
     The payload intentionally separates:
@@ -17,6 +24,15 @@ def build_combat_event_payload(state: GameState, plan: TacticalPlan) -> dict[str
     friendly combat.
     """
 
+    execution_context = execution_context or {}
+    execution_outcome = str(execution_context.get("outcome", "skipped"))
+    execution_reason = str(execution_context.get("execution_reason", "planning_only"))
+    execution_applied_count = int(execution_context.get("applied_command_count", 0) or 0)
+    execution_army_count = int(execution_context.get("execution_army_count", 0) or 0)
+    execution_idle_army_count = int(
+        execution_context.get("execution_idle_army_count", 0) or 0
+    )
+    execution_army_source = str(execution_context.get("execution_army_source", "none"))
     enemy_contact_visible = (
         state.visible_enemy_units_count > 0 or state.visible_enemy_structures_count > 0
     )
@@ -36,10 +52,12 @@ def build_combat_event_payload(state: GameState, plan: TacticalPlan) -> dict[str
         and enemy_contact_visible
     )
     friendly_combat_prerequisites_met = own_army_near_enemy
-    execution_evidence_available = plan.execution_evidence != "planning_only"
+    execution_evidence_available = (
+        execution_outcome == "applied" and execution_applied_count > 0
+    ) or plan.execution_evidence != "planning_only"
     detected = friendly_combat_prerequisites_met and execution_evidence_available
     if detected:
-        reason = "friendly_combat_execution_confirmed"
+        reason = "execution_applied_with_enemy_contact"
     elif state.own_army_count <= 0:
         reason = "no_own_army_available"
     elif not combat_capable_order_emitted:
@@ -70,6 +88,12 @@ def build_combat_event_payload(state: GameState, plan: TacticalPlan) -> dict[str
         "rally_eligible": plan.rally_eligible,
         "order_prerequisites_met": plan.order_prerequisites_met,
         "execution_evidence": plan.execution_evidence,
+        "execution_outcome": execution_outcome,
+        "execution_reason": execution_reason,
+        "execution_applied_count": execution_applied_count,
+        "execution_army_count": execution_army_count,
+        "execution_idle_army_count": execution_idle_army_count,
+        "execution_army_source": execution_army_source,
         "own_army_count": state.own_army_count,
         "visible_enemy_units_count": state.visible_enemy_units_count,
         "visible_enemy_structures_count": state.visible_enemy_structures_count,
@@ -169,5 +193,11 @@ class TacticalManager:
             visible_enemy_units_count=state.visible_enemy_units_count,
         )
 
-    def detect_combat_event(self, state: GameState, plan: TacticalPlan) -> dict[str, object]:
-        return build_combat_event_payload(state, plan)
+    def detect_combat_event(
+        self,
+        state: GameState,
+        plan: TacticalPlan,
+        *,
+        execution_context: dict[str, object] | None = None,
+    ) -> dict[str, object]:
+        return build_combat_event_payload(state, plan, execution_context=execution_context)
