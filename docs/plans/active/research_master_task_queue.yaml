@@ -5,7 +5,7 @@ source_of_truth:
 - docs/foundation/04_research_direction/research_direction_decision.md
 - docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
 - docs/experiments/real_match_validation_protocol.md
-active_next_task: checkpoint_C_army_core_gate
+active_next_task: task_010_rewrite_defend_attack_transition_logic
 execution_rules:
   checkpoint_every_n_tasks: 3
   checkpoint_failure_blocks_progress: true
@@ -596,15 +596,15 @@ phases:
   - id: checkpoint_C_army_core_gate
     phase: phase_r2_army_production_core
     group: checkpoint
-    status: pending
+    status: completed
     quota_risk: low
     expected_codex_window: review_window
     validation_level_required: L5
-    actual_validation_level: none
+    actual_validation_level: L5
     data_source:
     - task_007_rewrite_combat_unit_production_and_rally_logic
     - task_008_real_army_presence_probe
-    real_validation_status: not_started
+    real_validation_status: reviewed_prior_valid_real_sc2_evidence
     requires:
     - task_007_rewrite_combat_unit_production_and_rally_logic
     - task_008_real_army_presence_probe
@@ -646,21 +646,28 @@ phases:
     - 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
     - 不得保持后续任务为 pending 可执行状态；必须显式 blocked
     evidence_paths:
-    - artifacts/reports/checkpoints/
-    capability_validation_status: not_applicable_checkpoint
+    - artifacts/reports/checkpoints/checkpoint_C_army_core_gate.md
+    - artifacts/reports/r2_army_presence_probe/report.md
+    - artifacts/reports/r2_army_presence_probe/task_007_static_validation.md
+    - data/logs/evaluation/r2_army_presence_probe/summary.json
+    - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match_result.json
+    - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/telemetry/events.jsonl
+    - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match.SC2Replay
+    capability_validation_status: capability_validated_minimum
     reviewed_tasks:
     - task_007_rewrite_combat_unit_production_and_rally_logic
     - task_008_real_army_presence_probe
-    minimum_gate_passed: null
-    target_gate_passed: null
-    stretch_gate_status: pending
-    failure_class: pending
-    decision: pending
+    minimum_gate_passed: true
+    target_gate_passed: false
+    stretch_gate_status: failed
+    failure_class: state_extraction_or_army_classification_failure
+    decision: accepted_continue
     next_allowed_task:
       on_pass: task_010_rewrite_defend_attack_transition_logic
       on_fail_production_logic: task_007_rewrite_combat_unit_production_and_rally_logic
       on_fail_invalid_evidence: task_008_real_army_presence_probe
       on_fail_opening_regression: task_004_rebuild_opening_build_chain_logic
+    actual_game_time_sufficient: 'yes'
 - id: phase_r3_tactical_core
   name: 真实 defend/attack transition 与 first friendly combat
   objective: 在友军 army 已被验证的前提下，让 defend、attack 与 friendly combat 进入 capability validated
@@ -672,7 +679,7 @@ phases:
   - id: task_010_rewrite_defend_attack_transition_logic
     phase: phase_r3_tactical_core
     group: tactical_impl
-    status: blocked
+    status: pending
     quota_risk: medium
     expected_codex_window: single_session_to_multi_session
     validation_level_required: L1

@@ -1,10 +1,10 @@
-# Handoff: task_008_real_army_presence_probe
+# Handoff: checkpoint_C_army_core_gate
 
 Date: 2026-04-25
 
 ## Executed Task
 
-- `task_008_real_army_presence_probe`
+- `checkpoint_C_army_core_gate`
 
 ## Status
 
@@ -12,118 +12,98 @@ Date: 2026-04-25
 
 ## Validation
 
-- validation level achieved: `L3`
-- data source: `new real SC2 local match output`
+- validation level achieved: `L5`
+- data source: `prior real SC2 evidence plus checkpoint review`
 - capability validation status: `capability_validated_minimum`
 
 ## Files Changed
 
-- `data/logs/evaluation/r2_army_presence_probe/summary.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match_result.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/telemetry/events.jsonl`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match.SC2Replay`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/preflight.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/replay_metadata.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/launch_path_diagnostics.json`
-- `artifacts/reports/r2_army_presence_probe/report.md`
+- `artifacts/reports/checkpoints/checkpoint_C_army_core_gate.md`
 - `docs/plans/active/research_master_task_queue.yaml`
 - `docs/handoffs/latest.md`
 
 ## Verification Commands And Results
 
-- real probe command:
-  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& <r2_army_presence_probe.ps1>"`
-- result:
-  - run completed with `status = max_game_time_reached`
-  - `result = Result.Defeat`
-  - `runtime_max_game_loop = 9600`
-  - `requested_game_time_limit_seconds = 459`
-  - `max_game_time = 428.5714285714286`
-- artifact completeness:
-  - `summary.json`: present
-  - `match_result.json`: present
-  - `telemetry/events.jsonl`: present
-  - `match.SC2Replay`: present
-  - `preflight.json`: present
-  - `replay_metadata.json`: present
-  - `launch_path_diagnostics.json`: present
+- checkpoint input review:
+  - reviewed `task_007_rewrite_combat_unit_production_and_rally_logic`
+  - reviewed `task_008_real_army_presence_probe`
+  - reviewed `artifacts/reports/r2_army_presence_probe/report.md`
+  - reviewed `data/logs/evaluation/r2_army_presence_probe/summary.json`
+  - reviewed `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match_result.json`
+  - reviewed `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/telemetry/events.jsonl`
+- queue validation:
+  - `research_master_task_queue.yaml` parses successfully
+  - `active_next_task = task_010_rewrite_defend_attack_transition_logic`
 
-## Key Probe Counts
+## Checkpoint Decision
 
-- `train_command_issued = 11`
-- `combat_unit_production_success = 11`
-- `queued_after_train = 11`
-- `queued_after_train_zero_delta = 11`
+- `reviewed_tasks`:
+  - `task_007_rewrite_combat_unit_production_and_rally_logic`
+  - `task_008_real_army_presence_probe`
+- `minimum_gate_passed = true`
+- `target_gate_passed = false`
+- `stretch_gate_status = failed`
+- `actual_game_time_sufficient = yes`
+- `capability_validation_status = capability_validated_minimum`
+- `failure_class = state_extraction_or_army_classification_failure`
+- `decision = accepted_continue`
+- `next_allowed_task = task_010_rewrite_defend_attack_transition_logic`
+
+## Reasoning
+
+Checkpoint C accepts the army-core minimum on documented evidence:
+
 - `unit_created_detected = 10`
-- `unit_alive_after_short_window = 0`
+- documented `own_army_count` rose to `10`
 - `army_presence_changed = 10`
-- `max_own_army_count = 10`
-- `max_documented_own_army_count = 10`
+
+But it does not accept target-level tactical readiness:
+
+- replay-backed corroboration is still pending
+- `unit_alive_after_short_window = 0`
 - `max_legacy_own_army_count = 0`
 - `max_combat_unit_count = 0`
-- `attack_order_count = 334`
 
-## Current Best Failure Classification
-
-- `state_extraction_or_army_classification_failure`
-
-Reason:
-
-- `queued_after_train` remained zero-delta in the `already_pending(...)` channel
-- but `on_unit_created(...)` still fired 10 times for zealots
-- documented `own_army_count` rose to 10
-- `army_presence_changed` fired 10 times
-- `attack_order` was emitted with `own_army_count = 10`
-- the remaining discrepancy is therefore in the legacy / classification path, not in broad unit materialization
-
-## Replay Cross-Check
-
-- replay artifact exists: `yes`
-- automated replay parser available in this environment: `no`
-- manual replay review performed in this turn: `no`
-- replay-backed corroboration status:
-  - replay is saved, but this turn did not produce an independent replay-backed statement about friendly combat-unit appearance
-
-## Minimum / Target / Stretch
-
-- minimum gate result: `passed_with_replay_review_caveat`
-- target gate result: `failed`
-- stretch gate status: `failed`
+So the queue may proceed, but only with the explicit understanding that R2
+minimum rests on the documented channel, not on the legacy army/classification
+path.
 
 ## What This Proves
 
-- this rerun is valid L3 evidence
-- friendly combat units were created in the real match
-- documented `own_army_count` rose above zero to 10
-- the dominant blocker has narrowed from broad production failure to a legacy state extraction / army classification mismatch
+- the army-core minimum gate is now accepted
+- first-army existence is no longer diagnostic-only
+- the dominant blocker is now a legacy state extraction / army classification
+  mismatch
+- the next task may focus on tactical-logic implementation under this caveat
 
 ## What This Does Not Prove
 
-- it does not complete replay-backed corroboration
+- it does not prove replay-backed corroboration
 - it does not prove target-level stability
-- it does not prove the legacy army-count channel is safe
-- it does not execute or pass `checkpoint_C_army_core_gate`
+- it does not prove executed friendly combat
+- it does not allow `attack_order` or `combat_event_detected` to be treated as
+  combat-validated evidence by themselves
 
 ## Evidence Paths
 
+- `artifacts/reports/checkpoints/checkpoint_C_army_core_gate.md`
+- `artifacts/reports/r2_army_presence_probe/task_007_static_validation.md`
+- `artifacts/reports/r2_army_presence_probe/report.md`
 - `data/logs/evaluation/r2_army_presence_probe/summary.json`
 - `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match_result.json`
 - `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/telemetry/events.jsonl`
 - `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match.SC2Replay`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/preflight.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/replay_metadata.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/launch_path_diagnostics.json`
-- `artifacts/reports/r2_army_presence_probe/report.md`
 
 ## Blockers
 
-- `checkpoint_C_army_core_gate` still needs to review the replay caveat and the legacy-classification mismatch
-- tactical progression remains blocked until checkpoint review
+- legacy `bot_ai.army` / combat classification path remains inconsistent
+- replay-backed corroboration is still pending
+- tactical-stage evidence semantics must remain strict in R3
 
 ## Next Pending Task
 
-- `checkpoint_C_army_core_gate`
+- `task_010_rewrite_defend_attack_transition_logic`
 
 ## Stop
 
-This turn did not execute `checkpoint_C_army_core_gate`.
+This turn did not execute `task_010_rewrite_defend_attack_transition_logic`.
