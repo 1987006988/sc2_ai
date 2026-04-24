@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import subprocess
 import sys
 import traceback
 import uuid
@@ -46,6 +47,8 @@ class MatchRequest:
     opponent_tags: tuple[str, ...] = ()
     output_dir: str = "data/logs/evaluation"
     launch_mode: str = "dry_run"
+    run_class: str = "unspecified"
+    validation_class: str = "unspecified"
 
 
 def _game_time_limit_seconds(runtime_config: RuntimeConfig) -> int:
@@ -61,6 +64,87 @@ def _game_time_limit_seconds(runtime_config: RuntimeConfig) -> int:
 def _write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _read_yaml(path: str | Path) -> dict[str, Any]:
+    import yaml
+
+    with Path(path).open("r", encoding="utf-8") as handle:
+        payload = yaml.safe_load(handle) or {}
+    if not isinstance(payload, dict):
+        raise ValueError(f"Expected mapping YAML in {path}")
+    return payload
+
+
+def _git_commit() -> str | None:
+    try:
+        return (
+            subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            .stdout.strip()
+        )
+    except Exception:
+        return None
+
+
+def _bot_config_snapshot(request: MatchRequest) -> dict[str, Any]:
+    payload = _read_yaml(request.bot_config)
+    payload.setdefault(
+        "control",
+        {
+            "config_role": "unspecified",
+            "validation_class": request.validation_class,
+            "run_class": request.run_class,
+        },
+    )
+    return payload
+
+
+def _result_payload(
+    result: MatchResult,
+    request: MatchRequest,
+    *,
+    started_at: str | None,
+    completed_at: str | None,
+    duration_seconds: float | None,
+    failure_reason: str | None,
+    replay_path: str | None,
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "match_id": result.match_id,
+        "status": result.status,
+        "result": result.result,
+        "mode": result.mode,
+        "bot_name": result.bot_name,
+        "bot_config": request.bot_config,
+        "bot_config_id": request.bot_config_id,
+        "bot_config_tags": list(request.bot_config_tags),
+        "map_id": result.map_id,
+        "opponent_id": result.opponent_id,
+        "opponent_race": request.opponent_race,
+        "opponent_difficulty": request.opponent_difficulty,
+        "opponent_tags": list(request.opponent_tags),
+        "telemetry_path": result.telemetry_path,
+        "replay_metadata_path": result.replay_metadata_path,
+        "replay_path": replay_path,
+        "failure_reason": failure_reason,
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "duration_seconds": duration_seconds,
+        "run_class": request.run_class,
+        "validation_class": request.validation_class,
+        "config_reference": request.bot_config,
+        "config_snapshot": _bot_config_snapshot(request),
+        "git_commit": _git_commit(),
+    }
+    if extra:
+        payload.update(extra)
+    return payload
 
 
 def _race_from_str(name: str) -> Any:
@@ -286,31 +370,19 @@ def _write_failure_result(
         telemetry_path=telemetry_path,
         replay_metadata_path=replay_metadata_path,
     )
+    completed_at = datetime.now(timezone.utc).isoformat()
     _write_json(
         output_dir / "match_result.json",
-        {
-            "match_id": result.match_id,
-            "status": result.status,
-            "result": result.result,
-            "mode": result.mode,
-            "bot_name": result.bot_name,
-            "bot_config": request.bot_config,
-            "bot_config_id": request.bot_config_id,
-            "bot_config_tags": list(request.bot_config_tags),
-            "opponent_model_mode": "unknown",
-            "map_id": result.map_id,
-            "opponent_id": result.opponent_id,
-            "opponent_race": request.opponent_race,
-            "opponent_difficulty": request.opponent_difficulty,
-            "opponent_tags": list(request.opponent_tags),
-            "telemetry_path": result.telemetry_path,
-            "replay_metadata_path": result.replay_metadata_path,
-            "failure_reason": reason,
-            "started_at": started_at,
-            "completed_at": datetime.now(timezone.utc).isoformat(),
-            "duration_seconds": _duration_seconds(started_at),
-            "replay_path": None,
-        },
+        _result_payload(
+            result,
+            request,
+            started_at=started_at,
+            completed_at=completed_at,
+            duration_seconds=_duration_seconds(started_at),
+            failure_reason=reason,
+            replay_path=None,
+            extra={"opponent_model_mode": "unknown"},
+        ),
     )
     return result
 
@@ -361,31 +433,19 @@ def run_local_dry_match(request: MatchRequest) -> MatchResult:
         telemetry_path=str(telemetry_dir / "events.jsonl"),
         replay_metadata_path=str(replay_metadata_path),
     )
+    completed_at = datetime.now(timezone.utc).isoformat()
     _write_json(
         result_path,
-        {
-            "match_id": result.match_id,
-            "status": result.status,
-            "result": result.result,
-            "mode": result.mode,
-            "bot_name": result.bot_name,
-            "bot_config": request.bot_config,
-            "bot_config_id": request.bot_config_id,
-            "bot_config_tags": list(request.bot_config_tags),
-            "opponent_model_mode": app.config.opponent_model.mode,
-            "map_id": result.map_id,
-            "opponent_id": result.opponent_id,
-            "opponent_race": request.opponent_race,
-            "opponent_difficulty": request.opponent_difficulty,
-            "opponent_tags": list(request.opponent_tags),
-            "telemetry_path": result.telemetry_path,
-            "replay_metadata_path": result.replay_metadata_path,
-            "replay_path": None,
-            "failure_reason": None,
-            "started_at": started_at,
-            "completed_at": datetime.now(timezone.utc).isoformat(),
-            "duration_seconds": _duration_seconds(started_at),
-        },
+        _result_payload(
+            result,
+            request,
+            started_at=started_at,
+            completed_at=completed_at,
+            duration_seconds=_duration_seconds(started_at),
+            failure_reason=None,
+            replay_path=None,
+            extra={"opponent_model_mode": app.config.opponent_model.mode},
+        ),
     )
     return result
 
@@ -482,35 +542,25 @@ def run_real_launch_match(request: MatchRequest) -> MatchResult:
         telemetry_path=str(telemetry_dir / "events.jsonl"),
         replay_metadata_path=str(replay_metadata_path),
     )
+    completed_at = datetime.now(timezone.utc).isoformat()
     _write_json(
         output_dir / "match_result.json",
-        {
-            "match_id": result.match_id,
-            "status": result.status,
-            "result": result.result,
-            "mode": result.mode,
-            "bot_name": result.bot_name,
-            "bot_config": request.bot_config,
-            "bot_config_id": request.bot_config_id,
-            "bot_config_tags": list(request.bot_config_tags),
-            "opponent_model_mode": app.config.opponent_model.mode,
-            "map_id": result.map_id,
-            "opponent_id": result.opponent_id,
-            "opponent_race": request.opponent_race,
-            "opponent_difficulty": request.opponent_difficulty,
-            "opponent_tags": list(request.opponent_tags),
-            "telemetry_path": result.telemetry_path,
-            "replay_metadata_path": result.replay_metadata_path,
-            "replay_path": str(replay_file),
-            "failure_reason": None,
-            "exit_reason": app.container.runtime_exit_reason,
-            "started_at": started_at,
-            "completed_at": datetime.now(timezone.utc).isoformat(),
-            "duration_seconds": _duration_seconds(started_at),
-            "launch_message": "Real local match completed through python-sc2.",
-            "runtime_max_game_loop": app.config.runtime.max_game_loop,
-            "requested_game_time_limit_seconds": _game_time_limit_seconds(app.config.runtime),
-        },
+        _result_payload(
+            result,
+            request,
+            started_at=started_at,
+            completed_at=completed_at,
+            duration_seconds=_duration_seconds(started_at),
+            failure_reason=None,
+            replay_path=str(replay_file),
+            extra={
+                "opponent_model_mode": app.config.opponent_model.mode,
+                "exit_reason": app.container.runtime_exit_reason,
+                "launch_message": "Real local match completed through python-sc2.",
+                "runtime_max_game_loop": app.config.runtime.max_game_loop,
+                "requested_game_time_limit_seconds": _game_time_limit_seconds(app.config.runtime),
+            },
+        ),
     )
     _write_json(
         replay_metadata_path,
@@ -537,6 +587,8 @@ def run_match(request: MatchRequest) -> dict[str, str]:
         "match_id": result.match_id,
         "bot_config": request.bot_config,
         "bot_config_id": request.bot_config_id,
+        "run_class": request.run_class,
+        "validation_class": request.validation_class,
         "map_id": result.map_id,
         "opponent_id": result.opponent_id,
     }

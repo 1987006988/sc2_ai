@@ -36,6 +36,7 @@ def build_combat_event_payload(state: GameState, plan: TacticalPlan) -> dict[str
         "attack_order_near_enemy": attack_order_near_enemy,
         "army_order": plan.order,
         "army_order_reason": plan.reason,
+        "rally_eligible": plan.rally_eligible,
         "own_army_count": state.own_army_count,
         "visible_enemy_units_count": state.visible_enemy_units_count,
         "visible_enemy_structures_count": state.visible_enemy_structures_count,
@@ -53,6 +54,19 @@ class TacticalManager:
 
     def plan(self, state: GameState, decision: StrategyDecision) -> TacticalPlan:
         rally_point = state.own_start_location
+        if state.own_army_count <= 0:
+            return TacticalPlan(
+                name="hold_no_army",
+                strategy=decision.name,
+                tags=("no_army",),
+                order="hold_position",
+                reason="no_army_available",
+                rally_eligible=False,
+                rally_point=rally_point,
+                target_position=rally_point,
+                own_army_count=state.own_army_count,
+                visible_enemy_units_count=state.visible_enemy_units_count,
+            )
         if state.visible_enemy_units_count > 0:
             return TacticalPlan(
                 name="basic_defend_order",
@@ -60,6 +74,7 @@ class TacticalManager:
                 tags=("defend_order",),
                 order="defend_order",
                 reason="enemy_units_visible_near_base",
+                rally_eligible=False,
                 rally_point=rally_point,
                 target_position=state.own_start_location,
                 own_army_count=state.own_army_count,
@@ -67,7 +82,10 @@ class TacticalManager:
             )
         if (
             state.own_army_count >= self.build_order.attack_army_supply_threshold
-            or state.game_time >= self.build_order.attack_game_time_threshold
+            or (
+                state.own_army_count > 0
+                and state.game_time >= self.build_order.attack_game_time_threshold
+            )
         ) and state.known_enemy_start_location is not None:
             return TacticalPlan(
                 name="basic_attack_order",
@@ -75,6 +93,7 @@ class TacticalManager:
                 tags=("attack_order",),
                 order="attack_order",
                 reason="army_or_time_threshold_met",
+                rally_eligible=False,
                 rally_point=rally_point,
                 target_position=state.known_enemy_start_location,
                 own_army_count=state.own_army_count,
@@ -86,6 +105,7 @@ class TacticalManager:
             tags=("army_rally",),
             order="army_rally",
             reason="waiting_for_attack_or_defend_condition",
+            rally_eligible=True,
             rally_point=rally_point,
             target_position=rally_point,
             own_army_count=state.own_army_count,

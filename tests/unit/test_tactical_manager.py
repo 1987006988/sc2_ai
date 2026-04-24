@@ -23,6 +23,7 @@ def test_tactical_plan_serializes_army_order_fields():
         "tags": ["attack_order"],
         "order": "attack_order",
         "reason": "army_or_time_threshold_met",
+        "rally_eligible": False,
         "rally_point": [10.0, 20.0],
         "target_position": [90.0, 80.0],
         "own_army_count": 8,
@@ -44,6 +45,7 @@ def test_tactical_manager_rallies_before_attack_or_defend_conditions():
 
     assert plan.order == "army_rally"
     assert plan.reason == "waiting_for_attack_or_defend_condition"
+    assert plan.rally_eligible is True
     assert plan.target_position == (10.0, 20.0)
 
 
@@ -62,6 +64,7 @@ def test_tactical_manager_defends_when_enemy_units_visible():
 
     assert plan.order == "defend_order"
     assert plan.reason == "enemy_units_visible_near_base"
+    assert plan.rally_eligible is False
     assert plan.target_position == (10.0, 20.0)
 
 
@@ -81,10 +84,11 @@ def test_tactical_manager_attacks_after_army_threshold():
 
     assert plan.order == "attack_order"
     assert plan.reason == "army_or_time_threshold_met"
+    assert plan.rally_eligible is False
     assert plan.target_position == (90.0, 80.0)
 
 
-def test_tactical_manager_attacks_after_time_threshold():
+def test_tactical_manager_does_not_attack_without_army_even_after_time_threshold():
     plan = TacticalManager(
         BuildOrderConfig(attack_army_supply_threshold=99, attack_game_time_threshold=120.0)
     ).plan(
@@ -98,9 +102,10 @@ def test_tactical_manager_attacks_after_time_threshold():
         StrategyDecision("default"),
     )
 
-    assert plan.order == "attack_order"
-    assert plan.reason == "army_or_time_threshold_met"
-    assert plan.target_position == (90.0, 80.0)
+    assert plan.order == "hold_position"
+    assert plan.reason == "no_army_available"
+    assert plan.rally_eligible is False
+    assert plan.target_position == (10.0, 20.0)
 
 
 def test_build_combat_event_payload_detects_enemy_combat_unit_nearby():
@@ -128,6 +133,7 @@ def test_build_combat_event_payload_detects_enemy_combat_unit_nearby():
     assert payload["reason"] == "combat_signal_detected"
     assert payload["enemy_combat_unit_nearby"] is True
     assert payload["own_army_near_enemy"] is False
+    assert payload["rally_eligible"] is False
 
 
 def test_build_combat_event_payload_detects_attack_order_near_enemy():
@@ -151,6 +157,7 @@ def test_build_combat_event_payload_detects_attack_order_near_enemy():
 
     assert payload["detected"] is True
     assert payload["attack_order_near_enemy"] is True
+    assert payload["rally_eligible"] is False
     assert payload["target_position"] == [90.0, 80.0]
 
 
@@ -160,6 +167,7 @@ def test_build_combat_event_payload_has_structured_no_combat_reason():
         strategy="default",
         order="army_rally",
         reason="waiting_for_attack_or_defend_condition",
+        rally_eligible=False,
         target_position=(10.0, 20.0),
         own_army_count=0,
     )
@@ -173,3 +181,4 @@ def test_build_combat_event_payload_has_structured_no_combat_reason():
     assert payload["enemy_combat_unit_nearby"] is False
     assert payload["own_army_near_enemy"] is False
     assert payload["attack_order_near_enemy"] is False
+    assert payload["rally_eligible"] is False

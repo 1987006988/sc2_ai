@@ -1,16 +1,16 @@
 control:
-  config_role: debug_only
-  validation_class: debug_only
-  run_class: debug
-  capability_claim_allowed: false
+  config_role: adaptive_research
+  validation_class: adaptive_research
+  run_class: adaptive_treatment
+  capability_claim_allowed: true
   notes:
-    - short_window_debug_config
-    - forbidden_for_capability_claims
+    - derived_from_baseline_playable
+    - treatment_config_for_future_paired_eval
 
 bot:
-  name: sc2-ai-debug
+  name: sc2-ai-adaptive-research
   race: protoss
-  strategy: debug_stub
+  strategy: phase_b_revalidation_playable_core
 
 managers:
   macro: true
@@ -21,9 +21,14 @@ managers:
 
 opponent_model:
   mode: rule_based
+  intervention_mode: none
+  rush_risk_threshold: 0.5
+  tech_risk_threshold: 0.5
+  low_information_confidence_threshold: 0.25
+  low_information_game_time_threshold: 90.0
 
 runtime:
-  max_game_loop: 2600
+  max_game_loop: 7200
   max_steps:
   worker_production: true
   worker_gather: true

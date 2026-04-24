@@ -1,13 +1,13 @@
 evaluation:
-  name: phase_b_small_eval
-  launch_mode: real_launch
+  name: validation_contract_dry_run
+  launch_mode: dry_run
   bot_config: configs/bot/baseline_playable.yaml
   run_class: baseline_playable
-  validation_class: gameplay_capability
+  validation_class: dry_run_contract
   maps_config: configs/maps/phase_b_small_eval_maps.yaml
   opponents_config: configs/opponents/phase_b_small_eval_pool.yaml
-  repeats: 2
-  output_dir: data/logs/evaluation/phase_b_small_eval
-  run_id: phase_b_small_eval_20260422
+  repeats: 1
+  output_dir: data/logs/evaluation/validation_contract_dry_run
+  run_id: validation_contract_dry_run
   isolate_runs: true
   fail_on_crash: false

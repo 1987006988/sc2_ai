@@ -12,20 +12,30 @@ from sc2bot.config.schema import (
 from sc2bot.domain.game_state import GameState
 from sc2bot.runtime.dependency_container import DependencyContainer
 from sc2bot.runtime.game_loop import (
+    ARMY_PRESENCE_CONFIRMATION_GAME_LOOPS,
     DEFAULT_SUSTAIN_UNTIL_GAME_LOOP,
     GameLoop,
+    active_alert_names_from_bot_ai,
     assimilator_build_skip_reason,
+    build_army_presence_payload,
+    build_combat_unit_lifecycle_payload,
     build_combat_unit_production_payload,
+    build_combat_unit_queue_payload,
     build_gateway_build_payload,
     build_minimal_behavior_intervention_payload,
     build_supply_sustain_payload,
     build_tech_structure_payload,
+    classify_army_presence_events,
     combat_unit_production_skip_reason,
     cybernetics_core_build_skip_reason,
+    documented_army_count_from_bot_ai,
     gateway_build_skip_reason,
+    legacy_own_army_count_from_bot_ai,
+    normalize_available_ability_names,
     record_minimal_behavior_intervention,
     select_combat_unit_for_production,
     should_leave_after_sustain_limit,
+    units_created_count_from_bot_ai,
 )
 from sc2bot.domain.decisions import StrategyResponse
 from sc2bot.telemetry.event_logger import EventLogger
@@ -541,6 +551,7 @@ def test_build_combat_unit_production_payload_has_stable_shape():
     assert payload == {
         "reason": "combat_unit_conditions_met",
         "unit": "zealot",
+        "evidence_semantics": "precondition_or_command_path_only",
         "game_loop": 3000,
         "game_time": 133.9,
         "minerals": 140,
@@ -550,6 +561,12 @@ def test_build_combat_unit_production_payload_has_stable_shape():
         "gateway_ready_count": 1,
         "cybernetics_core_ready_count": 0,
         "idle_gateway_count": 1,
+        "pending_before_train": 0,
+        "pending_after_train": 0,
+        "pending_after_train_delta": 0,
+        "available_gateway_abilities": [],
+        "active_alerts": [],
+        "units_created_total_for_unit": 0,
     }
 
 
@@ -571,3 +588,183 @@ def test_combat_unit_production_payload_records_as_dry_telemetry(tmp_path):
     assert event["event_type"] == "combat_unit_production_skipped"
     assert event["payload"]["reason"] == "gateway_not_ready"
     assert event["payload"]["unit"] == "none"
+    assert event["payload"]["evidence_semantics"] == "precondition_or_command_path_only"
+
+
+def test_build_army_presence_payload_has_stable_shape():
+    payload = build_army_presence_payload(
+        "first_combat_unit_created",
+        GameState(
+            game_loop=6400,
+            game_time=285.7,
+            own_army_count=1,
+            visible_enemy_units_count=0,
+            visible_enemy_structures_count=3,
+        ),
+        previous_army_count=0,
+    )
+
+    assert payload == {
+        "reason": "first_combat_unit_created",
+        "game_loop": 6400,
+        "game_time": 285.7,
+        "previous_army_count": 0,
+        "own_army_count": 1,
+        "observed_unit_tag": None,
+        "observed_unit_type": None,
+        "observation_source": "bot_ai.army",
+        "legacy_own_army_count": None,
+        "documented_own_army_count": None,
+        "combat_unit_count": None,
+        "visible_enemy_units_count": 0,
+        "visible_enemy_structures_count": 3,
+    }
+
+
+def test_build_combat_unit_lifecycle_payload_has_stable_shape():
+    payload = build_combat_unit_lifecycle_payload(
+        "alive_after_short_window",
+        GameState(game_loop=6467, game_time=288.7, own_army_count=1),
+        unit_tag=77,
+        unit_name="zealot",
+        first_observed_game_loop=6400,
+    )
+
+    assert payload == {
+        "reason": "alive_after_short_window",
+        "unit_tag": 77,
+        "unit": "zealot",
+        "game_loop": 6467,
+        "game_time": 288.7,
+        "own_army_count": 1,
+        "first_observed_game_loop": 6400,
+        "confirmation_window_game_loops": ARMY_PRESENCE_CONFIRMATION_GAME_LOOPS,
+        "confirmation_window_seconds": round(ARMY_PRESENCE_CONFIRMATION_GAME_LOOPS / 22.4, 2),
+        "observation_source": "bot_ai.army",
+        "legacy_own_army_count": None,
+        "documented_own_army_count": None,
+        "combat_unit_count": None,
+        "units_created_total_for_unit": None,
+    }
+
+
+def test_build_combat_unit_queue_payload_has_stable_shape():
+    payload = build_combat_unit_queue_payload(
+        "queue_entry_observed_after_train",
+        "zealot",
+        GameState(game_loop=3128, game_time=139.64),
+        pending_before_train=0,
+        pending_after_train=1,
+        available_gateway_abilities=("TRAIN_ZEALOT",),
+        active_alerts=("TrainUnitComplete",),
+    )
+
+    assert payload == {
+        "reason": "queue_entry_observed_after_train",
+        "unit": "zealot",
+        "game_loop": 3128,
+        "game_time": 139.64,
+        "pending_before_train": 0,
+        "pending_after_train": 1,
+        "pending_after_train_delta": 1,
+        "available_gateway_abilities": ["TRAIN_ZEALOT"],
+        "active_alerts": ["TrainUnitComplete"],
+        "evidence_semantics": "queued_not_created",
+    }
+
+
+def test_classify_army_presence_events_distinguishes_observed_presence_from_short_window_alive():
+    initial_state = GameState(game_loop=6400, game_time=285.7, own_army_count=1)
+    initial_events, first_seen, confirmed, current_tags = classify_army_presence_events(
+        initial_state,
+        ((77, "zealot"),),
+        previous_army_count=0,
+        previous_observed_tags=set(),
+        first_observed_game_loops={},
+        confirmed_army_tags=set(),
+    )
+
+    assert [event_type for event_type, _payload in initial_events] == ["army_presence_changed"]
+    assert initial_events[0][1]["reason"] == "first_observed_army_presence"
+    assert initial_events[0][1]["observed_unit_type"] == "zealot"
+    assert first_seen == {77: 6400}
+    assert confirmed == set()
+    assert current_tags == {77}
+
+    confirmed_state = GameState(
+        game_loop=6400 + ARMY_PRESENCE_CONFIRMATION_GAME_LOOPS,
+        game_time=288.7,
+        own_army_count=1,
+    )
+    confirmed_events, next_first_seen, next_confirmed, next_tags = classify_army_presence_events(
+        confirmed_state,
+        ((77, "zealot"),),
+        previous_army_count=1,
+        previous_observed_tags=current_tags,
+        first_observed_game_loops=first_seen,
+        confirmed_army_tags=confirmed,
+    )
+
+    assert [event_type for event_type, _payload in confirmed_events] == [
+        "unit_alive_after_short_window",
+    ]
+    assert confirmed_events[0][1]["reason"] == "alive_after_short_window"
+    assert next_first_seen == {77: 6400}
+    assert next_confirmed == {77}
+    assert next_tags == {77}
+
+
+def test_documented_army_count_prefers_documented_channel():
+    class FakeBot:
+        army_count = 3
+        army = [object(), object()]
+
+    bot = FakeBot()
+
+    assert legacy_own_army_count_from_bot_ai(bot) == 2
+    assert documented_army_count_from_bot_ai(bot, fallback_count=2) == 3
+
+
+def test_units_created_count_reads_specific_unit_name():
+    class FakeType:
+        def __init__(self, name):
+            self.name = name
+
+    class FakeBot:
+        units_created = {
+            FakeType("ZEALOT"): 2,
+            FakeType("STALKER"): 1,
+        }
+
+    bot = FakeBot()
+
+    assert units_created_count_from_bot_ai(bot, "zealot") == 2
+    assert units_created_count_from_bot_ai(bot, "stalker") == 1
+    assert units_created_count_from_bot_ai(bot, "probe") == 0
+
+
+def test_normalize_available_ability_names_deduplicates_names():
+    class FakeAbility:
+        def __init__(self, name):
+            self.name = name
+
+    abilities = (FakeAbility("TRAIN_ZEALOT"), FakeAbility("TRAIN_ZEALOT"))
+
+    assert normalize_available_ability_names(abilities) == ("TRAIN_ZEALOT",)
+
+
+def test_active_alert_names_uses_alert_name_when_present():
+    class FakeAlert:
+        def __init__(self, name):
+            self.name = name
+
+    class FakeState:
+        alerts = (FakeAlert("TrainError"), FakeAlert("TrainUnitComplete"))
+
+    class FakeBot:
+        state = FakeState()
+
+    assert active_alert_names_from_bot_ai(FakeBot()) == (
+        "TrainError",
+        "TrainUnitComplete",
+    )

@@ -1,3 +1,12 @@
+control:
+  config_role: transitional_gameplay_fallback
+  validation_class: gameplay_capability
+  run_class: transitional_fallback
+  capability_claim_allowed: false
+  notes:
+    - retained_for_legacy_phase_b_revalidation_reference
+    - do_not_use_as_mainline_control_when_baseline_playable_exists
+
 bot:
   name: sc2-ai-phase-b-revalidation
   race: protoss

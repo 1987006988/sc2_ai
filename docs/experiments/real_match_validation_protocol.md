@@ -155,6 +155,12 @@ behavior delta、causal effect、研究特色是否成立。
 这类任务应该先通过静态检查、单元测试、dry-run 证明自己没有破坏执行合同。
 过早消耗真实对局只会浪费预算。
 
+典型例子：
+
+1. 冻结 `debug_only` / `baseline_playable` / `adaptive_research` 三类 config role
+2. 补齐 evaluation artifact 中的 `git_commit`、`config_snapshot`、`run_class`、`validation_class`
+3. 让 dry-run 输出足以审计 provenance，但不把 dry-run 叙述成 gameplay evidence
+
 ### 3. 离线分析与报告整理任务
 
 包括：
@@ -209,6 +215,31 @@ behavior delta、causal effect、研究特色是否成立。
 7. capability_validation_status 或 failure_class
 
 若缺少其中任意关键项，本次 evidence 不能直接支持 capability claim。
+
+### 当前 mainline config role 约定
+
+当前主线固定使用以下三类 bot config 角色：
+
+1. `debug_only`
+
+   * 对应 `configs/bot/debug.yaml`
+   * 只允许用于 smoke、dry-run、最短窗口调试
+   * 禁止用于任何 gameplay capability claim
+
+2. `baseline_playable`
+
+   * 对应 `configs/bot/baseline_playable.yaml`
+   * 是 Phase playable core rebuild 的正式 control config
+   * 允许用于 build chain / production / tactical / small eval 等 baseline capability 验证
+
+3. `adaptive_research`
+
+   * 对应 `configs/bot/adaptive_research.yaml`
+   * 是后续 adaptive research paired evaluation 的 treatment config
+   * 只有在 baseline_playable 通过对应 checkpoint 后才允许进入 paired evaluation
+
+`configs/bot/phase_b_revalidation_gameplay.yaml` 仅保留为过渡期 fallback / historical reference。
+当 `baseline_playable.yaml` 已存在时，它不再是当前 mainline control config。
 
 ### 为什么需要这套证据包
 

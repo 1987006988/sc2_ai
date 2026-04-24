@@ -14,7 +14,15 @@ def test_smoke_evaluation_config_loads():
     assert config["evaluation"]["name"] == "smoke"
     assert config["evaluation"]["repeats"] == 1
     entries = _bot_config_entries(config["evaluation"])
-    assert entries == [{"id": "default", "path": "configs/bot/debug.yaml", "tags": ()}]
+    assert entries == [
+        {
+            "id": "default",
+            "path": "configs/bot/debug.yaml",
+            "tags": (),
+            "run_class": "unspecified",
+            "validation_class": "unspecified",
+        }
+    ]
 
 
 def test_phase1d_ablation_config_loads_multiple_bot_configs():
@@ -114,13 +122,15 @@ def test_phase_b_revalidation_duration_probe_config_uses_gameplay_runtime_window
     bot_config = load_bot_config(evaluation["bot_config"])
 
     assert evaluation["launch_mode"] == "real_launch"
-    assert evaluation["bot_config"] == "configs/bot/phase_b_revalidation_gameplay.yaml"
+    assert evaluation["bot_config"] == "configs/bot/baseline_playable.yaml"
     assert evaluation["bot_config"] != "configs/bot/debug.yaml"
+    assert evaluation["run_class"] == "baseline_playable"
+    assert evaluation["validation_class"] == "gameplay_capability"
     assert evaluation["repeats"] == 1
     assert len(maps) == 1
     assert len(opponents) >= 1
-    assert bot_config.runtime.max_game_loop == 7200
-    assert _game_time_limit_seconds(bot_config.runtime) >= 300
+    assert bot_config.runtime.max_game_loop >= 9600
+    assert _game_time_limit_seconds(bot_config.runtime) >= 400
 
 
 def test_run_game_time_limit_derives_from_runtime_max_game_loop():

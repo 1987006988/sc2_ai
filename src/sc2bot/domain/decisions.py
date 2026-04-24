@@ -50,6 +50,7 @@ class TacticalPlan:
     tags: tuple[str, ...] = field(default_factory=tuple)
     order: str = "army_rally"
     reason: str = "no_army_available"
+    rally_eligible: bool = False
     rally_point: tuple[float, float] | None = None
     target_position: tuple[float, float] | None = None
     own_army_count: int = 0
@@ -62,6 +63,7 @@ class TacticalPlan:
             "tags": list(self.tags),
             "order": self.order,
             "reason": self.reason,
+            "rally_eligible": self.rally_eligible,
             "rally_point": list(self.rally_point) if self.rally_point else None,
             "target_position": list(self.target_position)
             if self.target_position

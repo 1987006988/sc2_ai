@@ -1,7 +1,9 @@
 evaluation:
   name: phase_b_revalidation_duration_probe
   launch_mode: real_launch
-  bot_config: configs/bot/phase_b_revalidation_gameplay.yaml
+  bot_config: configs/bot/baseline_playable.yaml
+  run_class: baseline_playable
+  validation_class: gameplay_capability
   maps_config: configs/maps/phase_b_small_eval_maps.yaml
   opponents_config: configs/opponents/phase_b_small_eval_pool.yaml
   repeats: 1

@@ -35,6 +35,10 @@ def _bot_config_entries(evaluation: dict) -> list[dict]:
                 "id": item["id"],
                 "path": item["path"],
                 "tags": tuple(item.get("tags", ())),
+                "run_class": item.get("run_class", evaluation.get("run_class", "unspecified")),
+                "validation_class": item.get(
+                    "validation_class", evaluation.get("validation_class", "unspecified")
+                ),
             }
             for item in evaluation["bot_configs"]
         ]
@@ -43,6 +47,8 @@ def _bot_config_entries(evaluation: dict) -> list[dict]:
             "id": "default",
             "path": evaluation["bot_config"],
             "tags": (),
+            "run_class": evaluation.get("run_class", "unspecified"),
+            "validation_class": evaluation.get("validation_class", "unspecified"),
         }
     ]
 
@@ -86,6 +92,8 @@ def main() -> int:
                             opponent_tags=tuple(opponent.get("tags", ())),
                             output_dir=str(output_dir),
                             launch_mode=launch_mode,
+                            run_class=bot_config["run_class"],
+                            validation_class=bot_config["validation_class"],
                         )
                     )
 
@@ -100,6 +108,11 @@ def main() -> int:
                 "output_dir": str(output_dir),
                 "historical": False,
                 "repeats": repeats,
+                "launch_mode": launch_mode,
+                "run_class": evaluation.get("run_class", "unspecified"),
+                "validation_class": evaluation.get("validation_class", "unspecified"),
+                "config_reference": str(Path(args.config)),
+                "config_snapshot": config,
                 "bot_configs": bot_configs,
                 "maps": maps,
                 "opponents": opponents,

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from sc2.bot_ai import BotAI
 
 DEFAULT_SUSTAIN_UNTIL_GAME_LOOP = 2600
+ARMY_PRESENCE_CONFIRMATION_GAME_LOOPS = 67
 GATEWAY_MINERALS = 150
 ASSIMILATOR_MINERALS = 75
 CYBERNETICS_CORE_MINERALS = 150
@@ -91,6 +92,7 @@ def build_game_state_from_bot_ai(bot_ai: "BotAI") -> GameState:
     enemy_structures = tuple(
         sorted(_unit_type_name(unit) for unit in getattr(bot_ai, "enemy_structures", []))
     )
+    legacy_own_army_count = len(getattr(bot_ai, "army", []))
     game_loop = int(getattr(bot_ai.state, "game_loop", 0))
     game_time = float(getattr(bot_ai, "time", game_loop / 22.4))
     return GameState(
@@ -110,7 +112,9 @@ def build_game_state_from_bot_ai(bot_ai: "BotAI") -> GameState:
             1 for name in enemy_structures if name.upper() in _TOWNHALL_TYPE_NAMES
         ),
         own_workers_count=len(getattr(bot_ai, "workers", [])),
-        own_army_count=len(getattr(bot_ai, "army", [])),
+        own_army_count=documented_army_count_from_bot_ai(
+            bot_ai, fallback_count=legacy_own_army_count
+        ),
         own_townhalls_count=len(getattr(bot_ai, "townhalls", [])),
         minerals=int(getattr(bot_ai, "minerals", 0)),
         vespene=int(getattr(bot_ai, "vespene", 0)),
@@ -146,6 +150,92 @@ def _first_position_tuple(positions: Any) -> tuple[float, float] | None:
     except TypeError:
         return None
     return _position_tuple(first)
+
+
+def observed_army_units_from_bot_ai(bot_ai: "BotAI") -> tuple[tuple[int, str], ...]:
+    """Return a stable snapshot of currently observed friendly army units."""
+
+    observed_units: list[tuple[int, str]] = []
+    for unit in getattr(bot_ai, "army", []):
+        tag = getattr(unit, "tag", None)
+        if tag is None:
+            continue
+        observed_units.append((int(tag), _unit_type_name(unit)))
+    return tuple(sorted(observed_units, key=lambda item: item[0]))
+
+
+def legacy_own_army_count_from_bot_ai(bot_ai: "BotAI") -> int:
+    """Return the legacy army count based on ``bot_ai.army`` length."""
+
+    return len(getattr(bot_ai, "army", []))
+
+
+def documented_army_count_from_bot_ai(bot_ai: "BotAI", *, fallback_count: int = 0) -> int:
+    """Return a documented army-count channel when available, else fall back."""
+
+    documented_count = getattr(bot_ai, "army_count", None)
+    if documented_count is None:
+        return int(fallback_count)
+    try:
+        return int(documented_count)
+    except (TypeError, ValueError):
+        return int(fallback_count)
+
+
+def units_created_count_from_bot_ai(bot_ai: "BotAI", unit_name: str) -> int:
+    """Return the created-unit counter for a specific combat unit when exposed."""
+
+    units_created = getattr(bot_ai, "units_created", None)
+    if units_created is None:
+        return 0
+    items = getattr(units_created, "items", None)
+    if not callable(items):
+        return 0
+    total = 0
+    for unit_type, count in items():
+        type_name = getattr(unit_type, "name", None)
+        if type_name is None:
+            type_name = _unit_type_name(unit_type)
+        if str(type_name).lower() != unit_name:
+            continue
+        try:
+            total += int(count)
+        except (TypeError, ValueError):
+            continue
+    return total
+
+
+def active_alert_names_from_bot_ai(bot_ai: "BotAI") -> tuple[str, ...]:
+    """Return normalized active alerts from the current SC2 observation."""
+
+    alerts = getattr(getattr(bot_ai, "state", None), "alerts", ()) or ()
+    normalized: list[str] = []
+    for alert in alerts:
+        name = getattr(alert, "name", None)
+        if name is None:
+            try:
+                from sc2.data import Alert
+
+                name = Alert(alert).name
+            except Exception:
+                name = str(alert)
+        normalized.append(str(name))
+    return tuple(sorted(set(normalized)))
+
+
+def normalize_available_ability_names(raw_abilities: Any) -> tuple[str, ...]:
+    """Normalize python-sc2 ability identifiers into stable string names."""
+
+    normalized: list[str] = []
+    for ability in raw_abilities or ():
+        name = getattr(ability, "name", None)
+        if name is None:
+            exact_id = getattr(ability, "exact_id", None)
+            name = getattr(exact_id, "name", None)
+        if name is None:
+            name = str(ability)
+        normalized.append(str(name))
+    return tuple(sorted(set(normalized)))
 
 
 def should_leave_after_sustain_limit(
@@ -361,12 +451,22 @@ def build_combat_unit_production_payload(
     gateway_ready_count: int = 0,
     cybernetics_core_ready_count: int = 0,
     idle_gateway_count: int = 0,
+    pending_before_train: int = 0,
+    pending_after_train: int = 0,
+    available_gateway_abilities: tuple[str, ...] = (),
+    active_alerts: tuple[str, ...] = (),
+    units_created_total_for_unit: int = 0,
 ) -> dict[str, object]:
     """Build stable telemetry for Phase B combat-unit production events."""
 
     return {
         "reason": reason,
         "unit": unit_name or "none",
+        "evidence_semantics": (
+            "command_only_not_unit_existence"
+            if reason == "train_command_issued"
+            else "precondition_or_command_path_only"
+        ),
         "game_loop": state.game_loop,
         "game_time": state.game_time,
         "minerals": state.minerals,
@@ -376,7 +476,184 @@ def build_combat_unit_production_payload(
         "gateway_ready_count": gateway_ready_count,
         "cybernetics_core_ready_count": cybernetics_core_ready_count,
         "idle_gateway_count": idle_gateway_count,
+        "pending_before_train": pending_before_train,
+        "pending_after_train": pending_after_train,
+        "pending_after_train_delta": pending_after_train - pending_before_train,
+        "available_gateway_abilities": list(available_gateway_abilities),
+        "active_alerts": list(active_alerts),
+        "units_created_total_for_unit": units_created_total_for_unit,
     }
+
+
+def build_combat_unit_queue_payload(
+    reason: str,
+    unit_name: str,
+    state: GameState,
+    *,
+    pending_before_train: int,
+    pending_after_train: int,
+    available_gateway_abilities: tuple[str, ...] = (),
+    active_alerts: tuple[str, ...] = (),
+) -> dict[str, object]:
+    """Build telemetry for queue-entry confirmation after a train command."""
+
+    return {
+        "reason": reason,
+        "unit": unit_name,
+        "game_loop": state.game_loop,
+        "game_time": state.game_time,
+        "pending_before_train": pending_before_train,
+        "pending_after_train": pending_after_train,
+        "pending_after_train_delta": pending_after_train - pending_before_train,
+        "available_gateway_abilities": list(available_gateway_abilities),
+        "active_alerts": list(active_alerts),
+        "evidence_semantics": "queued_not_created",
+    }
+
+
+def build_army_presence_payload(
+    reason: str,
+    state: GameState,
+    *,
+    previous_army_count: int,
+    observed_unit_tag: int | None = None,
+    observed_unit_type: str | None = None,
+    legacy_own_army_count: int | None = None,
+    documented_own_army_count: int | None = None,
+    combat_unit_count: int | None = None,
+) -> dict[str, object]:
+    """Build stable telemetry for first-army and army-growth transitions."""
+
+    return {
+        "reason": reason,
+        "game_loop": state.game_loop,
+        "game_time": state.game_time,
+        "previous_army_count": previous_army_count,
+        "own_army_count": state.own_army_count,
+        "observed_unit_tag": observed_unit_tag,
+        "observed_unit_type": observed_unit_type,
+        "observation_source": "bot_ai.army",
+        "legacy_own_army_count": legacy_own_army_count,
+        "documented_own_army_count": documented_own_army_count,
+        "combat_unit_count": combat_unit_count,
+        "visible_enemy_units_count": state.visible_enemy_units_count,
+        "visible_enemy_structures_count": state.visible_enemy_structures_count,
+    }
+
+
+def build_combat_unit_lifecycle_payload(
+    reason: str,
+    state: GameState,
+    *,
+    unit_tag: int,
+    unit_name: str,
+    first_observed_game_loop: int,
+    confirmation_window_game_loops: int = ARMY_PRESENCE_CONFIRMATION_GAME_LOOPS,
+    observation_source: str = "bot_ai.army",
+    legacy_own_army_count: int | None = None,
+    documented_own_army_count: int | None = None,
+    combat_unit_count: int | None = None,
+    units_created_total_for_unit: int | None = None,
+) -> dict[str, object]:
+    """Build stable telemetry for observed army-unit lifecycle events."""
+
+    return {
+        "reason": reason,
+        "unit_tag": unit_tag,
+        "unit": unit_name,
+        "game_loop": state.game_loop,
+        "game_time": state.game_time,
+        "own_army_count": state.own_army_count,
+        "first_observed_game_loop": first_observed_game_loop,
+        "confirmation_window_game_loops": confirmation_window_game_loops,
+        "confirmation_window_seconds": round(confirmation_window_game_loops / 22.4, 2),
+        "observation_source": observation_source,
+        "legacy_own_army_count": legacy_own_army_count,
+        "documented_own_army_count": documented_own_army_count,
+        "combat_unit_count": combat_unit_count,
+        "units_created_total_for_unit": units_created_total_for_unit,
+    }
+
+
+def classify_army_presence_events(
+    state: GameState,
+    current_army_units: tuple[tuple[int, str], ...],
+    *,
+    previous_army_count: int,
+    previous_observed_tags: set[int],
+    first_observed_game_loops: dict[int, int],
+    confirmed_army_tags: set[int],
+    confirmation_window_game_loops: int = ARMY_PRESENCE_CONFIRMATION_GAME_LOOPS,
+) -> tuple[list[tuple[str, dict[str, object]]], dict[int, int], set[int], set[int]]:
+    """Classify army-observation telemetry without requiring a live BotAI instance."""
+
+    current_units_by_tag = dict(current_army_units)
+    current_tags = set(current_units_by_tag)
+    updated_first_observed = {
+        tag: observed_at
+        for tag, observed_at in first_observed_game_loops.items()
+        if tag in current_tags
+    }
+    updated_confirmed_tags = confirmed_army_tags & current_tags
+    events: list[tuple[str, dict[str, object]]] = []
+    new_tags: list[int] = []
+
+    for unit_tag, unit_name in current_army_units:
+        if unit_tag in updated_first_observed:
+            continue
+        updated_first_observed[unit_tag] = state.game_loop
+        new_tags.append(unit_tag)
+    for unit_tag in sorted(current_tags):
+        if unit_tag in updated_confirmed_tags:
+            continue
+        first_observed_game_loop = updated_first_observed[unit_tag]
+        if state.game_loop - first_observed_game_loop < confirmation_window_game_loops:
+            continue
+        updated_confirmed_tags.add(unit_tag)
+        events.append(
+            (
+                "unit_alive_after_short_window",
+                build_combat_unit_lifecycle_payload(
+                    "alive_after_short_window",
+                    state,
+                    unit_tag=unit_tag,
+                    unit_name=current_units_by_tag[unit_tag],
+                    first_observed_game_loop=first_observed_game_loop,
+                    confirmation_window_game_loops=confirmation_window_game_loops,
+                    observation_source="bot_ai.army",
+                ),
+            )
+        )
+
+    if state.own_army_count > previous_army_count:
+        reference_tag = None
+        recently_seen_tags = sorted(current_tags - previous_observed_tags)
+        if recently_seen_tags:
+            reference_tag = recently_seen_tags[0]
+        elif new_tags:
+            reference_tag = new_tags[0]
+        elif current_tags:
+            reference_tag = min(current_tags)
+        reference_unit = current_units_by_tag.get(reference_tag) if reference_tag is not None else None
+        reason = (
+            "first_observed_army_presence"
+            if previous_army_count <= 0
+            else "army_count_increased"
+        )
+        events.append(
+            (
+                "army_presence_changed",
+                build_army_presence_payload(
+                    reason,
+                    state,
+                    previous_army_count=previous_army_count,
+                    observed_unit_tag=reference_tag,
+                    observed_unit_type=reference_unit,
+                ),
+            )
+        )
+
+    return events, updated_first_observed, updated_confirmed_tags, current_tags
 
 
 def build_minimal_behavior_intervention_payload(
@@ -438,6 +715,35 @@ def build_python_sc2_local_bot(
 
     class ProjectBotAI(BotAI):
         _scout_worker_tag: int | None = None
+        _last_recorded_army_count: int = 0
+        _previous_observed_army_tags: set[int] = set()
+        _army_unit_first_observed_loops: dict[int, int] = {}
+        _confirmed_alive_army_tags: set[int] = set()
+
+        async def on_unit_created(self, unit: Any) -> None:
+            unit_name = _unit_type_name(unit)
+            if unit_name not in {"zealot", "stalker"}:
+                return
+            state = build_game_state_from_bot_ai(self)
+            container.telemetry.record(
+                "unit_created_detected",
+                build_combat_unit_lifecycle_payload(
+                    "on_unit_created_callback",
+                    state,
+                    unit_tag=int(getattr(unit, "tag", 0)),
+                    unit_name=unit_name,
+                    first_observed_game_loop=state.game_loop,
+                    observation_source="on_unit_created_callback",
+                    legacy_own_army_count=legacy_own_army_count_from_bot_ai(self),
+                    documented_own_army_count=documented_army_count_from_bot_ai(
+                        self, fallback_count=state.own_army_count
+                    ),
+                    combat_unit_count=len(observed_army_units_from_bot_ai(self)),
+                    units_created_total_for_unit=units_created_count_from_bot_ai(
+                        self, unit_name
+                    ),
+                ),
+            )
 
         async def on_start(self) -> None:
             container.telemetry.record(
@@ -453,6 +759,7 @@ def build_python_sc2_local_bot(
         async def on_step(self, iteration: int) -> None:
             try:
                 state = build_game_state_from_bot_ai(self)
+                self._record_army_presence_transition(state)
                 strategy_response = game_loop.process_state(state)
                 await self._execute_survival_baseline(strategy_response)
                 exit_reason = self._exit_reason(iteration, state)
@@ -476,6 +783,46 @@ def build_python_sc2_local_bot(
                     {"iteration": iteration, "error": str(exc)},
                 )
                 await self.client.leave()
+
+        def _record_army_presence_transition(self, state: GameState) -> None:
+            legacy_army_count = legacy_own_army_count_from_bot_ai(self)
+            documented_army_count = documented_army_count_from_bot_ai(
+                self, fallback_count=state.own_army_count
+            )
+            combat_unit_count = len(observed_army_units_from_bot_ai(self))
+            events, first_observed_loops, confirmed_alive_tags, current_tags = (
+                classify_army_presence_events(
+                    state,
+                    tuple(
+                        sorted(
+                            (
+                                (unit_tag, unit_name)
+                                for unit_tag, unit_name in observed_army_units_from_bot_ai(self)
+                            ),
+                            key=lambda item: item[0],
+                        )
+                    ),
+                    previous_army_count=self._last_recorded_army_count,
+                    previous_observed_tags=self._previous_observed_army_tags,
+                    first_observed_game_loops=self._army_unit_first_observed_loops,
+                    confirmed_army_tags=self._confirmed_alive_army_tags,
+                )
+            )
+            enriched_events: list[tuple[str, dict[str, object]]] = []
+            for event_type, payload in events:
+                payload = {
+                    **payload,
+                    "legacy_own_army_count": legacy_army_count,
+                    "documented_own_army_count": documented_army_count,
+                    "combat_unit_count": combat_unit_count,
+                }
+                enriched_events.append((event_type, payload))
+            for event_type, payload in enriched_events:
+                container.telemetry.record(event_type, payload)
+            self._army_unit_first_observed_loops = first_observed_loops
+            self._confirmed_alive_army_tags = confirmed_alive_tags
+            self._previous_observed_army_tags = current_tags
+            self._last_recorded_army_count = state.own_army_count
 
         def _exit_reason(self, iteration: int, state: GameState) -> str | None:
             if runtime_config.max_steps is not None and iteration >= runtime_config.max_steps:
@@ -962,6 +1309,13 @@ def build_python_sc2_local_bot(
                     idle_gateway_count=idle_gateway_count,
                 )
                 return
+            selected_gateway = idle_gateways.first
+            pending_before_train = int(self.already_pending(unit_type))
+            available_gateway_abilities = await self._available_gateway_ability_names(
+                selected_gateway
+            )
+            active_alerts = active_alert_names_from_bot_ai(self)
+            units_created_total_for_unit = units_created_count_from_bot_ai(self, unit_name)
             self._record_combat_unit_production(
                 "attempt",
                 "combat_unit_conditions_met",
@@ -970,9 +1324,14 @@ def build_python_sc2_local_bot(
                 gateway_ready_count=gateway_ready_count,
                 cybernetics_core_ready_count=cybernetics_core_ready_count,
                 idle_gateway_count=idle_gateway_count,
+                pending_before_train=pending_before_train,
+                pending_after_train=pending_before_train,
+                available_gateway_abilities=available_gateway_abilities,
+                active_alerts=active_alerts,
+                units_created_total_for_unit=units_created_total_for_unit,
             )
             try:
-                idle_gateways.first.train(unit_type)
+                selected_gateway.train(unit_type)
             except Exception as exc:
                 self._record_combat_unit_production(
                     "failed",
@@ -982,8 +1341,15 @@ def build_python_sc2_local_bot(
                     gateway_ready_count=gateway_ready_count,
                     cybernetics_core_ready_count=cybernetics_core_ready_count,
                     idle_gateway_count=idle_gateway_count,
+                    pending_before_train=pending_before_train,
+                    pending_after_train=pending_before_train,
+                    available_gateway_abilities=available_gateway_abilities,
+                    active_alerts=active_alerts,
+                    units_created_total_for_unit=units_created_total_for_unit,
                 )
                 return
+            pending_after_train = int(self.already_pending(unit_type))
+            active_alerts = active_alert_names_from_bot_ai(self)
             self._record_combat_unit_production(
                 "success",
                 "train_command_issued",
@@ -992,6 +1358,28 @@ def build_python_sc2_local_bot(
                 gateway_ready_count=gateway_ready_count,
                 cybernetics_core_ready_count=cybernetics_core_ready_count,
                 idle_gateway_count=idle_gateway_count,
+                pending_before_train=pending_before_train,
+                pending_after_train=pending_after_train,
+                available_gateway_abilities=available_gateway_abilities,
+                active_alerts=active_alerts,
+                units_created_total_for_unit=units_created_total_for_unit,
+            )
+            queue_reason = (
+                "queue_entry_observed_after_train"
+                if pending_after_train > pending_before_train
+                else "queue_entry_not_observed_after_train"
+            )
+            container.telemetry.record(
+                "queued_after_train",
+                build_combat_unit_queue_payload(
+                    queue_reason,
+                    unit_name,
+                    state,
+                    pending_before_train=pending_before_train,
+                    pending_after_train=pending_after_train,
+                    available_gateway_abilities=available_gateway_abilities,
+                    active_alerts=active_alerts,
+                ),
             )
 
         def _record_combat_unit_production(
@@ -1004,6 +1392,11 @@ def build_python_sc2_local_bot(
             gateway_ready_count: int,
             cybernetics_core_ready_count: int,
             idle_gateway_count: int,
+            pending_before_train: int = 0,
+            pending_after_train: int = 0,
+            available_gateway_abilities: tuple[str, ...] = (),
+            active_alerts: tuple[str, ...] = (),
+            units_created_total_for_unit: int = 0,
         ) -> None:
             container.telemetry.record(
                 f"combat_unit_production_{outcome}",
@@ -1014,8 +1407,21 @@ def build_python_sc2_local_bot(
                     gateway_ready_count=gateway_ready_count,
                     cybernetics_core_ready_count=cybernetics_core_ready_count,
                     idle_gateway_count=idle_gateway_count,
+                    pending_before_train=pending_before_train,
+                    pending_after_train=pending_after_train,
+                    available_gateway_abilities=available_gateway_abilities,
+                    active_alerts=active_alerts,
+                    units_created_total_for_unit=units_created_total_for_unit,
                 ),
             )
+
+        async def _available_gateway_ability_names(self, gateway: Any) -> tuple[str, ...]:
+            try:
+                return normalize_available_ability_names(
+                    await self.get_available_abilities(gateway)
+                )
+            except Exception:
+                return ()
 
         def _combat_unit_type(self, unit_name: str | None) -> Any:
             if unit_name == "zealot":
