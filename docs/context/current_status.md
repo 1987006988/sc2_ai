@@ -33,6 +33,13 @@ Current source-of-truth status:
 - the next allowed execution entrypoint is
   `docs/plans/active/research_master_task_queue.yaml`.
 
+Control-layer cleanup status:
+
+- the new control layer has been fully imported and cleaned up;
+- old plans have been explicitly downgraded to historical reference;
+- the repository may now begin from the new master queue;
+- this round added no new gameplay capability and only clarified governance.
+
 Legacy/historical plan separation is indexed in:
 
 - `docs/plans/legacy_index.md`

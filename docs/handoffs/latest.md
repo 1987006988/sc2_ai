@@ -44,6 +44,17 @@ These files are now the current execution authority:
 - `docs/templates/task_recipe_template.md`
 - `docs/experiments/failure_repair_playbook.md`
 
+## Execution Entry
+
+The only execution entrypoint is:
+
+- `docs/plans/active/research_master_task_queue.yaml`
+
+If execution resumes, the first task must come from the current active queue
+state after checking `active_next_task` and `requires`.
+
+Do not resume from any old Phase A / Phase B / Phase B-R queue.
+
 ## Legacy Plans Marked As Historical Reference
 
 - `docs/plans/active/MASTER_PLAN_interview_demo_v0.md`
@@ -82,3 +93,12 @@ The next allowed action is to start from:
 
 Old queues are no longer execution entrypoints. New execution must reference the
 active control layer above and use the new master queue as the only task source.
+
+Allowed next action:
+
+- begin executing the new master queue, one task at a time, from the current
+  queue state.
+
+Not allowed next action:
+
+- starting from any legacy queue or manual trigger as if it were still active.

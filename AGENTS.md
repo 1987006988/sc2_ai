@@ -4,14 +4,22 @@
 
 Build a layered hybrid full-game StarCraft II bot.
 
-Phase 1 focuses on:
+The current mainline objective is:
 
-- runnable full-game skeleton;
-- local evaluation loop;
-- minimal telemetry and logs;
-- opponent modeling / hidden-state inference interface.
+1. first reach an accepted playable baseline;
+2. then validate a single adaptive research feature on top of that baseline.
 
-Phase 1's only primary research feature is opponent modeling / hidden-state inference.
+The active execution authority is the current research control layer:
+
+- `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+- `docs/plans/active/research_master_task_queue.yaml`
+- `docs/experiments/real_match_validation_protocol.md`
+- `docs/experiments/checkpoint_acceptance_spec.md`
+- `docs/plans/active/phase_playable_core_rebuild.md`
+- `docs/plans/active/phase_adaptive_response_research.md`
+- `docs/agents/codex_execution_rules_research_mode.md`
+
+Old phase plans are historical references only.
 
 ## Current Scope
 
@@ -23,47 +31,57 @@ Phase 1's only primary research feature is opponent modeling / hidden-state infe
 
 ## Directory Navigation
 
-- `src/sc2bot/`: production bot runtime, managers, config, telemetry, and stable interfaces.
-- `research/`: prototypes, notebooks, ablations, SMAC, replay learning, LLM coach, combat predictor experiments.
-- `evaluation/`: fixed opponent pools, batch matches, metrics, reports.
+- `src/sc2bot/`: production bot runtime, managers, config, telemetry, and
+  stable interfaces.
+- `research/`: prototypes, notebooks, ablations, SMAC, replay learning, LLM
+  coach, combat predictor experiments.
+- `evaluation/`: match runners, batch orchestration, metrics, reports.
 - `configs/`: bot, map, opponent, evaluation, and logging configs.
-- `data/`: replays, parsed data, features, logs. Large generated data should not be committed by default.
+- `data/`: replays, parsed data, features, logs. Large generated data should
+  not be committed by default.
 - `artifacts/`: generated models, reports, plots, checkpoints, replay artifacts.
-- `docs/`: context, ADRs, plans, handoffs, lessons, templates, commands.
+- `docs/`: context, plans, handoffs, lessons, templates, commands, and control
+  files.
 - `scripts/`: repeatable setup, development, data, and docs commands.
 - `tests/`: unit and integration tests for mainline infrastructure.
 
 ## Mainline / Research Boundary
 
 - Do not import `research/` from `src/sc2bot/`.
-- Do not place notebooks, SMAC experiments, LLM prompts, replay exploration, or one-off ablation scripts in `src/sc2bot/`.
+- Do not place notebooks, SMAC experiments, LLM prompts, replay exploration, or
+  one-off ablation scripts in `src/sc2bot/`.
 - Prototype code must pass promotion rules before moving into `src/sc2bot/`.
-- Evaluation code may run the bot, but bot decision logic must stay out of `evaluation/`.
+- Evaluation code may run the bot, but bot decision logic must stay out of
+  `evaluation/`.
 
 ## How to Run
 
 Initial commands:
 
 - Environment check: `scripts/setup/check_env.ps1`
-- Local bot skeleton: `scripts/dev/run_bot_local.ps1`
-- Smoke evaluation skeleton: `scripts/dev/run_smoke_eval.ps1`
 - Unit tests: `python -m pytest tests/unit`
 
-## Verification
+Validated real-match commands and variants should be read from:
 
-Every mainline task must state:
+- `docs/commands/common_commands.md`
+- `docs/commands/verification_matrix.md`
+- `docs/handoffs/latest.md`
 
-- Goal
-- Context
-- Constraints
-- Done when
-- Verification steps
+## Validation Discipline
 
-Use `docs/templates/task_template.md` for non-trivial tasks.
+- `completed != validated`
+- `diagnostic != capability`
+- unit tests prove code logic only
+- dry-runs prove orchestration only
+- real matches are required for gameplay capability claims
+- multi-match batches are required for stability claims
+- checkpoint failure blocks progression
+
+Never use historical completed tasks as proof that a capability is accepted.
 
 ## Planning Rules
 
-Write a plan in `docs/plans/active/` before:
+Write or update a plan in `docs/plans/active/` before:
 
 - changing multiple mainline modules;
 - adding a manager;
@@ -73,6 +91,12 @@ Write a plan in `docs/plans/active/` before:
 - changing architecture boundaries;
 - introducing a new external dependency;
 - starting work expected to take more than half a day.
+
+For current execution, the authoritative task source is:
+
+- `docs/plans/active/research_master_task_queue.yaml`
+
+Do not resume any legacy phase queue as if it were still active.
 
 ## Prototype Promotion Rules
 
@@ -91,20 +115,17 @@ A prototype may enter `src/sc2bot/` only if:
 
 - Do not make AlphaStar-like end-to-end RL the current mainline.
 - Do not make SMAC / SMACv2 the full-game mainline.
-- Do not use LLMs as the real-time control layer in phase 1.
+- Do not use LLMs as the real-time control layer.
 - Do not put research scripts or notebooks into `src/sc2bot/`.
 - Do not rely on chat history as project memory.
-- Do not silently change architecture boundaries without ADR or plan updates.
-
-## Showcase vs Mainline
-
-- Structured strategy explanation and replay summary are showcase enhancements.
-- They do not block phase-1 mainline completion.
+- Do not silently change architecture boundaries without plan updates.
+- Do not treat historical phase plans as execution authority.
+- Do not continue past a failed checkpoint.
 
 ## Before Finishing a Task
 
-- Update the relevant plan or create a handoff.
+- Update the relevant control file or create a handoff.
 - Record verification commands and results.
-- Add or update an ADR if architecture changed.
+- Update `docs/context/current_status.md` if the control state changed.
 - Add a lesson if a non-obvious failure or repeated pitfall was discovered.
-- Keep `docs/context/current_status.md` accurate after milestone changes.
+- Keep `docs/handoffs/latest.md` aligned with the current active control layer.
