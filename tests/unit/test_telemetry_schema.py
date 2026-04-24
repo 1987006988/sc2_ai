@@ -63,7 +63,7 @@ def test_game_loop_records_prediction_only_opponent_prediction(tmp_path):
     )
     switch_event = next(event for event in events if event["event_type"] == "strategy_switch")
     combat_event = next(
-        event for event in events if event["event_type"] == "combat_event_detected"
+        event for event in events if event["event_type"] == "combat_event_skipped"
     )
 
     assert prediction_event["payload"]["opponent_model_mode"] == "rule_based"
@@ -80,5 +80,7 @@ def test_game_loop_records_prediction_only_opponent_prediction(tmp_path):
     assert "early_combat_unit" in response_event["payload"]["prediction_signals"]
     assert switch_event["payload"]["selected_response_tag"] == "defensive_posture"
     assert switch_event["payload"]["strategy_switch_reason"] == "rush_risk_high"
-    assert combat_event["payload"]["reason"] == "combat_signal_detected"
+    assert combat_event["payload"]["reason"] == "no_own_army_available"
     assert combat_event["payload"]["enemy_combat_unit_nearby"] is True
+    assert combat_event["payload"]["planning_signal_present"] is False
+    assert combat_event["payload"]["execution_evidence_available"] is False

@@ -1,10 +1,10 @@
-# Handoff: checkpoint_C_army_core_gate
+# Handoff: checkpoint_D_tactical_core_gate
 
 Date: 2026-04-25
 
 ## Executed Task
 
-- `checkpoint_C_army_core_gate`
+- `checkpoint_D_tactical_core_gate`
 
 ## Status
 
@@ -18,19 +18,19 @@ Date: 2026-04-25
 
 ## Files Changed
 
-- `artifacts/reports/checkpoints/checkpoint_C_army_core_gate.md`
+- `artifacts/reports/checkpoints/checkpoint_D_tactical_core_gate.md`
 - `docs/plans/active/research_master_task_queue.yaml`
 - `docs/handoffs/latest.md`
 
 ## Verification Commands And Results
 
 - checkpoint input review:
-  - reviewed `task_007_rewrite_combat_unit_production_and_rally_logic`
-  - reviewed `task_008_real_army_presence_probe`
-  - reviewed `artifacts/reports/r2_army_presence_probe/report.md`
-  - reviewed `data/logs/evaluation/r2_army_presence_probe/summary.json`
-  - reviewed `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match_result.json`
-  - reviewed `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/telemetry/events.jsonl`
+  - reviewed `task_010_rewrite_defend_attack_transition_logic`
+  - reviewed `task_011_real_tactical_probe`
+  - reviewed `artifacts/reports/r3_tactical_probe/report.md`
+  - reviewed `data/logs/evaluation/r3_tactical_probe/summary.json`
+  - reviewed `data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/match_result.json`
+  - reviewed `data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/telemetry/events.jsonl`
 - queue validation:
   - `research_master_task_queue.yaml` parses successfully
   - `active_next_task = task_010_rewrite_defend_attack_transition_logic`
@@ -38,67 +38,63 @@ Date: 2026-04-25
 ## Checkpoint Decision
 
 - `reviewed_tasks`:
-  - `task_007_rewrite_combat_unit_production_and_rally_logic`
-  - `task_008_real_army_presence_probe`
+  - `task_010_rewrite_defend_attack_transition_logic`
+  - `task_011_real_tactical_probe`
 - `minimum_gate_passed = true`
 - `target_gate_passed = false`
 - `stretch_gate_status = failed`
 - `actual_game_time_sufficient = yes`
 - `capability_validation_status = capability_validated_minimum`
-- `failure_class = state_extraction_or_army_classification_failure`
-- `decision = accepted_continue`
+- `failure_class = logic_failure`
+- `decision = repair_and_rerun`
 - `next_allowed_task = task_010_rewrite_defend_attack_transition_logic`
 
 ## Reasoning
 
-Checkpoint C accepts the army-core minimum on documented evidence:
+Checkpoint D accepts the tactical minimum:
 
-- `unit_created_detected = 10`
-- documented `own_army_count` rose to `10`
-- `army_presence_changed = 10`
+- legal `defend_order` / `attack_order` occurred in a valid real probe
+- `own_army_count > 0` held during those orders
 
 But it does not accept target-level tactical readiness:
 
+- `friendly combat` was not validated
+- `combat_event_detected_count = 0`
+- the final payload stayed `planning_signal_without_execution_evidence`
 - replay-backed corroboration is still pending
-- `unit_alive_after_short_window = 0`
-- `max_legacy_own_army_count = 0`
-- `max_combat_unit_count = 0`
 
-So the queue may proceed, but only with the explicit understanding that R2
-minimum rests on the documented channel, not on the legacy army/classification
-path.
+So this checkpoint does not allow entry into baseline batch evaluation yet.
+The tactical layer must be repaired and rerun first.
 
 ## What This Proves
 
-- the army-core minimum gate is now accepted
-- first-army existence is no longer diagnostic-only
-- the dominant blocker is now a legacy state extraction / army classification
-  mismatch
-- the next task may focus on tactical-logic implementation under this caveat
+- tactical minimum is now beyond diagnostic-only
+- the remaining blocker is tactical execution / combat-evidence logic
+- the next repair should stay inside R3, not jump to baseline batch
 
 ## What This Does Not Prove
 
-- it does not prove replay-backed corroboration
-- it does not prove target-level stability
-- it does not prove executed friendly combat
-- it does not allow `attack_order` or `combat_event_detected` to be treated as
-  combat-validated evidence by themselves
+- it does not prove friendly combat
+- it does not prove replay-backed contact
+- it does not justify entering `task_013_baseline_easy_pool_batch_evaluation`
+- it does not allow planning telemetry to be treated as executed-combat evidence
 
 ## Evidence Paths
 
-- `artifacts/reports/checkpoints/checkpoint_C_army_core_gate.md`
-- `artifacts/reports/r2_army_presence_probe/task_007_static_validation.md`
-- `artifacts/reports/r2_army_presence_probe/report.md`
-- `data/logs/evaluation/r2_army_presence_probe/summary.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match_result.json`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/telemetry/events.jsonl`
-- `data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match.SC2Replay`
+- `artifacts/reports/checkpoints/checkpoint_D_tactical_core_gate.md`
+- `artifacts/reports/r3_tactical_probe/task_010_static_validation.md`
+- `artifacts/reports/r3_tactical_probe/report.md`
+- `data/logs/evaluation/r3_tactical_probe/summary.json`
+- `data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/match_result.json`
+- `data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/telemetry/events.jsonl`
+- `data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/match.SC2Replay`
 
 ## Blockers
 
-- legacy `bot_ai.army` / combat classification path remains inconsistent
+- executed friendly-combat evidence is still absent
 - replay-backed corroboration is still pending
-- tactical-stage evidence semantics must remain strict in R3
+- tactical logic must now bridge the gap between legal plan emission and
+  executed combat evidence
 
 ## Next Pending Task
 

@@ -679,17 +679,17 @@ phases:
   - id: task_010_rewrite_defend_attack_transition_logic
     phase: phase_r3_tactical_core
     group: tactical_impl
-    status: pending
+    status: completed
     quota_risk: medium
     expected_codex_window: single_session_to_multi_session
     validation_level_required: L1
-    actual_validation_level: none
+    actual_validation_level: L1
     data_source:
     - src/sc2bot/managers/tactical_manager.py
     - src/sc2bot/runtime/game_loop.py
     - src/sc2bot/managers/strategy_manager.py
     - configs/bot/baseline_playable.yaml
-    real_validation_status: not_started
+    real_validation_status: not_applicable
     requires:
     - checkpoint_C_army_core_gate
     goal: 把 defend、attack、regroup 的触发从当前极薄逻辑提升为建立在真实 army existence 之上的可测试战术过渡。
@@ -734,21 +734,25 @@ phases:
     evidence_paths:
     - src/sc2bot/managers/tactical_manager.py
     - src/sc2bot/runtime/game_loop.py
-    - tests/
+    - src/sc2bot/domain/decisions.py
+    - tests/unit/test_tactical_manager.py
+    - tests/unit/test_telemetry_schema.py
+    - tests/unit/test_game_loop.py
+    - artifacts/reports/r3_tactical_probe/task_010_static_validation.md
     capability_validation_status: not_applicable_implementation_task
   - id: task_011_real_tactical_probe
     phase: phase_r3_tactical_core
     group: tactical_probe
-    status: blocked
+    status: completed
     quota_risk: medium
     expected_codex_window: single_probe_plus_contact_window
     validation_level_required: L3
-    actual_validation_level: none
+    actual_validation_level: L3
     data_source:
     - task_010_rewrite_defend_attack_transition_logic
     - configs/bot/baseline_playable.yaml
     - docs/experiments/real_match_validation_protocol.md
-    real_validation_status: not_started
+    real_validation_status: completed_valid_real_sc2_probe
     requires:
     - task_010_rewrite_defend_attack_transition_logic
     - checkpoint_C_army_core_gate
@@ -790,21 +794,25 @@ phases:
     - 无合法战术 order 时回 task_010 修战术逻辑
     - 友军 army 回归缺失时退回 task_007 或 checkpoint_C
     evidence_paths:
-    - data/logs/evaluation/r3_tactical_probe/
+    - data/logs/evaluation/r3_tactical_probe/summary.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/match_result.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/telemetry/events.jsonl
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/match.SC2Replay
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/launch_path_diagnostics.json
     - artifacts/reports/r3_tactical_probe/report.md
-    capability_validation_status: pending
+    capability_validation_status: capability_validated_minimum
   - id: checkpoint_D_tactical_core_gate
     phase: phase_r3_tactical_core
     group: checkpoint
-    status: blocked
+    status: completed
     quota_risk: low
     expected_codex_window: review_window
     validation_level_required: L5
-    actual_validation_level: none
+    actual_validation_level: L5
     data_source:
     - task_010_rewrite_defend_attack_transition_logic
     - task_011_real_tactical_probe
-    real_validation_status: not_started
+    real_validation_status: reviewed_prior_valid_real_sc2_evidence
     requires:
     - task_010_rewrite_defend_attack_transition_logic
     - task_011_real_tactical_probe
@@ -846,21 +854,28 @@ phases:
     - 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
     - 不得保持后续任务为 pending 可执行状态；必须显式 blocked
     evidence_paths:
-    - artifacts/reports/checkpoints/
-    capability_validation_status: not_applicable_checkpoint
+    - artifacts/reports/checkpoints/checkpoint_D_tactical_core_gate.md
+    - artifacts/reports/r3_tactical_probe/task_010_static_validation.md
+    - artifacts/reports/r3_tactical_probe/report.md
+    - data/logs/evaluation/r3_tactical_probe/summary.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/match_result.json
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/telemetry/events.jsonl
+    - data/logs/evaluation/r3_tactical_probe/reallaunch-bb2aed30/match.SC2Replay
+    capability_validation_status: capability_validated_minimum
     reviewed_tasks:
     - task_010_rewrite_defend_attack_transition_logic
     - task_011_real_tactical_probe
-    minimum_gate_passed: null
-    target_gate_passed: null
-    stretch_gate_status: pending
-    failure_class: pending
-    decision: pending
+    minimum_gate_passed: true
+    target_gate_passed: false
+    stretch_gate_status: failed
+    failure_class: logic_failure
+    decision: repair_and_rerun
     next_allowed_task:
       on_pass: task_013_baseline_easy_pool_batch_evaluation
       on_fail_tactical_logic: task_010_rewrite_defend_attack_transition_logic
       on_fail_invalid_evidence: task_011_real_tactical_probe
       on_fail_army_regression: task_007_rewrite_combat_unit_production_and_rally_logic
+    actual_game_time_sufficient: 'yes'
 - id: phase_r4_baseline_outcome_validation
   name: 非自适应 baseline 的 Level 1 验收
   objective: 证明 non-adaptive Protoss baseline 已经不再是 survival scaffold，而是可以被真实 batch
