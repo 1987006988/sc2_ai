@@ -1,0 +1,25 @@
+version: 1
+config_role: r6_dataset_contract
+dataset_manifest_path: research/r6_temporal_belief/data/dataset_manifest.json
+source_manifest_path: research/r6_temporal_belief/data/source_manifest.yaml
+split_policy:
+  id: r6_split_policy_v0
+  primary_units:
+    - replay_series_id
+    - player_identity
+    - time_window_bucket
+  leakage_constraints:
+    - adjacent_replays_from_same_series_must_not_cross_splits
+    - same_player_time_window_must_not_cross_splits
+    - local_accepted_replay_artifacts_excluded_from_holdout
+    - internal_online_eval_replays_excluded_from_same_round_holdout
+  manual_selection:
+    allowed: false
+    explicit_manifest_annotation_required: true
+validation_command:
+  - python
+  - research/r6_temporal_belief/datasets/splits.py
+  - --source-manifest
+  - research/r6_temporal_belief/data/source_manifest.yaml
+  - --dataset-manifest
+  - research/r6_temporal_belief/data/dataset_manifest.json

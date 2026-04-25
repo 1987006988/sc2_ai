@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "manifest_role": "r6_dataset_manifest",
+  "updated_at": "2026-04-26",
+  "dataset_id": "r6_temporal_belief_dataset_v0_contract_only",
+  "status": "contract_frozen_not_populated",
+  "source_manifest_path": "research/r6_temporal_belief/data/source_manifest.yaml",
+  "split_policy_id": "r6_split_policy_v0",
+  "sources": [
+    {
+      "source_id": "public_replay_corpora_primary",
+      "ingestion_status": "planned_not_ingested",
+      "usage_boundary": "offline_primary"
+    },
+    {
+      "source_id": "public_benchmark_dataset_secondary",
+      "ingestion_status": "planned_not_ingested",
+      "usage_boundary": "offline_secondary"
+    },
+    {
+      "source_id": "local_r4_level1_baseline_artifacts",
+      "ingestion_status": "available_local",
+      "usage_boundary": "domain_anchor_only"
+    },
+    {
+      "source_id": "local_r5_adaptive_paired_artifacts",
+      "ingestion_status": "available_local",
+      "usage_boundary": "domain_anchor_only"
+    }
+  ],
+  "splits": {
+    "train": {
+      "status": "not_materialized",
+      "allowed_source_types": [
+        "public_replay_corpus",
+        "public_benchmark_dataset"
+      ]
+    },
+    "val": {
+      "status": "not_materialized",
+      "allowed_source_types": [
+        "public_replay_corpus",
+        "public_benchmark_dataset"
+      ]
+    },
+    "test": {
+      "status": "not_materialized",
+      "allowed_source_types": [
+        "public_replay_corpus",
+        "public_benchmark_dataset"
+      ]
+    }
+  },
+  "forbidden_mixes": [
+    "local_accepted_replay_artifacts_into_holdout_benchmark",
+    "same_series_across_train_and_test",
+    "same_player_time_window_across_train_and_test",
+    "internal_online_eval_replays_back_into_same_round_holdout"
+  ],
+  "label_schema_placeholder_path": "configs/research/r6_label_schema.yaml",
+  "leakage_checks": [
+    "split_unit_disjointness",
+    "source_boundary_holdout_exclusion",
+    "adjacent_series_exclusion",
+    "manual_selection_annotation_required"
+  ]
+}

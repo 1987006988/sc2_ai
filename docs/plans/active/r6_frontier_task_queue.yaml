@@ -1,0 +1,452 @@
+version: 1
+document_status: active
+queue_role: frontier_extension_queue
+activation_rule: "Only active after explicit R6 activation. Core queue remains historical record after project_core_goal_reached."
+source_of_truth:
+  - docs/foundation/04_research_direction/r6_temporal_opponent_belief_frontier_decision.md
+  - docs/plans/active/R6_FRONTIER_MASTER_EXECUTION_PLAN.md
+  - docs/plans/active/phase_r6_temporal_opponent_belief_frontier.md
+  - docs/experiments/r6_frontier_evaluation_protocol.md
+  - docs/experiments/r6_claims_and_interview_deliverables.md
+frozen_predecessor_queue: docs/plans/active/research_master_task_queue.yaml
+accepted_start_state:
+  core_project_status: project_core_goal_reached
+  accepted_baseline_checkpoint: checkpoint_E_level1_baseline_gate
+  accepted_adaptive_checkpoint: checkpoint_F_adaptive_research_gate
+active_next_task: r6_task_004_implement_hidden_state_labelers_and_baselines
+execution_rules:
+  checkpoint_every_n_tasks: 3
+  checkpoint_failure_blocks_progress: true
+  phase_skip_allowed: false
+  do_not_reopen_core_queue: true
+  do_not_modify_frozen_control_logic_during_eval: true
+  do_not_add_second_research_feature: true
+validation_levels:
+  L0: documentation_and_classification_only
+  L1: static_code_config_and_test_validation
+  L2: dataset_and_training_pipeline_validation
+  L3: offline_benchmark_or_single_real_probe
+  L4: internal_batch_or_paired_evaluation
+  L5: phase_decision_backed_by_L3_or_L4_evidence
+  L6: external_bot_ecosystem_validation
+phases:
+  - id: phase_r6_0_control_dataset_contract
+    name: R6 起点冻结与数据契约
+    objective: 冻结 accepted baseline 和 accepted R5 adaptive comparator，建立 replay/source/split/claim 契约。
+    entry_requirements:
+      - project_core_goal_reached
+    exit_checkpoint: r6_checkpoint_G_control_dataset_gate
+    tasks:
+      - id: r6_task_001_freeze_control_and_claim_contract
+        phase: phase_r6_0_control_dataset_contract
+        group: control_freeze
+        status: completed
+        quota_risk: low
+        expected_codex_window: single_session
+        validation_level_required: L1
+        actual_validation_level: L1
+        real_validation_status: not_applicable
+        capability_validation_status: completed_contract_freeze
+        requires: []
+        data_source:
+          - docs/context/current_status.md
+          - docs/handoffs/latest.md
+          - docs/plans/active/research_master_task_queue.yaml
+          - configs/bot/baseline_playable.yaml
+          - configs/bot/adaptive_research.yaml
+          - artifacts/reports/checkpoints/checkpoint_E_level1_baseline_gate.md
+          - artifacts/reports/checkpoints/checkpoint_F_adaptive_research_gate.md
+        goal: 冻结 R6 的 baseline control、R5 comparator 和 frontier claim 边界。
+        scope:
+          - create control anchor manifest
+          - create comparator anchor manifest
+          - create R6 claim register
+          - define allowed response surface and forbidden scope
+        non_goals:
+          - no training
+          - no new SC2 run
+          - no baseline logic changes
+        files_likely_to_change:
+          - docs/foundation/04_research_direction/r6_temporal_opponent_belief_frontier_decision.md
+          - docs/experiments/r6_claims_and_interview_deliverables.md
+          - artifacts/reports/r6_control_anchor/report.md
+          - docs/plans/active/r6_frontier_task_queue.yaml
+          - docs/handoffs/latest.md
+          - docs/context/current_status.md
+        verification:
+          - accepted control and comparator hashes are recorded
+          - R6 claim boundary is explicit
+          - frozen predecessor queue remains unchanged
+        done_criteria:
+          - control anchor manifest exists
+          - comparator anchor manifest exists
+          - claim register exists
+        minimum_gate:
+          claim: control and comparator are frozen
+          pass_condition: accepted baseline and accepted R5 adaptive are version-pinned with config hashes and evidence paths
+        target_gate:
+          claim: R6 claim contract is executable
+          pass_condition: response surface, comparator set, and forbidden scope are fully written and consistent
+        stretch_gate:
+          claim: control freeze is automatable
+          pass_condition: control/comparator manifest generation is scriptable
+        stop_conditions:
+          - accepted baseline cannot be pinned
+          - comparator drift is detected
+          - R6 scope is still ambiguous
+        rollback_notes:
+          - do not edit the frozen predecessor queue
+          - if conflict appears, resolve docs before moving forward
+        evidence_paths:
+          - artifacts/reports/r6_control_anchor/report.md
+          - docs/foundation/04_research_direction/r6_temporal_opponent_belief_frontier_decision.md
+          - docs/experiments/r6_claims_and_interview_deliverables.md
+        failure_class: none
+      - id: r6_task_002_build_replay_data_manifest_and_split_contract
+        phase: phase_r6_0_control_dataset_contract
+        group: dataset_contract
+        status: completed
+        quota_risk: medium
+        expected_codex_window: single_session_to_multi_session
+        validation_level_required: L2
+        actual_validation_level: L2
+        real_validation_status: not_applicable
+        capability_validation_status: completed_dataset_contract
+        requires:
+          - r6_task_001_freeze_control_and_claim_contract
+        data_source:
+          - research/r6_temporal_belief/data/
+          - research/r6_temporal_belief/datasets/
+          - public replay source manifests
+          - local accepted replay manifests
+        goal: 建立可复现、可追溯、泄漏受控的数据契约与 split 契约。
+        scope:
+          - create dataset manifest schema
+          - define source provenance fields
+          - define split policy and leakage checks
+          - define label schema placeholders
+        non_goals:
+          - no model training
+          - no online evaluation
+          - no manual cherry-picking of replay subsets
+        files_likely_to_change:
+          - research/r6_temporal_belief/data/source_manifest.yaml
+          - research/r6_temporal_belief/data/dataset_manifest.json
+          - research/r6_temporal_belief/datasets/splits.py
+          - configs/research/r6_dataset_manifest.yaml
+          - configs/research/r6_label_schema.yaml
+          - artifacts/reports/r6_control_anchor/report.md
+          - docs/handoffs/latest.md
+        verification:
+          - manifest schema validates
+          - split policy documents leakage constraints
+          - dataset contract names every source and intended use
+        done_criteria:
+          - dataset manifest exists
+          - split contract exists
+          - leakage-check script skeleton exists
+        minimum_gate:
+          claim: replay data contract exists
+          pass_condition: every source is versioned and split rules are explicit
+        target_gate:
+          claim: benchmark setup can start safely
+          pass_condition: train/val/test leakage policy is script-checkable and label schema draft is frozen
+        stretch_gate:
+          claim: dataset integrity checks are partially automated
+          pass_condition: at least one leakage validation command exists
+        stop_conditions:
+          - source provenance is missing
+          - split contract is ambiguous
+          - local and public sources are mixed without boundary
+        rollback_notes:
+          - keep raw data outside git if required
+          - only version manifests and checks
+        evidence_paths:
+          - research/r6_temporal_belief/data/source_manifest.yaml
+          - research/r6_temporal_belief/data/dataset_manifest.json
+          - research/r6_temporal_belief/datasets/splits.py
+          - configs/research/r6_dataset_manifest.yaml
+          - configs/research/r6_label_schema.yaml
+          - artifacts/reports/r6_control_anchor/report.md
+      - id: r6_checkpoint_G_control_dataset_gate
+        phase: phase_r6_0_control_dataset_contract
+        group: checkpoint
+        status: completed
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
+        requires:
+          - r6_task_001_freeze_control_and_claim_contract
+          - r6_task_002_build_replay_data_manifest_and_split_contract
+        reviewed_tasks:
+          - r6_task_001_freeze_control_and_claim_contract
+          - r6_task_002_build_replay_data_manifest_and_split_contract
+        goal: 决定 R6 是否可以进入 benchmark 构建阶段。
+        evidence_paths:
+          - artifacts/reports/r6_control_anchor/report.md
+          - research/r6_temporal_belief/data/source_manifest.yaml
+          - research/r6_temporal_belief/data/dataset_manifest.json
+          - research/r6_temporal_belief/datasets/splits.py
+          - configs/research/r6_dataset_manifest.yaml
+          - configs/research/r6_label_schema.yaml
+          - artifacts/reports/checkpoints/r6_checkpoint_G_control_dataset_gate.md
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: passed
+        failure_class: none
+        decision: accepted_continue
+        next_allowed_task:
+          on_pass: r6_task_004_implement_hidden_state_labelers_and_baselines
+          on_fail_contract: r6_task_002_build_replay_data_manifest_and_split_contract
+          on_fail_control_freeze: r6_task_001_freeze_control_and_claim_contract
+  - id: phase_r6_1_offline_benchmark
+    name: R6 离线隐藏状态基准
+    objective: 建立 hidden-state benchmark、label pipeline 和 baseline floor。
+    entry_requirements:
+      - r6_checkpoint_G_control_dataset_gate passed
+    exit_checkpoint: r6_checkpoint_H_offline_benchmark_gate
+    tasks:
+      - id: r6_task_004_implement_hidden_state_labelers_and_baselines
+        phase: phase_r6_1_offline_benchmark
+        group: offline_baseline_impl
+        status: pending
+        quota_risk: medium
+        expected_codex_window: multi_session
+        validation_level_required: L2
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_checkpoint_G_control_dataset_gate
+        goal: 实现 hidden-state labels 与 rule-based/static/shallow temporal baselines。
+        evidence_paths: []
+      - id: r6_task_005_run_offline_hidden_state_benchmark
+        phase: phase_r6_1_offline_benchmark
+        group: offline_baseline_eval
+        status: pending
+        quota_risk: medium
+        expected_codex_window: benchmark_window
+        validation_level_required: L3
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_004_implement_hidden_state_labelers_and_baselines
+        goal: 运行 first valid offline benchmark，并建立 baseline leaderboard。
+        evidence_paths: []
+      - id: r6_checkpoint_H_offline_benchmark_gate
+        phase: phase_r6_1_offline_benchmark
+        group: checkpoint
+        status: pending
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_004_implement_hidden_state_labelers_and_baselines
+          - r6_task_005_run_offline_hidden_state_benchmark
+        reviewed_tasks:
+          - r6_task_004_implement_hidden_state_labelers_and_baselines
+          - r6_task_005_run_offline_hidden_state_benchmark
+        goal: 决定 benchmark 是否有效并允许进入 learned model 训练阶段。
+        evidence_paths: []
+        minimum_gate_passed: null
+        target_gate_passed: null
+        stretch_gate_status: pending
+        failure_class: pending
+        decision: pending
+        next_allowed_task:
+          on_pass: r6_task_007_implement_temporal_belief_model_and_training_loop
+          on_fail_benchmark: r6_task_004_implement_hidden_state_labelers_and_baselines
+          on_fail_eval: r6_task_005_run_offline_hidden_state_benchmark
+  - id: phase_r6_2_temporal_model_training
+    name: R6 学习型时序 belief
+    objective: 训练 learned temporal belief model 并在离线 benchmark 上超过 baseline floor。
+    entry_requirements:
+      - r6_checkpoint_H_offline_benchmark_gate passed
+    exit_checkpoint: r6_checkpoint_I_learned_belief_gate
+    tasks:
+      - id: r6_task_007_implement_temporal_belief_model_and_training_loop
+        phase: phase_r6_2_temporal_model_training
+        group: model_impl
+        status: pending
+        quota_risk: high
+        expected_codex_window: multi_session
+        validation_level_required: L2
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_checkpoint_H_offline_benchmark_gate
+        goal: 实现至少一种 learned temporal belief model 及训练/推理闭环。
+        evidence_paths: []
+      - id: r6_task_008_train_and_evaluate_temporal_belief_model
+        phase: phase_r6_2_temporal_model_training
+        group: model_eval
+        status: pending
+        quota_risk: high
+        expected_codex_window: training_window
+        validation_level_required: L3
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_007_implement_temporal_belief_model_and_training_loop
+        goal: 训练 learned model 并在 holdout benchmark 上和 baselines 对比。
+        evidence_paths: []
+      - id: r6_checkpoint_I_learned_belief_gate
+        phase: phase_r6_2_temporal_model_training
+        group: checkpoint
+        status: pending
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_007_implement_temporal_belief_model_and_training_loop
+          - r6_task_008_train_and_evaluate_temporal_belief_model
+        reviewed_tasks:
+          - r6_task_007_implement_temporal_belief_model_and_training_loop
+          - r6_task_008_train_and_evaluate_temporal_belief_model
+        goal: 决定 learned temporal belief 是否足以进入 online integration。
+        evidence_paths: []
+        minimum_gate_passed: null
+        target_gate_passed: null
+        stretch_gate_status: pending
+        failure_class: pending
+        decision: pending
+        next_allowed_task:
+          on_pass: r6_task_010_integrate_temporal_belief_response_surface
+          on_fail_model: r6_task_007_implement_temporal_belief_model_and_training_loop
+          on_fail_eval: r6_task_008_train_and_evaluate_temporal_belief_model
+  - id: phase_r6_3_online_integration
+    name: R6 内部在线决策集成
+    objective: 用 learned temporal belief 驱动 bounded response surface，并完成三臂 internal paired evaluation。
+    entry_requirements:
+      - r6_checkpoint_I_learned_belief_gate passed
+    exit_checkpoint: r6_checkpoint_J_internal_frontier_gate
+    tasks:
+      - id: r6_task_010_integrate_temporal_belief_response_surface
+        phase: phase_r6_3_online_integration
+        group: online_impl
+        status: pending
+        quota_risk: high
+        expected_codex_window: multi_session
+        validation_level_required: L2
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_checkpoint_I_learned_belief_gate
+        goal: 将 learned belief 接到 bounded response surface，而不是只输出 prediction tag。
+        evidence_paths: []
+      - id: r6_task_011_run_internal_triple_arm_paired_evaluation
+        phase: phase_r6_3_online_integration
+        group: paired_eval
+        status: pending
+        quota_risk: high
+        expected_codex_window: batch_window
+        validation_level_required: L4
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_010_integrate_temporal_belief_response_surface
+        goal: 运行 A/B/C 三臂 internal paired evaluation。
+        evidence_paths: []
+      - id: r6_checkpoint_J_internal_frontier_gate
+        phase: phase_r6_3_online_integration
+        group: checkpoint
+        status: pending
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_010_integrate_temporal_belief_response_surface
+          - r6_task_011_run_internal_triple_arm_paired_evaluation
+        reviewed_tasks:
+          - r6_task_010_integrate_temporal_belief_response_surface
+          - r6_task_011_run_internal_triple_arm_paired_evaluation
+        goal: 决定 R6 是否具备进入 external validation 的资格。
+        evidence_paths: []
+        minimum_gate_passed: null
+        target_gate_passed: null
+        stretch_gate_status: pending
+        failure_class: pending
+        decision: pending
+        next_allowed_task:
+          on_pass: r6_task_013_run_external_bot_ecosystem_evaluation
+          on_fail_integration: r6_task_010_integrate_temporal_belief_response_surface
+          on_fail_paired_eval: r6_task_011_run_internal_triple_arm_paired_evaluation
+  - id: phase_r6_4_external_validation_and_closeout
+    name: R6 外部验证与面试收口
+    objective: 在 external bot ecosystem 中验证 learned treatment，并生成 interview-ready evidence package。
+    entry_requirements:
+      - r6_checkpoint_J_internal_frontier_gate passed
+    exit_checkpoint: r6_checkpoint_K_frontier_claim_gate
+    tasks:
+      - id: r6_task_013_run_external_bot_ecosystem_evaluation
+        phase: phase_r6_4_external_validation_and_closeout
+        group: external_eval
+        status: pending
+        quota_risk: high
+        expected_codex_window: external_eval_window
+        validation_level_required: L6
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_checkpoint_J_internal_frontier_gate
+        goal: 在外部 bot 生态中验证 learned treatment。
+        evidence_paths: []
+      - id: r6_task_014_closeout_frontier_claim_and_interview_pack
+        phase: phase_r6_4_external_validation_and_closeout
+        group: closeout
+        status: pending
+        quota_risk: medium
+        expected_codex_window: single_session_to_multi_session
+        validation_level_required: L5
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_013_run_external_bot_ecosystem_evaluation
+        goal: 生成 frontier closeout 包和面试证据包。
+        evidence_paths: []
+      - id: r6_checkpoint_K_frontier_claim_gate
+        phase: phase_r6_4_external_validation_and_closeout
+        group: checkpoint
+        status: pending
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: none
+        real_validation_status: not_started
+        capability_validation_status: pending
+        requires:
+          - r6_task_013_run_external_bot_ecosystem_evaluation
+          - r6_task_014_closeout_frontier_claim_and_interview_pack
+        reviewed_tasks:
+          - r6_task_013_run_external_bot_ecosystem_evaluation
+          - r6_task_014_closeout_frontier_claim_and_interview_pack
+        goal: 决定 R6 是否形成可对外陈述的 frontier claim。
+        evidence_paths: []
+        minimum_gate_passed: null
+        target_gate_passed: null
+        stretch_gate_status: pending
+        failure_class: pending
+        decision: pending
+        next_allowed_task:
+          on_pass: r6_frontier_goal_reached
+          on_fail_external_eval: r6_task_013_run_external_bot_ecosystem_evaluation
+          on_fail_closeout: r6_task_014_closeout_frontier_claim_and_interview_pack

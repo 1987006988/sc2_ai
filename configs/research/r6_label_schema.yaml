@@ -1,0 +1,41 @@
+version: 1
+schema_role: r6_hidden_state_label_schema_draft
+updated_at: "2026-04-26"
+tasks:
+  - id: opening_class
+    type: multiclass
+    status: draft
+    intended_horizon_seconds: 120
+  - id: hidden_tech_path
+    type: multiclass
+    status: draft
+    intended_horizon_seconds: 180
+  - id: future_expansion_within_horizon
+    type: binary
+    status: draft
+    intended_horizon_seconds: 120
+  - id: hidden_army_bucket
+    type: multiclass
+    status: draft
+    intended_horizon_seconds: 90
+  - id: future_contact_risk
+    type: binary
+    status: draft
+    intended_horizon_seconds: 60
+  - id: time_to_first_contact
+    type: regression
+    status: draft
+    intended_horizon_seconds: 120
+  - id: next_macro_threat_indicator
+    type: multiclass
+    status: draft
+    intended_horizon_seconds: 120
+label_rules:
+  leakage_guard:
+    local_accepted_replays_holdout_allowed: false
+    internal_online_eval_replay_holdout_allowed: false
+  provenance_required_fields:
+    - replay_source_id
+    - replay_series_id
+    - player_identity
+    - time_window_bucket

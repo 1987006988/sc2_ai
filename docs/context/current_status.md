@@ -2,18 +2,18 @@
 
 ## Execution Sync Status
 
-As of 2026-04-25, the active execution state is:
+As of 2026-04-26, the active execution state is:
 
 - active queue:
-  - `docs/plans/active/research_master_task_queue.yaml`
+  - `docs/plans/active/r6_frontier_task_queue.yaml`
 - latest handoff:
   - `docs/handoffs/latest.md`
 - current active next task:
-  - `project_core_goal_reached`
+  - `r6_task_004_implement_hidden_state_labelers_and_baselines`
 
 Latest checkpoint state:
 
-- `checkpoint_F_adaptive_research_gate`
+- `r6_checkpoint_G_control_dataset_gate`
   - `minimum_gate_passed = true`
   - `target_gate_passed = true`
   - `decision = accepted_continue`
@@ -21,13 +21,12 @@ Latest checkpoint state:
 
 Latest completed task state:
 
-- `task_017_null_vs_adaptive_paired_evaluation`
-  - invalid polluted control output was excluded from final judgment
-  - accepted control slice reached `1/3` wins
-  - accepted retuned treatment slice reached `2/3` wins
-  - accepted behavior delta concentrated on `continue_scouting` persistence
-  - one adaptive research contribution is now accepted on a matched Easy Zerg
-    slice
+- `r6_task_002_build_replay_data_manifest_and_split_contract`
+  - replay source manifest exists
+  - dataset manifest exists
+  - split policy and forbidden-mix rules are explicit
+  - leakage-check skeleton exists
+  - benchmark setup contract is now frozen enough to enter R6.1
 
 Repository sync check:
 
@@ -86,8 +85,9 @@ Legacy/historical plan separation is indexed in:
 
 Phase 1D and Phase 1E foundation work is complete. Phase 1F demo packaging and standalone Phase L0 execution planning are paused.
 
-The active route is now the research control layer centered on
-`docs/plans/active/research_master_task_queue.yaml`.
+The accepted core route remains the research control layer centered on
+`docs/plans/active/research_master_task_queue.yaml`, and it remains historical
+completion record after `project_core_goal_reached`.
 
 Current accepted milestone state:
 
@@ -97,6 +97,21 @@ Current accepted milestone state:
   `checkpoint_F_adaptive_research_gate`
 - the accepted adaptive result is bounded to one matched Easy Zerg slice and is
   not yet a broader-pool extension claim
+
+Current extension state:
+
+- R6 frontier mode is active
+- R6 source-of-truth is now:
+  - `docs/foundation/04_research_direction/r6_temporal_opponent_belief_frontier_decision.md`
+  - `docs/plans/active/R6_FRONTIER_MASTER_EXECUTION_PLAN.md`
+  - `docs/plans/active/phase_r6_temporal_opponent_belief_frontier.md`
+  - `docs/plans/active/r6_frontier_task_queue.yaml`
+  - `docs/experiments/r6_frontier_evaluation_protocol.md`
+  - `docs/experiments/r6_claims_and_interview_deliverables.md`
+- the frozen predecessor queue remains:
+  - `docs/plans/active/research_master_task_queue.yaml`
+- current R6 next task:
+  - `r6_task_004_implement_hidden_state_labelers_and_baselines`
 
 ## Mainline
 
@@ -140,12 +155,19 @@ Research directories are isolated and contain no production dependencies.
 ## Current Priority
 
 - keep the research control layer as the only execution authority;
+- keep the predecessor core queue frozen as accepted history;
+- use `docs/plans/active/r6_frontier_task_queue.yaml` as the active extension queue;
 - keep queue / handoff / checkpoint report synchronized when pushing updates;
 - treat old Phase A / Phase B / Phase B-R plans and queues as historical
   context, not as current task sources;
 - treat the core project goal as reached at the current planned scope;
-- if work continues, treat it as extension work beyond the accepted core goal,
-  not as unfinished baseline/adaptive core validation.
+- treat all further work as extension work beyond the accepted core goal, not as
+  unfinished baseline/adaptive core validation;
+- do not begin benchmark, model training, online integration, or external eval
+  before `r6_checkpoint_G_control_dataset_gate` passes;
+- `r6_checkpoint_G_control_dataset_gate` now passed, so benchmark/label
+  implementation may begin, but later online/external stages remain blocked by
+  later R6 checkpoints.
 
 ## Decisions Landed
 

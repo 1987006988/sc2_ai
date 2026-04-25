@@ -1,0 +1,68 @@
+version: 1
+manifest_role: r6_source_manifest
+updated_at: "2026-04-26"
+sources:
+  - source_id: public_replay_corpora_primary
+    source_type: public_replay_corpus
+    status: planned_not_ingested
+    provenance_required: true
+    intended_use:
+      - offline_train
+      - offline_val
+      - offline_test
+    allowed_in_holdout_benchmark: true
+    allowed_in_online_eval: false
+    notes:
+      - placeholder source entry for future public replay ingestion
+      - exact corpus path and license must be recorded before use
+  - source_id: public_benchmark_dataset_secondary
+    source_type: public_benchmark_dataset
+    status: planned_not_ingested
+    provenance_required: true
+    intended_use:
+      - offline_train
+      - offline_val
+      - offline_test
+    allowed_in_holdout_benchmark: true
+    allowed_in_online_eval: false
+    notes:
+      - placeholder benchmark-dataset source entry
+      - may only be merged after manifest-level provenance review
+  - source_id: local_r4_level1_baseline_artifacts
+    source_type: local_accepted_replay_artifacts
+    status: available_local
+    path: data/logs/evaluation/r4_baseline_repair_or_confirmation/
+    provenance_required: true
+    intended_use:
+      - domain_anchor_only
+      - qualitative_case_study
+    allowed_in_holdout_benchmark: false
+    allowed_in_online_eval: false
+    notes:
+      - accepted Level 1 baseline evidence source
+      - may not be mixed into holdout benchmark tables
+  - source_id: local_r5_adaptive_paired_artifacts
+    source_type: local_accepted_replay_artifacts
+    status: available_local
+    path: data/logs/evaluation/r5_paired_adaptive_eval/
+    provenance_required: true
+    intended_use:
+      - domain_anchor_only
+      - qualitative_case_study
+    allowed_in_holdout_benchmark: false
+    allowed_in_online_eval: false
+    notes:
+      - accepted R5 adaptive paired evidence source
+      - may not re-enter the same-round offline holdout benchmark
+split_constraints:
+  primary_split_unit:
+    - replay_series_id
+    - player_identity
+    - time_window_bucket
+  forbidden_cross_split_links:
+    - adjacent_replays_from_same_series
+    - same_player_same_time_window
+    - manually_curated_replay_cluster
+  manual_selection_policy:
+    require_explicit_manifest_annotation: true
+    cherry_picking_allowed: false

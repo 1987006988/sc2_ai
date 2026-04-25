@@ -1,113 +1,110 @@
-# Handoff: checkpoint_F_adaptive_research_gate
+# Handoff: r6_checkpoint_G_control_dataset_gate
 
-Date: 2026-04-25
+Date: 2026-04-26
 
 ## Executed Work
 
-- `task_017_null_vs_adaptive_paired_evaluation`
-- `checkpoint_F_adaptive_research_gate`
+- `r6_task_002_build_replay_data_manifest_and_split_contract`
+- `r6_checkpoint_G_control_dataset_gate`
 
 ## Status
 
-- `task_017`: `completed`
-- `checkpoint_F`: `completed`
+- `r6_task_002`: `completed`
+- `r6_checkpoint_G`: `completed`
 
 ## Validation
 
-- `task_017` validation level achieved: `L4`
-- `task_017` data source: `prior real paired SC2 outputs`
-- `task_017` capability validation status: `capability_validated_target`
-- `checkpoint_F` validation level achieved: `L5`
-- `checkpoint_F` capability validation status: `capability_validated_target`
+- `r6_task_002` validation level achieved: `L2`
+- `r6_task_002` data source: `dataset-contract docs + manifest skeletons`
+- `r6_task_002` capability validation status: `completed_dataset_contract`
+- `r6_checkpoint_G` validation level achieved: `L5`
+- `r6_checkpoint_G` capability validation status: `capability_validated_target`
 
-## Verification Inputs
+## Verification Inputs For Task 002
 
-- `artifacts/reports/r5_paired_adaptive_eval/task_016_static_validation.md`
-- invalid control context:
-  - `data/logs/evaluation/r5_paired_adaptive_eval/control/r5_paired_control_zerg_20260425/summary.json`
-- accepted control:
-  - `data/logs/evaluation/r5_paired_adaptive_eval/control/r5_paired_control_zerg_clean_20260425/summary.json`
-- diagnostic clean treatment:
-  - `data/logs/evaluation/r5_paired_adaptive_eval/treatment/r5_paired_treatment_zerg_clean_20260425/summary.json`
-- accepted retuned treatment:
-  - `data/logs/evaluation/r5_paired_adaptive_eval/treatment/r5_paired_treatment_zerg_retuned_20260425/summary.json`
-- paired report:
-  - `artifacts/reports/r5_paired_adaptive_eval/report.md`
+- `research/r6_temporal_belief/data/source_manifest.yaml`
+- `research/r6_temporal_belief/data/dataset_manifest.json`
+- `research/r6_temporal_belief/datasets/splits.py`
+- `configs/research/r6_dataset_manifest.yaml`
+- `configs/research/r6_label_schema.yaml`
+- `artifacts/reports/r6_control_anchor/report.md`
 
-## Task 017 Result
+## Verification Results
 
-- minimum gate result: `passed`
-- target gate result: `passed`
-- stretch gate status: `failed`
+- source manifest exists: yes
+- dataset manifest exists: yes
+- split policy and forbidden mixes are explicit: yes
+- leakage validation command exists: yes
+- label schema draft exists: yes
+- predecessor core queue remains unchanged: yes
 
-Accepted paired comparison:
+Validation command:
 
-- control clean: `1/3` wins
-- treatment retuned: `2/3` wins
-
-Behavior delta:
-
-- control:
-  - `adaptive_gate_applied = 0`
-- treatment retuned:
-  - `adaptive_gate_applied = 682`
-  - `worker_scout_persistence_applied = 679`
-  - selected response tag concentrated on `continue_scouting`
-
-Interpretation:
-
-- invalid polluted control output was excluded
-- initial clean treatment showed behavior change without benefit and remains
-  diagnostic-only context
-- the accepted treatment result uses the same adaptive feature after a same-feature
-  small-step retune
-- accepted behavior delta and accepted outcome delta now move in the same
-  direction on the matched Easy Zerg slice
-
-## Checkpoint F Result
-
-- `minimum_gate_passed = true`
-- `target_gate_passed = true`
-- `stretch_gate_status = failed`
-- `actual_game_time_sufficient = yes`
-- `failure_class = none`
-- `decision = accepted_continue`
-- `next_allowed_task = project_core_goal_reached`
-
-## What This Proves
-
-- the project now has an accepted Level 1 playable baseline
-- the project now has one accepted adaptive research contribution in real SC2
-- the validated adaptive contribution is a sparse-scout gating layer whose
-  accepted effect is established on one matched Easy Zerg slice
-
-## What This Does Not Prove
-
-- it does not prove broader-pool generalization
-- it does not prove Medium-opponent strength
-- it does not prove ladder competitiveness
-- it does not prove a second adaptive feature
+- `python research/r6_temporal_belief/datasets/splits.py --source-manifest research/r6_temporal_belief/data/source_manifest.yaml --dataset-manifest research/r6_temporal_belief/data/dataset_manifest.json`
+- result: `R6_DATASET_CONTRACT_VALID`
 
 ## Files Changed
 
-- `artifacts/reports/r5_paired_adaptive_eval/report.md`
-- `artifacts/reports/checkpoints/checkpoint_F_adaptive_research_gate.md`
-- `docs/plans/active/research_master_task_queue.yaml`
+- `research/r6_temporal_belief/data/source_manifest.yaml`
+- `research/r6_temporal_belief/data/dataset_manifest.json`
+- `research/r6_temporal_belief/datasets/splits.py`
+- `configs/research/r6_dataset_manifest.yaml`
+- `configs/research/r6_label_schema.yaml`
+- `artifacts/reports/r6_control_anchor/report.md`
+- `artifacts/reports/checkpoints/r6_checkpoint_G_control_dataset_gate.md`
+- `docs/plans/active/r6_frontier_task_queue.yaml`
 - `docs/handoffs/latest.md`
 - `docs/context/current_status.md`
 
+## Task 002 Result
+
+- minimum gate result: `passed`
+- target gate result: `passed`
+- stretch gate status: `passed`
+
+## Checkpoint G Result
+
+- `minimum_gate_passed = true`
+- `target_gate_passed = true`
+- `stretch_gate_status = passed`
+- `failure_class = none`
+- `decision = accepted_continue`
+- `next_allowed_task = r6_task_004_implement_hidden_state_labelers_and_baselines`
+
+## What This Proves
+
+- R6 now has an explicit replay/source/split contract
+- local accepted replay artifacts are fenced off from holdout benchmark use
+- R6 can proceed to benchmark and label implementation without reopening core history
+
+## What This Does Not Prove
+
+- it does not validate replay ingestion yet
+- it does not validate label extraction correctness yet
+- it does not validate any learned temporal model yet
+- it does not validate any new online or external result
+
+## Evidence Paths
+
+- `artifacts/reports/r6_control_anchor/report.md`
+- `docs/plans/active/r6_frontier_task_queue.yaml`
+- `research/r6_temporal_belief/data/source_manifest.yaml`
+- `research/r6_temporal_belief/data/dataset_manifest.json`
+- `research/r6_temporal_belief/datasets/splits.py`
+- `configs/research/r6_dataset_manifest.yaml`
+- `configs/research/r6_label_schema.yaml`
+- `artifacts/reports/checkpoints/r6_checkpoint_G_control_dataset_gate.md`
+
 ## Blockers
 
-- no blocker remains before `checkpoint_F`
-- broader extension remains unvalidated, but it is not a blocker to the core
-  project goal already accepted by `checkpoint_F`
+- no blocker remains before `r6_checkpoint_G`
+- R6.1 is now unblocked, but no benchmark implementation has started in this turn
 
 ## Next Pending Task
 
-- `project_core_goal_reached`
+- `r6_task_004_implement_hidden_state_labelers_and_baselines`
 
 ## Stop
 
-This turn did not execute any post-`checkpoint_F` extension task.
-No new SC2 run was required in this turn; the phase closeout used already
-collected valid paired evidence.
+This turn did not execute `r6_task_004_implement_hidden_state_labelers_and_baselines`.
+No training, new SC2 run, online integration, or external eval was started.
