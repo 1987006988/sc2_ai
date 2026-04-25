@@ -1,12 +1,23 @@
 opponents:
-  - id: builtin_easy_terran
+  - id: builtin_easy_zerg
     type: computer
-    race: terran
+    race: zerg
     difficulty: easy
     tags:
       - builtin
       - r4
       - repair_confirmation
-      - terran
+      - zerg
+      - easy
+    enabled: true
+  - id: builtin_easy_protoss
+    type: computer
+    race: protoss
+    difficulty: easy
+    tags:
+      - builtin
+      - r4
+      - repair_confirmation
+      - protoss
       - easy
     enabled: true

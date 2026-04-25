@@ -13,13 +13,11 @@ Date: 2026-04-25
 ## Validation
 
 - validation level achieved: `L5`
-- data source: `task_013 + task_014 evidence review`
-- capability validation status: `capability_validated_minimum`
+- data source: `task_013 + expanded task_014 evidence review`
+- capability validation status: `capability_validated_target`
 
 ## Files Changed
 
-- `artifacts/reports/r4_baseline_easy_pool/report.md`
-- `artifacts/reports/r4_baseline_repair_or_confirmation/report.md`
 - `artifacts/reports/checkpoints/checkpoint_E_level1_baseline_gate.md`
 - `docs/plans/active/research_master_task_queue.yaml`
 - `docs/handoffs/latest.md`
@@ -30,52 +28,58 @@ Date: 2026-04-25
   - `6` valid real matches
   - `0/6` wins
   - no prerequisite regression
-- reviewed `task_014` focused repair rerun:
-  - `2` valid real matches
-  - `2/2` wins on easy Terran
-  - complete artifact set present
+- reviewed `task_014` multi-step repair + confirmation evidence:
+  - Terran-focused rerun after the first repair: `2/2` wins
+  - corrected Zerg/Protoss confirmation rerun with `2` Gateways: `0/4` wins
+  - second focused repair on the same failure class (`3` Gateways)
+  - Zerg/Protoss confirmation rerun after the second repair: `3/4` wins
+  - no prerequisite regression in the accepted repaired baseline
 - queue validation:
   - `research_master_task_queue.yaml` parses successfully
-  - `active_next_task = task_014_baseline_repair_or_confirmation`
+  - `active_next_task = task_016_integrate_single_adaptive_gating_layer`
 
 ## Task Result
 
 - minimum gate result: `true`
-- target gate result: `false`
-- stretch gate status: `failed`
-- failure class: `stability_failure`
-- decision: `repair_and_rerun`
-- next allowed task: `task_014_baseline_repair_or_confirmation`
+- target gate result: `true`
+- stretch gate status: `passed`
+- failure class: `none`
+- decision: `accepted_continue`
+- next allowed task: `task_016_integrate_single_adaptive_gating_layer`
 
 ## What This Proves
 
-- baseline minimum is now accepted
-- the project is no longer blocked by scaffold-level or prerequisite-level issues
-- the remaining R4 blocker is slice-level stability and repeated-outcome coverage
+- Level 1 playable baseline is now accepted
+- the baseline is stable enough to act as the control for adaptive paired
+  evaluation
+- no prerequisite-level blocker remains before Phase R5
 
 ## What This Does Not Prove
 
-- it does not accept full Level 1 target yet
-- it does not prove repeated wins across the designated easy slice
-- it does not justify entering adaptive paired evaluation
+- it does not prove perfect win coverage on every easy-race repeat
+- it does not prove ladder competitiveness
+- it does not by itself validate the adaptive research feature
 
 ## Evidence Paths
 
 - `data/logs/evaluation/r4_baseline_easy_pool_batch/r4_baseline_easy_pool_batch_20260425/summary.json`
 - `artifacts/reports/r4_baseline_easy_pool/report.md`
 - `data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_20260425/summary.json`
+- `data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_zp_20260425/summary.json`
+- `data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_zp_sc2path_20260425/summary.json`
+- `data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_zp_gateway3_20260425/summary.json`
 - `artifacts/reports/r4_baseline_repair_or_confirmation/report.md`
 - `artifacts/reports/checkpoints/checkpoint_E_level1_baseline_gate.md`
 
 ## Blockers
 
-- no prerequisite-level blocker remains
-- full Level 1 target remains unaccepted because easy-slice repeated wins are still incomplete
+- no Phase R4 blocking issue remains
+- next work starts in Phase R5 adaptive integration, not another baseline repair
 
 ## Next Pending Task
 
-- `task_014_baseline_repair_or_confirmation`
+- `task_016_integrate_single_adaptive_gating_layer`
 
 ## Stop
 
-This turn did not execute `task_014_baseline_repair_or_confirmation`.
+This turn did not execute `task_016_integrate_single_adaptive_gating_layer`.

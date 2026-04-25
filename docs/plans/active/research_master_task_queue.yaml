@@ -5,7 +5,7 @@ source_of_truth:
 - docs/foundation/04_research_direction/research_direction_decision.md
 - docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
 - docs/experiments/real_match_validation_protocol.md
-active_next_task: task_014_baseline_repair_or_confirmation
+active_next_task: task_016_integrate_single_adaptive_gating_layer
 execution_rules:
   checkpoint_every_n_tasks: 3
   checkpoint_failure_blocks_progress: true
@@ -592,7 +592,7 @@ phases:
     - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match.SC2Replay
     - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/launch_path_diagnostics.json
     - artifacts/reports/r2_army_presence_probe/report.md
-    capability_validation_status: capability_validated_minimum
+    capability_validation_status: capability_validated_target
   - id: checkpoint_C_army_core_gate
     phase: phase_r2_army_production_core
     group: checkpoint
@@ -653,7 +653,7 @@ phases:
     - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match_result.json
     - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/telemetry/events.jsonl
     - data/logs/evaluation/r2_army_presence_probe/reallaunch-c59869c3/match.SC2Replay
-    capability_validation_status: capability_validated_minimum
+    capability_validation_status: capability_validated_target
     reviewed_tasks:
     - task_007_rewrite_combat_unit_production_and_rally_logic
     - task_008_real_army_presence_probe
@@ -1065,17 +1065,20 @@ phases:
     - data/logs/evaluation/r4_baseline_easy_pool_batch/r4_baseline_easy_pool_batch_20260425/summary.json
     - artifacts/reports/r4_baseline_easy_pool/report.md
     - data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_20260425/summary.json
+    - data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_zp_20260425/summary.json
+    - data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_zp_sc2path_20260425/summary.json
     - artifacts/reports/r4_baseline_repair_or_confirmation/report.md
     - artifacts/reports/checkpoints/checkpoint_E_level1_baseline_gate.md
-    capability_validation_status: capability_validated_minimum
+    capability_validation_status: capability_validated_target
     reviewed_tasks:
     - task_013_baseline_easy_pool_batch_evaluation
     - task_014_baseline_repair_or_confirmation
     minimum_gate_passed: true
-    target_gate_passed: false
-    stretch_gate_status: failed
-    failure_class: stability_failure
-    decision: repair_and_rerun
+    target_gate_passed: true
+    stretch_gate_status: passed
+    actual_game_time_sufficient: yes
+    failure_class: none
+    decision: accepted_continue
     next_allowed_task:
       on_pass: task_016_integrate_single_adaptive_gating_layer
       on_fail_minor_instability: task_014_baseline_repair_or_confirmation
@@ -1092,7 +1095,7 @@ phases:
   - id: task_016_integrate_single_adaptive_gating_layer
     phase: phase_r5_adaptive_research_validation
     group: adaptive_impl
-    status: blocked
+    status: pending
     quota_risk: high
     expected_codex_window: single_session_to_multi_session
     validation_level_required: L1

@@ -43,7 +43,7 @@ build_order:
   pylon_supply_buffer: 2
   gateway_min_probe_count: 16
   gateway_min_game_time: 90.0
-  gateway_target_count: 2
+  gateway_target_count: 3
   assimilator_enabled: true
   cybernetics_core_enabled: true
   zealot_production_priority: 10

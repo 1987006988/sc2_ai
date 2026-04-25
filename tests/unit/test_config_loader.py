@@ -84,7 +84,7 @@ def test_phase_b_revalidation_gameplay_config_uses_long_runtime_window():
     assert config.runtime.supply_sustain is True
 
 
-def test_baseline_playable_config_allows_two_gateway_production_capacity():
+def test_baseline_playable_config_allows_three_gateway_production_capacity():
     config = load_bot_config(Path("configs/bot/baseline_playable.yaml"))
 
-    assert config.build_order.gateway_target_count == 2
+    assert config.build_order.gateway_target_count == 3

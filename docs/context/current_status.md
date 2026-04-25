@@ -9,15 +9,23 @@ As of 2026-04-25, the active execution state is:
 - latest handoff:
   - `docs/handoffs/latest.md`
 - current active next task:
-  - `task_010_rewrite_defend_attack_transition_logic`
+  - `task_016_integrate_single_adaptive_gating_layer`
 
 Latest checkpoint state:
 
-- `checkpoint_D_tactical_core_gate`
+- `checkpoint_E_level1_baseline_gate`
   - `minimum_gate_passed = true`
-  - `target_gate_passed = false`
-  - `decision = repair_and_rerun`
-  - `failure_class = logic_failure`
+  - `target_gate_passed = true`
+  - `decision = accepted_continue`
+  - `failure_class = none`
+
+Latest completed task state:
+
+- `task_014_baseline_repair_or_confirmation`
+  - repaired baseline wins the focused easy-Terran slice (`2/2`)
+  - after a second focused repair on the same failure class, the corrected
+    Zerg/Protoss confirmation rerun reached `3/4` wins
+  - Level 1 baseline is now accepted and Phase R5 is unblocked
 
 Repository sync check:
 
