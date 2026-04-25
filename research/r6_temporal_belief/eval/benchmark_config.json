@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "config_role": "r6_offline_benchmark_contract",
+  "task_bundle": [
+    "opening_class",
+    "hidden_tech_path",
+    "future_expansion_within_horizon",
+    "hidden_army_bucket",
+    "future_contact_risk",
+    "next_macro_threat_indicator"
+  ],
+  "comparator_set": [
+    "rule_based",
+    "static_prior",
+    "shallow_temporal"
+  ],
+  "validation_scope": "fixture_subset_only_until_real_holdout_is_materialized"
+}

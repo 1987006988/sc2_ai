@@ -13,7 +13,7 @@ accepted_start_state:
   core_project_status: project_core_goal_reached
   accepted_baseline_checkpoint: checkpoint_E_level1_baseline_gate
   accepted_adaptive_checkpoint: checkpoint_F_adaptive_research_gate
-active_next_task: r6_task_004_implement_hidden_state_labelers_and_baselines
+active_next_task: r6_task_005_run_offline_hidden_state_benchmark
 execution_rules:
   checkpoint_every_n_tasks: 3
   checkpoint_failure_blocks_progress: true
@@ -212,31 +212,42 @@ phases:
       - id: r6_task_004_implement_hidden_state_labelers_and_baselines
         phase: phase_r6_1_offline_benchmark
         group: offline_baseline_impl
-        status: pending
+        status: completed
         quota_risk: medium
         expected_codex_window: multi_session
         validation_level_required: L2
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L2
+        real_validation_status: not_applicable
+        capability_validation_status: completed_offline_pipeline_impl
         requires:
           - r6_checkpoint_G_control_dataset_gate
         goal: 实现 hidden-state labels 与 rule-based/static/shallow temporal baselines。
-        evidence_paths: []
+        evidence_paths:
+          - research/r6_temporal_belief/labels/labelers.py
+          - research/r6_temporal_belief/datasets/reader.py
+          - research/r6_temporal_belief/eval/offline_baselines.py
+          - research/r6_temporal_belief/eval/metrics.py
+          - research/r6_temporal_belief/eval/benchmark_config.json
+          - tests/r6/test_label_pipeline.py
+          - artifacts/reports/r6_offline_benchmark/task_004_static_validation.md
       - id: r6_task_005_run_offline_hidden_state_benchmark
         phase: phase_r6_1_offline_benchmark
         group: offline_baseline_eval
-        status: pending
+        status: blocked
         quota_risk: medium
         expected_codex_window: benchmark_window
         validation_level_required: L3
         actual_validation_level: none
         real_validation_status: not_started
-        capability_validation_status: pending
+        capability_validation_status: blocked_missing_materialized_holdout_inputs
         requires:
           - r6_task_004_implement_hidden_state_labelers_and_baselines
         goal: 运行 first valid offline benchmark，并建立 baseline leaderboard。
-        evidence_paths: []
+        evidence_paths:
+          - research/r6_temporal_belief/data/source_manifest.yaml
+          - research/r6_temporal_belief/data/dataset_manifest.json
+          - research/r6_temporal_belief/eval/benchmark_config.json
+          - artifacts/reports/r6_offline_benchmark/report.md
       - id: r6_checkpoint_H_offline_benchmark_gate
         phase: phase_r6_1_offline_benchmark
         group: checkpoint

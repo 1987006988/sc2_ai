@@ -9,7 +9,7 @@ As of 2026-04-26, the active execution state is:
 - latest handoff:
   - `docs/handoffs/latest.md`
 - current active next task:
-  - `r6_task_004_implement_hidden_state_labelers_and_baselines`
+  - `r6_task_005_run_offline_hidden_state_benchmark`
 
 Latest checkpoint state:
 
@@ -21,12 +21,19 @@ Latest checkpoint state:
 
 Latest completed task state:
 
-- `r6_task_002_build_replay_data_manifest_and_split_contract`
-  - replay source manifest exists
-  - dataset manifest exists
-  - split policy and forbidden-mix rules are explicit
-  - leakage-check skeleton exists
-  - benchmark setup contract is now frozen enough to enter R6.1
+- `r6_task_004_implement_hidden_state_labelers_and_baselines`
+  - hidden-state label extraction module exists
+  - replay-sample reader exists
+  - rule-based / static prior / shallow temporal baselines exist
+  - offline metric bundle and benchmark contract config exist
+  - fixture subset validation passed
+
+Current blocked task state:
+
+- `r6_task_005_run_offline_hidden_state_benchmark`
+  - blocked on missing materialized holdout replay inputs
+  - local accepted replay artifacts remain domain-anchor-only and cannot be used
+    as accepted holdout benchmark evidence
 
 Repository sync check:
 
@@ -111,7 +118,7 @@ Current extension state:
 - the frozen predecessor queue remains:
   - `docs/plans/active/research_master_task_queue.yaml`
 - current R6 next task:
-  - `r6_task_004_implement_hidden_state_labelers_and_baselines`
+  - `r6_task_005_run_offline_hidden_state_benchmark`
 
 ## Mainline
 
@@ -166,8 +173,9 @@ Research directories are isolated and contain no production dependencies.
 - do not begin benchmark, model training, online integration, or external eval
   before `r6_checkpoint_G_control_dataset_gate` passes;
 - `r6_checkpoint_G_control_dataset_gate` now passed, so benchmark/label
-  implementation may begin, but later online/external stages remain blocked by
-  later R6 checkpoints.
+  implementation may begin, but `r6_task_005` is currently blocked until
+  benchmark-ready holdout inputs are materialized; later online/external stages
+  remain blocked by later R6 checkpoints.
 
 ## Decisions Landed
 

@@ -1,110 +1,107 @@
-# Handoff: r6_checkpoint_G_control_dataset_gate
+# Handoff: r6_task_004_completed_task_005_blocked
 
 Date: 2026-04-26
 
 ## Executed Work
 
-- `r6_task_002_build_replay_data_manifest_and_split_contract`
-- `r6_checkpoint_G_control_dataset_gate`
+- `r6_task_004_implement_hidden_state_labelers_and_baselines`
+- `r6_task_005_run_offline_hidden_state_benchmark`
 
 ## Status
 
-- `r6_task_002`: `completed`
-- `r6_checkpoint_G`: `completed`
+- `r6_task_004`: `completed`
+- `r6_task_005`: `blocked`
 
 ## Validation
 
-- `r6_task_002` validation level achieved: `L2`
-- `r6_task_002` data source: `dataset-contract docs + manifest skeletons`
-- `r6_task_002` capability validation status: `completed_dataset_contract`
-- `r6_checkpoint_G` validation level achieved: `L5`
-- `r6_checkpoint_G` capability validation status: `capability_validated_target`
+- `r6_task_004` validation level achieved: `L2`
+- `r6_task_004` data source: `offline pipeline implementation + fixture subset tests`
+- `r6_task_004` capability validation status: `completed_offline_pipeline_impl`
+- `r6_task_005` validation level achieved: `none`
+- `r6_task_005` capability validation status: `blocked_missing_materialized_holdout_inputs`
 
-## Verification Inputs For Task 002
+## Verification Inputs For Task 004
 
-- `research/r6_temporal_belief/data/source_manifest.yaml`
-- `research/r6_temporal_belief/data/dataset_manifest.json`
-- `research/r6_temporal_belief/datasets/splits.py`
-- `configs/research/r6_dataset_manifest.yaml`
-- `configs/research/r6_label_schema.yaml`
-- `artifacts/reports/r6_control_anchor/report.md`
+- `research/r6_temporal_belief/labels/labelers.py`
+- `research/r6_temporal_belief/datasets/reader.py`
+- `research/r6_temporal_belief/eval/offline_baselines.py`
+- `research/r6_temporal_belief/eval/metrics.py`
+- `research/r6_temporal_belief/eval/benchmark_config.json`
+- `tests/r6/test_label_pipeline.py`
 
 ## Verification Results
 
-- source manifest exists: yes
-- dataset manifest exists: yes
-- split policy and forbidden mixes are explicit: yes
-- leakage validation command exists: yes
-- label schema draft exists: yes
-- predecessor core queue remains unchanged: yes
-
-Validation command:
-
-- `python research/r6_temporal_belief/datasets/splits.py --source-manifest research/r6_temporal_belief/data/source_manifest.yaml --dataset-manifest research/r6_temporal_belief/data/dataset_manifest.json`
-- result: `R6_DATASET_CONTRACT_VALID`
+- fixture validation command:
+  - `PYTHONPATH=. python -m pytest tests/r6/test_label_pipeline.py -q`
+  - result: `3 passed in 0.01s`
+- benchmark input scan:
+  - no materialized public replay corpus / benchmark-ready holdout split found
+  - local accepted replay artifacts remain domain-anchor-only and cannot be used
+    as accepted holdout benchmark evidence
 
 ## Files Changed
 
-- `research/r6_temporal_belief/data/source_manifest.yaml`
-- `research/r6_temporal_belief/data/dataset_manifest.json`
-- `research/r6_temporal_belief/datasets/splits.py`
-- `configs/research/r6_dataset_manifest.yaml`
-- `configs/research/r6_label_schema.yaml`
-- `artifacts/reports/r6_control_anchor/report.md`
-- `artifacts/reports/checkpoints/r6_checkpoint_G_control_dataset_gate.md`
+- `research/r6_temporal_belief/labels/labelers.py`
+- `research/r6_temporal_belief/datasets/reader.py`
+- `research/r6_temporal_belief/eval/offline_baselines.py`
+- `research/r6_temporal_belief/eval/metrics.py`
+- `research/r6_temporal_belief/eval/benchmark_config.json`
+- `tests/r6/test_label_pipeline.py`
+- `artifacts/reports/r6_offline_benchmark/task_004_static_validation.md`
+- `artifacts/reports/r6_offline_benchmark/report.md`
 - `docs/plans/active/r6_frontier_task_queue.yaml`
 - `docs/handoffs/latest.md`
 - `docs/context/current_status.md`
 
-## Task 002 Result
+## Task 004 Result
 
 - minimum gate result: `passed`
 - target gate result: `passed`
 - stretch gate status: `passed`
 
-## Checkpoint G Result
+## Task 005 Result
 
-- `minimum_gate_passed = true`
-- `target_gate_passed = true`
-- `stretch_gate_status = passed`
-- `failure_class = none`
-- `decision = accepted_continue`
-- `next_allowed_task = r6_task_004_implement_hidden_state_labelers_and_baselines`
+- minimum gate result: `blocked`
+- target gate result: `blocked`
+- stretch gate status: `blocked`
+- blocker class: `dataset_contract_frozen_but_holdout_inputs_not_materialized`
 
 ## What This Proves
 
-- R6 now has an explicit replay/source/split contract
-- local accepted replay artifacts are fenced off from holdout benchmark use
-- R6 can proceed to benchmark and label implementation without reopening core history
+- hidden-state label extraction module exists
+- rule-based / static prior / shallow temporal baselines exist
+- metrics and reader exist
+- the next blocker is no longer contract design; it is missing benchmark-ready
+  holdout inputs
 
 ## What This Does Not Prove
 
-- it does not validate replay ingestion yet
-- it does not validate label extraction correctness yet
+- it does not validate a first real offline benchmark
+- it does not produce a baseline leaderboard
 - it does not validate any learned temporal model yet
 - it does not validate any new online or external result
 
 ## Evidence Paths
 
-- `artifacts/reports/r6_control_anchor/report.md`
 - `docs/plans/active/r6_frontier_task_queue.yaml`
-- `research/r6_temporal_belief/data/source_manifest.yaml`
-- `research/r6_temporal_belief/data/dataset_manifest.json`
-- `research/r6_temporal_belief/datasets/splits.py`
-- `configs/research/r6_dataset_manifest.yaml`
-- `configs/research/r6_label_schema.yaml`
-- `artifacts/reports/checkpoints/r6_checkpoint_G_control_dataset_gate.md`
+- `research/r6_temporal_belief/labels/labelers.py`
+- `research/r6_temporal_belief/datasets/reader.py`
+- `research/r6_temporal_belief/eval/offline_baselines.py`
+- `research/r6_temporal_belief/eval/metrics.py`
+- `research/r6_temporal_belief/eval/benchmark_config.json`
+- `artifacts/reports/r6_offline_benchmark/task_004_static_validation.md`
+- `artifacts/reports/r6_offline_benchmark/report.md`
 
 ## Blockers
 
-- no blocker remains before `r6_checkpoint_G`
-- R6.1 is now unblocked, but no benchmark implementation has started in this turn
+- `r6_task_005` is blocked on missing materialized holdout replay inputs
+- `r6_checkpoint_H` cannot be reached until a valid benchmark dataset exists
 
 ## Next Pending Task
 
-- `r6_task_004_implement_hidden_state_labelers_and_baselines`
+- `r6_task_005_run_offline_hidden_state_benchmark`
 
 ## Stop
 
-This turn did not execute `r6_task_004_implement_hidden_state_labelers_and_baselines`.
+This turn did not execute `r6_checkpoint_H_offline_benchmark_gate`.
 No training, new SC2 run, online integration, or external eval was started.
