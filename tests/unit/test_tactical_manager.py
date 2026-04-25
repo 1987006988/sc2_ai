@@ -1,5 +1,5 @@
 from sc2bot.config.schema import BuildOrderConfig
-from sc2bot.domain.decisions import StrategyDecision, TacticalPlan
+from sc2bot.domain.decisions import StrategyDecision, StrategyResponse, TacticalPlan
 from sc2bot.domain.game_state import GameState
 from sc2bot.managers.tactical_manager import TacticalManager, build_combat_event_payload
 
@@ -97,6 +97,32 @@ def test_tactical_manager_attacks_after_army_threshold():
     assert plan.rally_eligible is False
     assert plan.order_prerequisites_met is True
     assert plan.target_position == (90.0, 80.0)
+
+
+def test_tactical_manager_adaptive_attack_delay_holds_before_buffer_is_met():
+    plan = TacticalManager(
+        BuildOrderConfig(attack_army_supply_threshold=4, attack_game_time_threshold=120.0)
+    ).plan(
+        GameState(
+            game_loop=0,
+            game_time=120.0,
+            own_start_location=(10.0, 20.0),
+            known_enemy_start_location=(90.0, 80.0),
+            own_army_count=4,
+        ),
+        StrategyDecision("default"),
+        StrategyResponse(
+            intervention_mode="adaptive_gating",
+            first_attack_timing_gate_active=True,
+            first_attack_delay_seconds=60.0,
+            first_attack_army_buffer=2,
+        ),
+    )
+
+    assert plan.order == "army_rally"
+    assert plan.reason == "adaptive_attack_delay_active"
+    assert plan.regroup_reason == "adaptive_attack_delay_active"
+    assert plan.rally_eligible is True
 
 
 def test_tactical_manager_does_not_attack_without_army_even_after_time_threshold():

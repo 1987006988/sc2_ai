@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 
 from sc2bot.config.schema import BuildOrderConfig
-from sc2bot.domain.decisions import StrategyDecision, TacticalPlan
+from sc2bot.domain.decisions import StrategyDecision, StrategyResponse, TacticalPlan
 from sc2bot.domain.game_state import GameState
 
 
@@ -109,7 +109,12 @@ class TacticalManager:
     def __init__(self, build_order: BuildOrderConfig | None = None) -> None:
         self.build_order = build_order or BuildOrderConfig()
 
-    def plan(self, state: GameState, decision: StrategyDecision) -> TacticalPlan:
+    def plan(
+        self,
+        state: GameState,
+        decision: StrategyDecision,
+        strategy_response: StrategyResponse | None = None,
+    ) -> TacticalPlan:
         rally_point = state.own_start_location
         if state.own_army_count <= 0:
             return TacticalPlan(
@@ -141,15 +146,23 @@ class TacticalManager:
                 own_army_count=state.own_army_count,
                 visible_enemy_units_count=state.visible_enemy_units_count,
             )
-        attack_threshold_by_army = (
-            state.own_army_count >= self.build_order.attack_army_supply_threshold
+        attack_army_threshold = self.build_order.attack_army_supply_threshold
+        attack_game_time_threshold = self.build_order.attack_game_time_threshold
+        adaptive_attack_delay_active = bool(
+            strategy_response and strategy_response.first_attack_timing_gate_active
         )
+        if adaptive_attack_delay_active:
+            attack_army_threshold += strategy_response.first_attack_army_buffer
+            attack_game_time_threshold += strategy_response.first_attack_delay_seconds
+        attack_threshold_by_army = state.own_army_count >= attack_army_threshold
         attack_threshold_by_time = (
             state.own_army_count > 0
-            and state.game_time >= self.build_order.attack_game_time_threshold
+            and state.game_time >= attack_game_time_threshold
         )
         if state.known_enemy_start_location is None:
             regroup_reason = "known_enemy_start_location_missing"
+        elif adaptive_attack_delay_active and not attack_threshold_by_army and not attack_threshold_by_time:
+            regroup_reason = "adaptive_attack_delay_active"
         elif attack_threshold_by_army:
             regroup_reason = "waiting_for_attack_contact_after_army_threshold"
         elif attack_threshold_by_time:
@@ -159,11 +172,18 @@ class TacticalManager:
         if (
             attack_threshold_by_army or attack_threshold_by_time
         ) and state.known_enemy_start_location is not None:
-            attack_reason = (
-                "army_threshold_met_with_known_enemy_start"
-                if attack_threshold_by_army
-                else "time_threshold_met_with_known_enemy_start"
-            )
+            if attack_threshold_by_army:
+                attack_reason = (
+                    "adaptive_army_threshold_met_with_known_enemy_start"
+                    if adaptive_attack_delay_active
+                    else "army_threshold_met_with_known_enemy_start"
+                )
+            else:
+                attack_reason = (
+                    "adaptive_time_threshold_met_with_known_enemy_start"
+                    if adaptive_attack_delay_active
+                    else "time_threshold_met_with_known_enemy_start"
+                )
             return TacticalPlan(
                 name="basic_attack_order",
                 strategy=decision.name,

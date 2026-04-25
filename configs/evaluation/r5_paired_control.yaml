@@ -1,0 +1,13 @@
+evaluation:
+  name: r5_paired_adaptive_eval_control
+  launch_mode: real_launch
+  bot_config: configs/bot/baseline_playable.yaml
+  run_class: paired_control
+  validation_class: research_paired_eval
+  maps_config: configs/maps/r5_paired_adaptive_maps.yaml
+  opponents_config: configs/opponents/r5_paired_adaptive_pool.yaml
+  repeats: 3
+  output_dir: data/logs/evaluation/r5_paired_adaptive_eval/control
+  run_id: r5_paired_control_zerg_clean_20260425
+  isolate_runs: true
+  fail_on_crash: false

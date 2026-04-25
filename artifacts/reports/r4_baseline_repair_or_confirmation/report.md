@@ -5,10 +5,11 @@ Task: `task_014_baseline_repair_or_confirmation`
 
 ## Repair Scope
 
-Focused repair applied:
+Focused repair path applied:
 
 - dominant failure class from `task_013` was treated as sustained production / spending weakness
-- scope was kept to a single baseline production-capacity change
+- scope stayed inside one dominant failure class: baseline production-capacity
+  insufficiency
 - baseline first moved from `1` Gateway to `2`
 - after the Zerg/Protoss confirmation slice still failed, the same failure class
   was kept and the baseline was then moved from `2` Gateways to `3`
@@ -209,8 +210,6 @@ Reason:
 
 ## Stretch Gate
 
-`pending_checkpoint_review`
-
 `passed`
 
 Reason:
@@ -223,7 +222,8 @@ Reason:
 
 ## What This Proves
 
-- a single-scope repair can materially improve the dominant R4 failure class
+- a same-failure-class small-step repair path can materially improve the
+  dominant R4 failure class
 - the baseline can now win at least a focused easy-Terran rerun slice
 - the production-capacity bottleneck identified in `task_013` was real and actionable
 - keeping the same failure class and increasing baseline production capacity

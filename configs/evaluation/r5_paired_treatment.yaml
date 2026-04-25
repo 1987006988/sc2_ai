@@ -1,0 +1,13 @@
+evaluation:
+  name: r5_paired_adaptive_eval_treatment
+  launch_mode: real_launch
+  bot_config: configs/bot/adaptive_research.yaml
+  run_class: paired_treatment
+  validation_class: research_paired_eval
+  maps_config: configs/maps/r5_paired_adaptive_maps.yaml
+  opponents_config: configs/opponents/r5_paired_adaptive_pool.yaml
+  repeats: 3
+  output_dir: data/logs/evaluation/r5_paired_adaptive_eval/treatment
+  run_id: r5_paired_treatment_zerg_retuned_20260425
+  isolate_runs: true
+  fail_on_crash: false

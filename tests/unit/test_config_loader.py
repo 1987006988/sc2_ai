@@ -88,3 +88,28 @@ def test_baseline_playable_config_allows_three_gateway_production_capacity():
     config = load_bot_config(Path("configs/bot/baseline_playable.yaml"))
 
     assert config.build_order.gateway_target_count == 3
+
+
+def test_adaptive_research_config_freezes_single_adaptive_gating_layer():
+    config = load_bot_config(Path("configs/bot/adaptive_research.yaml"))
+
+    assert config.opponent_model.mode == "rule_based"
+    assert config.opponent_model.intervention_mode == "adaptive_gating"
+    assert config.opponent_model.rush_risk_threshold == 0.65
+    assert config.opponent_model.scout_continuation_game_time_limit == 210.0
+    assert config.opponent_model.first_attack_delay_seconds == 45.0
+    assert config.opponent_model.first_attack_army_buffer == 1
+    assert config.build_order.gateway_target_count == 3
+    assert config.runtime.max_game_loop == 9600
+
+
+def test_adaptive_research_core_matches_baseline_control_except_adaptive_layer():
+    baseline = load_bot_config(Path("configs/bot/baseline_playable.yaml"))
+    adaptive = load_bot_config(Path("configs/bot/adaptive_research.yaml"))
+
+    assert adaptive.runtime == baseline.runtime
+    assert adaptive.build_order == baseline.build_order
+    assert adaptive.managers == baseline.managers
+    assert adaptive.bot.race == baseline.bot.race
+    assert adaptive.opponent_model.mode == baseline.opponent_model.mode
+    assert adaptive.opponent_model.intervention_mode == "adaptive_gating"

@@ -17,6 +17,7 @@ from sc2bot.runtime.game_loop import (
     GameLoop,
     active_alert_names_from_bot_ai,
     assimilator_build_skip_reason,
+    build_adaptive_gate_applied_payload,
     build_army_presence_payload,
     build_combat_unit_lifecycle_payload,
     build_combat_unit_production_payload,
@@ -126,6 +127,67 @@ def test_build_minimal_behavior_intervention_payload_has_stable_shape():
         "strategy_switch_reason": "rush_risk_high",
         "intervention_mode": "minimal_behavior",
     }
+
+
+def test_build_adaptive_gate_applied_payload_has_stable_shape():
+    response = StrategyResponse(
+        selected_response_tag="first_attack_timing_delay",
+        strategy_switch_reason="information_gap_delay",
+        intervention_mode="adaptive_gating",
+        continue_scouting_gate_active=True,
+        defensive_posture_gate_active=False,
+        first_attack_timing_gate_active=True,
+        first_attack_delay_seconds=90.0,
+        first_attack_army_buffer=2,
+        belief_summary={"information_gap_high": True},
+    )
+
+    payload = build_adaptive_gate_applied_payload(
+        response,
+        GameState(game_loop=1234, game_time=55.0, own_army_count=3, visible_enemy_units_count=1),
+    )
+
+    assert payload == {
+        "selected_response_tag": "first_attack_timing_delay",
+        "strategy_switch_reason": "information_gap_delay",
+        "continue_scouting_gate_active": True,
+        "defensive_posture_gate_active": False,
+        "first_attack_timing_gate_active": True,
+        "first_attack_delay_seconds": 90.0,
+        "first_attack_army_buffer": 2,
+        "own_army_count": 3,
+        "visible_enemy_units_count": 1,
+        "game_loop": 1234,
+        "game_time": 55.0,
+        "belief_summary": {"information_gap_high": True},
+    }
+
+
+def test_game_loop_records_belief_state_and_adaptive_gate_events(tmp_path):
+    config = BotConfig(
+        bot=BotIdentityConfig(name="test-bot", race="protoss", strategy="test"),
+        managers=ManagersConfig(),
+        opponent_model=OpponentModelConfig(mode="rule_based", intervention_mode="adaptive_gating"),
+        runtime=RuntimeConfig(),
+        build_order=BuildOrderConfig(),
+        telemetry=TelemetryConfig(output_dir=str(tmp_path)),
+    )
+    container = DependencyContainer.from_config(config)
+
+    GameLoop(container).process_state(GameState(game_loop=2200, game_time=100.0))
+
+    events = [
+        json.loads(line)
+        for line in (tmp_path / "events.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    belief_event = next(event for event in events if event["event_type"] == "belief_state")
+    gate_event = next(event for event in events if event["event_type"] == "adaptive_gate_applied")
+    response_event = next(event for event in events if event["event_type"] == "strategy_response")
+
+    assert belief_event["payload"]["information_gap_high"] is True
+    assert gate_event["payload"]["continue_scouting_gate_active"] is True
+    assert gate_event["payload"]["first_attack_timing_gate_active"] is True
+    assert response_event["payload"]["intervention_mode"] == "adaptive_gating"
 
 
 def test_build_tactical_order_execution_payload_has_stable_shape():

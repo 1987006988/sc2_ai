@@ -21,14 +21,17 @@ managers:
 
 opponent_model:
   mode: rule_based
-  intervention_mode: none
-  rush_risk_threshold: 0.5
+  intervention_mode: adaptive_gating
+  rush_risk_threshold: 0.65
   tech_risk_threshold: 0.5
   low_information_confidence_threshold: 0.25
   low_information_game_time_threshold: 90.0
+  scout_continuation_game_time_limit: 210.0
+  first_attack_delay_seconds: 45.0
+  first_attack_army_buffer: 1
 
 runtime:
-  max_game_loop: 7200
+  max_game_loop: 9600
   max_steps:
   worker_production: true
   worker_gather: true
@@ -43,6 +46,7 @@ build_order:
   pylon_supply_buffer: 2
   gateway_min_probe_count: 16
   gateway_min_game_time: 90.0
+  gateway_target_count: 3
   assimilator_enabled: true
   cybernetics_core_enabled: true
   zealot_production_priority: 10

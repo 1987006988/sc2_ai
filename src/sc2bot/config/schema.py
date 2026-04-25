@@ -29,6 +29,9 @@ class OpponentModelConfig:
     tech_risk_threshold: float = 0.5
     low_information_confidence_threshold: float = 0.25
     low_information_game_time_threshold: float = 90.0
+    scout_continuation_game_time_limit: float = 210.0
+    first_attack_delay_seconds: float = 90.0
+    first_attack_army_buffer: int = 2
 
 
 @dataclass(frozen=True)

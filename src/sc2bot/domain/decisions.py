@@ -25,6 +25,12 @@ class StrategyResponse:
     confidence: float = 0.0
     prediction_signals: tuple[str, ...] = field(default_factory=tuple)
     recommended_response_tags: tuple[str, ...] = field(default_factory=tuple)
+    continue_scouting_gate_active: bool = False
+    defensive_posture_gate_active: bool = False
+    first_attack_timing_gate_active: bool = False
+    first_attack_delay_seconds: float = 0.0
+    first_attack_army_buffer: int = 0
+    belief_summary: dict[str, object] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -40,6 +46,12 @@ class StrategyResponse:
             "confidence": self.confidence,
             "prediction_signals": list(self.prediction_signals),
             "recommended_response_tags": list(self.recommended_response_tags),
+            "continue_scouting_gate_active": self.continue_scouting_gate_active,
+            "defensive_posture_gate_active": self.defensive_posture_gate_active,
+            "first_attack_timing_gate_active": self.first_attack_timing_gate_active,
+            "first_attack_delay_seconds": self.first_attack_delay_seconds,
+            "first_attack_army_buffer": self.first_attack_army_buffer,
+            "belief_summary": self.belief_summary,
         }
 
 

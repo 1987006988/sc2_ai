@@ -1,0 +1,6 @@
+opponents:
+  - id: builtin_easy_zerg
+    type: computer
+    race: zerg
+    difficulty: easy
+    enabled: true

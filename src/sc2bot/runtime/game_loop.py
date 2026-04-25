@@ -45,13 +45,19 @@ class GameLoop:
         prediction = self.container.opponent_model.predict(observations)
         decision = self.container.strategy.decide(state, prediction)
         strategy_response = self.container.strategy.select_response(
-            prediction, self.container.opponent_model_config
+            state,
+            observations,
+            prediction,
+            self.container.opponent_model_config,
         )
         self.container.macro.update(state, decision)
-        tactical_plan = self.container.tactical.plan(state, decision)
+        tactical_plan = self.container.tactical.plan(state, decision, strategy_response)
         self._latest_tactical_plan = tactical_plan
         self.container.micro.execute(state, tactical_plan)
         self.container.telemetry.record("game_state", state.to_dict())
+        belief_summary = strategy_response.belief_summary
+        if belief_summary:
+            self.container.telemetry.record("belief_state", belief_summary)
         self.container.telemetry.record("army_order", tactical_plan.to_dict())
         combat_event = self.container.tactical.detect_combat_event(state, tactical_plan)
         self.container.telemetry.record(
@@ -76,6 +82,17 @@ class GameLoop:
             },
         )
         self.container.telemetry.record("strategy_response", strategy_response.to_dict())
+        if any(
+            (
+                strategy_response.continue_scouting_gate_active,
+                strategy_response.defensive_posture_gate_active,
+                strategy_response.first_attack_timing_gate_active,
+            )
+        ):
+            self.container.telemetry.record(
+                "adaptive_gate_applied",
+                build_adaptive_gate_applied_payload(strategy_response, state),
+            )
         response_key = (
             strategy_response.selected_response_tag,
             strategy_response.strategy_switch_reason,
@@ -817,6 +834,30 @@ def should_apply_minimal_behavior(response: StrategyResponse) -> bool:
     return response.intervention_mode == "minimal_behavior"
 
 
+def should_apply_adaptive_gating(response: StrategyResponse) -> bool:
+    return response.intervention_mode == "adaptive_gating"
+
+
+def build_adaptive_gate_applied_payload(
+    response: StrategyResponse,
+    state: GameState,
+) -> dict[str, object]:
+    return {
+        "selected_response_tag": response.selected_response_tag,
+        "strategy_switch_reason": response.strategy_switch_reason,
+        "continue_scouting_gate_active": response.continue_scouting_gate_active,
+        "defensive_posture_gate_active": response.defensive_posture_gate_active,
+        "first_attack_timing_gate_active": response.first_attack_timing_gate_active,
+        "first_attack_delay_seconds": response.first_attack_delay_seconds,
+        "first_attack_army_buffer": response.first_attack_army_buffer,
+        "own_army_count": state.own_army_count,
+        "visible_enemy_units_count": state.visible_enemy_units_count,
+        "game_loop": state.game_loop,
+        "game_time": state.game_time,
+        "belief_summary": response.belief_summary,
+    }
+
+
 def build_python_sc2_local_bot(
     container: DependencyContainer,
     bot_name: str,
@@ -983,10 +1024,11 @@ def build_python_sc2_local_bot(
                 worker.gather(target)
 
         async def _safe_worker_scout(self, strategy_response: StrategyResponse) -> None:
-            if (
+            continue_scouting_active = (
                 should_apply_minimal_behavior(strategy_response)
                 and strategy_response.selected_response_tag == "continue_scouting"
-            ):
+            ) or strategy_response.continue_scouting_gate_active
+            if continue_scouting_active:
                 record_minimal_behavior_intervention(
                     container.telemetry,
                     strategy_response,
@@ -995,7 +1037,26 @@ def build_python_sc2_local_bot(
                     reason="continue_scouting",
                 )
             if self._scout_worker_tag is not None:
-                return
+                if not continue_scouting_active or not self.enemy_start_locations:
+                    return
+                scout_worker = self.workers.find_by_tag(self._scout_worker_tag)
+                if scout_worker is None:
+                    self._scout_worker_tag = None
+                else:
+                    scout_worker.move(self.enemy_start_locations[0])
+                    container.telemetry.record(
+                        "worker_scout_persistence_applied",
+                        {
+                            "worker_tag": scout_worker.tag,
+                            "target": list(
+                                _position_tuple(self.enemy_start_locations[0]) or ()
+                            ),
+                            "reason": "adaptive_continue_scouting"
+                            if should_apply_adaptive_gating(strategy_response)
+                            else "minimal_behavior_continue_scouting",
+                        },
+                    )
+                    return
             if not self.workers or not self.enemy_start_locations:
                 return
             worker = self.workers.first
@@ -1699,7 +1760,7 @@ def build_python_sc2_local_bot(
             defensive_posture = (
                 should_apply_minimal_behavior(strategy_response)
                 and strategy_response.selected_response_tag == "defensive_posture"
-            )
+            ) or strategy_response.defensive_posture_gate_active
             if defensive_posture:
                 record_minimal_behavior_intervention(
                     container.telemetry,

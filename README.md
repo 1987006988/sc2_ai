@@ -48,14 +48,15 @@ What is true right now:
   reporting infrastructure have been validated;
 - the new research control layer has been imported and cleaned up;
 - old plans have been downgraded to historical reference;
-- the repository can now begin from the new master queue;
-- this cleanup round did not add any new gameplay capability.
+- a Level 1 playable baseline has now been accepted through
+  `checkpoint_E_level1_baseline_gate`;
+- the current active next task is
+  `task_016_integrate_single_adaptive_gating_layer`.
 
 What is not true yet:
 
-- there is no accepted playable Protoss combat core yet;
-- there is no validated Level 1 baseline yet;
 - there is no validated adaptive research contribution yet;
+- there is no accepted paired adaptive evaluation result yet;
 - the repository does not prove ladder competitiveness.
 
 ## Real-Match-First Rules
@@ -139,10 +140,12 @@ they are no longer execution authority.
 ## What This Repository Does Not Prove Yet
 
 - It does not prove ladder competitiveness.
-- It does not prove stable win rate against built-in Easy or Medium opponents.
+- It does not prove broad stable win rate across larger Easy or Medium pools
+  beyond the accepted Level 1 baseline gate.
 - It does not prove gameplay quality improvement.
 - It does not prove opponent modeling improves match outcomes.
-- It does not yet prove an accepted playable Protoss combat core.
+- It does not yet prove an accepted adaptive research effect on top of the
+  baseline.
 
 ## Next Step
 

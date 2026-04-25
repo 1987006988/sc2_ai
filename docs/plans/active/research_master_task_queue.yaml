@@ -5,7 +5,7 @@ source_of_truth:
 - docs/foundation/04_research_direction/research_direction_decision.md
 - docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
 - docs/experiments/real_match_validation_protocol.md
-active_next_task: task_016_integrate_single_adaptive_gating_layer
+active_next_task: project_core_goal_reached
 execution_rules:
   checkpoint_every_n_tasks: 3
   checkpoint_failure_blocks_progress: true
@@ -950,7 +950,7 @@ phases:
     group: baseline_repair_confirmation
     status: completed
     quota_risk: high
-    expected_codex_window: single_repair_plus_focused_rerun_window
+    expected_codex_window: same_failure_class_small_step_iterations_plus_focused_rerun_window
     validation_level_required: L4
     actual_validation_level: L4
     data_source:
@@ -959,10 +959,13 @@ phases:
     real_validation_status: completed_valid_real_sc2_batch
     requires:
     - task_013_baseline_easy_pool_batch_evaluation
-    goal: 基于 baseline batch 的 dominant failure class，执行一次最高优先级 repair，或在 target 已通过时执行最小必要
+    goal: 基于 baseline batch 的 dominant failure class，在不切换 failure
+      class 的前提下执行一次或多次连续小步 repair，或在 target 已通过时执行最小必要
       confirmation rerun 以冻结 Level 1 证据。
     scope:
     - 若 task_013 target 未通过，则只修最主要 failure class，不分散到多条支线
+    - 允许在同一 dominant failure class 下连续做小步迭代，但每次只改一个核心变量，且不得同时扩展到第二个
+      failure class
     - 若 task_013 target 已通过，则不扩 scope，只做最小 confirmation 以证明结果不是偶发
     - rerun 只覆盖受影响的 opponent/map slice，避免无效扩大样本
     non_goals:
@@ -977,17 +980,18 @@ phases:
     - data/logs/evaluation/r4_baseline_repair_or_confirmation/
     - artifacts/reports/r4_baseline_repair_or_confirmation/report.md
     verification:
-    - repair 或 confirmation 的范围与 task_013 failure class 一一对应
+    - 每一步 repair 或 confirmation 的范围都与 task_013 当前 dominant failure class 一一对应
     - rerun 结果与原 batch 可对比
     - 没有引入新的 prerequisite regression
     done_criteria:
-    - dominant failure class 被处理或被确认不影响 Level 1 结论
+    - dominant failure class 被处理，或在同一 failure class 下的小步迭代已经充分说明它不再阻断 Level
+      1 结论
     - 补充证据可以支持 checkpoint_E 做 pass/fail 决策
     - baseline 仍保持 non-adaptive 对照角色的清晰性
     minimum_gate:
       claim: 最高优先级 baseline 风险已被处理
-      pass_condition: repair 后的 focused rerun 明确改善 dominant failure class，或 confirmation
-        证明原结论稳定
+      pass_condition: 同一 dominant failure class 下的 focused rerun 或连续小步 rerun
+        明确改善该 failure class，或 confirmation 证明原结论稳定
     target_gate:
       claim: Level 1 决策已具备足够稳健性
       pass_condition: repair/confirmation 之后，checkpoint 不再需要额外 large scope 证据就能决定是否接受
@@ -996,9 +1000,9 @@ phases:
       claim: baseline 已准备好作为 adaptive paired eval 的 control
       pass_condition: baseline 行为稳定、配置冻结、不会在 paired eval 中继续漂移
     stop_conditions:
-    - repair 没有针对 dominant failure class
+    - repair 脱离当前 dominant failure class
     - rerun 引入新的 prerequisite regression
-    - 为了追求通过而偷偷扩大 scope 或变更多个变量
+    - 为了追求通过而偷偷扩大 scope、同时变更多个变量、或把连续小步迭代扩成多 failure-class 混修
     rollback_notes:
     - 若 repair 导致 core regression，立即回退到 task_013 前的通过版本并重新定位 failure class
     - 若 confirmation rerun 与原 batch 冲突，取消 Level 1 冻结并继续 baseline repair
@@ -1095,11 +1099,11 @@ phases:
   - id: task_016_integrate_single_adaptive_gating_layer
     phase: phase_r5_adaptive_research_validation
     group: adaptive_impl
-    status: pending
+    status: completed
     quota_risk: high
     expected_codex_window: single_session_to_multi_session
     validation_level_required: L1
-    actual_validation_level: none
+    actual_validation_level: L1
     data_source:
     - src/sc2bot/managers/strategy_manager.py
     - src/sc2bot/opponent_model/*
@@ -1107,7 +1111,7 @@ phases:
     - configs/bot/baseline_playable.yaml
     - configs/bot/adaptive_research.yaml
     - phase1d/phase1e reports
-    real_validation_status: not_started
+    real_validation_status: not_applicable
     requires:
     - checkpoint_E_level1_baseline_gate
     goal: 仅接入一个 research feature：稀疏侦察驱动的在线对手状态推断与时机门控层，并把它真正连到 gameplay gate，而非仅保留
@@ -1159,21 +1163,32 @@ phases:
     - src/sc2bot/opponent_model/
     - configs/bot/adaptive_research.yaml
     - tests/
+    evidence_paths:
+    - src/sc2bot/domain/belief_state.py
+    - src/sc2bot/managers/strategy_manager.py
+    - src/sc2bot/managers/tactical_manager.py
+    - src/sc2bot/runtime/game_loop.py
+    - configs/bot/adaptive_research.yaml
+    - tests/unit/test_strategy_manager.py
+    - tests/unit/test_tactical_manager.py
+    - tests/unit/test_game_loop.py
+    - tests/unit/test_config_loader.py
+    - artifacts/reports/r5_paired_adaptive_eval/task_016_static_validation.md
     capability_validation_status: not_applicable_implementation_task
   - id: task_017_null_vs_adaptive_paired_evaluation
     phase: phase_r5_adaptive_research_validation
     group: paired_eval
-    status: blocked
+    status: completed
     quota_risk: high
     expected_codex_window: multi_run_paired_window
     validation_level_required: L4
-    actual_validation_level: none
+    actual_validation_level: L4
     data_source:
     - task_016_integrate_single_adaptive_gating_layer
     - configs/bot/baseline_playable.yaml
     - configs/bot/adaptive_research.yaml
     - docs/experiments/real_match_validation_protocol.md
-    real_validation_status: not_started
+    real_validation_status: completed_valid_real_sc2_paired_evaluation
     requires:
     - task_016_integrate_single_adaptive_gating_layer
     - checkpoint_E_level1_baseline_gate
@@ -1217,21 +1232,24 @@ phases:
     - 无行为差异时回 task_016 修 adaptive gate，而不是继续扩大样本
     - 若出现 core regression，回退到 checkpoint_E 接受的 baseline control
     evidence_paths:
-    - data/logs/evaluation/r5_paired_adaptive_eval/
+    - data/logs/evaluation/r5_paired_adaptive_eval/control/r5_paired_control_zerg_20260425/summary.json
+    - data/logs/evaluation/r5_paired_adaptive_eval/control/r5_paired_control_zerg_clean_20260425/summary.json
+    - data/logs/evaluation/r5_paired_adaptive_eval/treatment/r5_paired_treatment_zerg_clean_20260425/summary.json
+    - data/logs/evaluation/r5_paired_adaptive_eval/treatment/r5_paired_treatment_zerg_retuned_20260425/summary.json
     - artifacts/reports/r5_paired_adaptive_eval/report.md
-    capability_validation_status: pending
+    capability_validation_status: capability_validated_target
   - id: checkpoint_F_adaptive_research_gate
     phase: phase_r5_adaptive_research_validation
     group: checkpoint
-    status: blocked
+    status: completed
     quota_risk: low
     expected_codex_window: review_window
     validation_level_required: L5
-    actual_validation_level: none
+    actual_validation_level: L5
     data_source:
     - task_016_integrate_single_adaptive_gating_layer
     - task_017_null_vs_adaptive_paired_evaluation
-    real_validation_status: not_started
+    real_validation_status: not_applicable
     requires:
     - task_016_integrate_single_adaptive_gating_layer
     - task_017_null_vs_adaptive_paired_evaluation
@@ -1272,16 +1290,21 @@ phases:
     - 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
     - 不得保持后续任务为 pending 可执行状态；必须显式 blocked
     evidence_paths:
-    - artifacts/reports/checkpoints/
-    capability_validation_status: not_applicable_checkpoint
+    - artifacts/reports/r5_paired_adaptive_eval/task_016_static_validation.md
+    - data/logs/evaluation/r5_paired_adaptive_eval/control/r5_paired_control_zerg_clean_20260425/summary.json
+    - data/logs/evaluation/r5_paired_adaptive_eval/treatment/r5_paired_treatment_zerg_retuned_20260425/summary.json
+    - artifacts/reports/r5_paired_adaptive_eval/report.md
+    - artifacts/reports/checkpoints/checkpoint_F_adaptive_research_gate.md
+    capability_validation_status: capability_validated_target
     reviewed_tasks:
     - task_016_integrate_single_adaptive_gating_layer
     - task_017_null_vs_adaptive_paired_evaluation
-    minimum_gate_passed: null
-    target_gate_passed: null
-    stretch_gate_status: pending
-    failure_class: pending
-    decision: pending
+    minimum_gate_passed: true
+    target_gate_passed: true
+    stretch_gate_status: failed
+    actual_game_time_sufficient: yes
+    failure_class: none
+    decision: accepted_continue
     next_allowed_task:
       on_pass: project_core_goal_reached
       on_fail_no_behavior_change: task_016_integrate_single_adaptive_gating_layer

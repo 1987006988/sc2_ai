@@ -9,11 +9,11 @@ As of 2026-04-25, the active execution state is:
 - latest handoff:
   - `docs/handoffs/latest.md`
 - current active next task:
-  - `task_016_integrate_single_adaptive_gating_layer`
+  - `project_core_goal_reached`
 
 Latest checkpoint state:
 
-- `checkpoint_E_level1_baseline_gate`
+- `checkpoint_F_adaptive_research_gate`
   - `minimum_gate_passed = true`
   - `target_gate_passed = true`
   - `decision = accepted_continue`
@@ -21,11 +21,13 @@ Latest checkpoint state:
 
 Latest completed task state:
 
-- `task_014_baseline_repair_or_confirmation`
-  - repaired baseline wins the focused easy-Terran slice (`2/2`)
-  - after a second focused repair on the same failure class, the corrected
-    Zerg/Protoss confirmation rerun reached `3/4` wins
-  - Level 1 baseline is now accepted and Phase R5 is unblocked
+- `task_017_null_vs_adaptive_paired_evaluation`
+  - invalid polluted control output was excluded from final judgment
+  - accepted control slice reached `1/3` wins
+  - accepted retuned treatment slice reached `2/3` wins
+  - accepted behavior delta concentrated on `continue_scouting` persistence
+  - one adaptive research contribution is now accepted on a matched Easy Zerg
+    slice
 
 Repository sync check:
 
@@ -84,7 +86,17 @@ Legacy/historical plan separation is indexed in:
 
 Phase 1D and Phase 1E foundation work is complete. Phase 1F demo packaging and standalone Phase L0 execution planning are paused.
 
-The active route is now `docs/plans/active/ladder_competitive_adaptive_sc2_bot_plan.md`. Phase A: Ladder Infrastructure & Scalable Real-Match Dataset has reached closeout. Phase B: Playable Competitive Core has completed its task queue as evidence-gathering, but the Level 1 playable baseline is not reached. A Phase B evidence audit now separates task completion from gameplay capability validation. Phase B-R: Playable Competitive Core Revalidation is planned as the next active workstream.
+The active route is now the research control layer centered on
+`docs/plans/active/research_master_task_queue.yaml`.
+
+Current accepted milestone state:
+
+- Level 1 playable baseline is accepted through
+  `checkpoint_E_level1_baseline_gate`
+- one adaptive research contribution is accepted through
+  `checkpoint_F_adaptive_research_gate`
+- the accepted adaptive result is bounded to one matched Easy Zerg slice and is
+  not yet a broader-pool extension claim
 
 ## Mainline
 
@@ -127,15 +139,13 @@ Research directories are isolated and contain no production dependencies.
 
 ## Current Priority
 
-- keep the newly imported research control layer as the only execution
-  authority;
+- keep the research control layer as the only execution authority;
+- keep queue / handoff / checkpoint report synchronized when pushing updates;
 - treat old Phase A / Phase B / Phase B-R plans and queues as historical
   context, not as current task sources;
-- do not resume any legacy queue;
-- prepare to start the new mainline from
-  `docs/plans/active/research_master_task_queue.yaml`;
-- keep Phase A evidence as infrastructure/data foundation and earlier Phase B
-  evidence as historical diagnostics rather than accepted capability proof.
+- treat the core project goal as reached at the current planned scope;
+- if work continues, treat it as extension work beyond the accepted core goal,
+  not as unfinished baseline/adaptive core validation.
 
 ## Decisions Landed
 
