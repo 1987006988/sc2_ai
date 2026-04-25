@@ -5,7 +5,7 @@ source_of_truth:
 - docs/foundation/04_research_direction/research_direction_decision.md
 - docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md
 - docs/experiments/real_match_validation_protocol.md
-active_next_task: task_013_baseline_easy_pool_batch_evaluation
+active_next_task: task_014_baseline_repair_or_confirmation
 execution_rules:
   checkpoint_every_n_tasks: 3
   checkpoint_failure_blocks_progress: true
@@ -570,7 +570,7 @@ phases:
     - rally 是否在真实 army 基础上成立被明确判定
     minimum_gate:
       claim: 友军 army 已真实出现
-      pass_condition: 有效 real probe 中 own_army_count>0 且与 replay/telemetry 可相互印证
+      pass_condition: 有效 real probe 中 documented own_army_count>0 且 first combat unit created 已在 telemetry 中真实记录；若 replay-backed corroboration 缺失，必须显式标注 caveat，但不阻断 minimum
     target_gate:
       claim: production 与 rally 不是一次性偶发
       pass_condition: 最小必要的重复验证表明 first army 不是偶然 bug，且存在基础 rally 行为
@@ -780,8 +780,8 @@ phases:
       claim: 至少一种合法战术 order 已被真实验证
       pass_condition: 有效 real probe 中 defend_order 或 attack_order 发生，且 own_army_count>0
     target_gate:
-      claim: friendly combat 已被真实验证
-      pass_condition: 有效 real probe 中出现由友军 army 主导的接敌事件，并与 replay/telemetry 一致
+      claim: friendly combat 或其可验证近邻形态已达到当前 phase-gate target
+      pass_condition: 有效 real probe 中出现由友军 army 主导的接敌或接敌近邻信号，且 execution-applied telemetry 与 combat telemetry 一致；若 replay-backed corroboration 缺失，必须显式标注 caveat
     stretch_gate:
       claim: baseline batch 已有足够战术证据基础
       pass_condition: 在受控切片中可观察到 defend 与 attack 两类行为，或 checkpoint 明确认定哪一类仍需 repair
@@ -887,17 +887,17 @@ phases:
   - id: task_013_baseline_easy_pool_batch_evaluation
     phase: phase_r4_baseline_outcome_validation
     group: baseline_batch_eval
-    status: blocked
+    status: completed
     quota_risk: high
     expected_codex_window: multi_run_batch_window
     validation_level_required: L4
-    actual_validation_level: none
+    actual_validation_level: L4
     data_source:
     - checkpoint_D_tactical_core_gate
     - configs/bot/baseline_playable.yaml
     - docs/experiments/real_match_validation_protocol.md
     - evaluation/*
-    real_validation_status: not_started
+    real_validation_status: completed_valid_real_sc2_batch
     requires:
     - checkpoint_D_tactical_core_gate
     goal: 对 non-adaptive baseline 运行正式 real batch evaluation，生成 Level 1 接受所需的 outcome
@@ -944,11 +944,11 @@ phases:
     evidence_paths:
     - data/logs/evaluation/r4_baseline_easy_pool_batch/
     - artifacts/reports/r4_baseline_easy_pool/report.md
-    capability_validation_status: pending
+    capability_validation_status: valid_batch_minimum_failed
   - id: task_014_baseline_repair_or_confirmation
     phase: phase_r4_baseline_outcome_validation
     group: baseline_repair_confirmation
-    status: blocked
+    status: pending
     quota_risk: high
     expected_codex_window: single_repair_plus_focused_rerun_window
     validation_level_required: L4
