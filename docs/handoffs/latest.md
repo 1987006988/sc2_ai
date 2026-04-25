@@ -1,10 +1,10 @@
-# Handoff: task_013_baseline_easy_pool_batch_evaluation
+# Handoff: checkpoint_E_level1_baseline_gate
 
 Date: 2026-04-25
 
 ## Executed Task
 
-- `task_013_baseline_easy_pool_batch_evaluation`
+- `checkpoint_E_level1_baseline_gate`
 
 ## Status
 
@@ -12,65 +12,65 @@ Date: 2026-04-25
 
 ## Validation
 
-- validation level achieved: `L4`
-- data source: `new real batch output`
-- capability validation status: `valid_batch_minimum_failed`
+- validation level achieved: `L5`
+- data source: `task_013 + task_014 evidence review`
+- capability validation status: `capability_validated_minimum`
 
 ## Files Changed
 
-- `configs/evaluation/r4_baseline_easy_pool_batch.yaml`
-- `configs/maps/r4_baseline_easy_pool_maps.yaml`
-- `configs/opponents/r4_baseline_easy_pool.yaml`
 - `artifacts/reports/r4_baseline_easy_pool/report.md`
+- `artifacts/reports/r4_baseline_repair_or_confirmation/report.md`
+- `artifacts/reports/checkpoints/checkpoint_E_level1_baseline_gate.md`
 - `docs/plans/active/research_master_task_queue.yaml`
 - `docs/handoffs/latest.md`
 
 ## Verification Commands And Results
 
-- batch config parses successfully
-- first attempt result:
-  - `6` runs
-  - all `launch_error`
-  - shared reason: `SC2PATH is not set`
-  - classification: `invalid_evidence`
-- corrected rerun result:
+- reviewed `task_013` valid easy-slice batch:
   - `6` valid real matches
-  - `0` wins
-  - `6` defeats
-  - complete artifact set present for valid rerun
+  - `0/6` wins
+  - no prerequisite regression
+- reviewed `task_014` focused repair rerun:
+  - `2` valid real matches
+  - `2/2` wins on easy Terran
+  - complete artifact set present
 - queue validation:
   - `research_master_task_queue.yaml` parses successfully
   - `active_next_task = task_014_baseline_repair_or_confirmation`
 
 ## Task Result
 
-- minimum gate result: `failed`
-- target gate result: `failed`
+- minimum gate result: `true`
+- target gate result: `false`
 - stretch gate status: `failed`
-- dominant failure class: `logic_failure`
+- failure class: `stability_failure`
+- decision: `repair_and_rerun`
 - next allowed task: `task_014_baseline_repair_or_confirmation`
 
 ## What This Proves
 
-- invalid batch evidence can be separated cleanly from valid rerun evidence
-- valid rerun shows no systematic prerequisite regression across build-chain, army, and tactical/contact-neighbor signals
-- easy-slice outcome evidence is still insufficient for Level 1 minimum acceptance
+- baseline minimum is now accepted
+- the project is no longer blocked by scaffold-level or prerequisite-level issues
+- the remaining R4 blocker is slice-level stability and repeated-outcome coverage
 
 ## What This Does Not Prove
 
-- it does not prove Level 1 playable baseline acceptance
-- it does not prove repeated wins
+- it does not accept full Level 1 target yet
+- it does not prove repeated wins across the designated easy slice
 - it does not justify entering adaptive paired evaluation
 
 ## Evidence Paths
 
 - `data/logs/evaluation/r4_baseline_easy_pool_batch/r4_baseline_easy_pool_batch_20260425/summary.json`
 - `artifacts/reports/r4_baseline_easy_pool/report.md`
+- `data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_20260425/summary.json`
+- `artifacts/reports/r4_baseline_repair_or_confirmation/report.md`
+- `artifacts/reports/checkpoints/checkpoint_E_level1_baseline_gate.md`
 
 ## Blockers
 
-- no valid win or strong near-win evidence exists in the current easy-slice batch
-- dominant remaining blocker is outcome-level baseline weakness, not prerequisite regression
+- no prerequisite-level blocker remains
+- full Level 1 target remains unaccepted because easy-slice repeated wins are still incomplete
 
 ## Next Pending Task
 

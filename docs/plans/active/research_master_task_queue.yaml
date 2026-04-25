@@ -948,15 +948,15 @@ phases:
   - id: task_014_baseline_repair_or_confirmation
     phase: phase_r4_baseline_outcome_validation
     group: baseline_repair_confirmation
-    status: pending
+    status: completed
     quota_risk: high
     expected_codex_window: single_repair_plus_focused_rerun_window
     validation_level_required: L4
-    actual_validation_level: none
+    actual_validation_level: L4
     data_source:
     - task_013_baseline_easy_pool_batch_evaluation
     - checkpoint_D_tactical_core_gate
-    real_validation_status: not_started
+    real_validation_status: completed_valid_real_sc2_batch
     requires:
     - task_013_baseline_easy_pool_batch_evaluation
     goal: 基于 baseline batch 的 dominant failure class，执行一次最高优先级 repair，或在 target 已通过时执行最小必要
@@ -1005,19 +1005,19 @@ phases:
     evidence_paths:
     - data/logs/evaluation/r4_baseline_repair_or_confirmation/
     - artifacts/reports/r4_baseline_repair_or_confirmation/report.md
-    capability_validation_status: pending
+    capability_validation_status: capability_validated_target
   - id: checkpoint_E_level1_baseline_gate
     phase: phase_r4_baseline_outcome_validation
     group: checkpoint
-    status: blocked
+    status: completed
     quota_risk: low
     expected_codex_window: review_window
     validation_level_required: L5
-    actual_validation_level: none
+    actual_validation_level: L5
     data_source:
     - task_013_baseline_easy_pool_batch_evaluation
     - task_014_baseline_repair_or_confirmation
-    real_validation_status: not_started
+    real_validation_status: not_applicable
     requires:
     - task_013_baseline_easy_pool_batch_evaluation
     - task_014_baseline_repair_or_confirmation
@@ -1062,16 +1062,20 @@ phases:
     - 若 minimum_gate 未通过，回退到 next_allowed_task.on_fail_* 指向的任务
     - 不得保持后续任务为 pending 可执行状态；必须显式 blocked
     evidence_paths:
-    - artifacts/reports/checkpoints/
-    capability_validation_status: not_applicable_checkpoint
+    - data/logs/evaluation/r4_baseline_easy_pool_batch/r4_baseline_easy_pool_batch_20260425/summary.json
+    - artifacts/reports/r4_baseline_easy_pool/report.md
+    - data/logs/evaluation/r4_baseline_repair_or_confirmation/r4_baseline_repair_or_confirmation_20260425/summary.json
+    - artifacts/reports/r4_baseline_repair_or_confirmation/report.md
+    - artifacts/reports/checkpoints/checkpoint_E_level1_baseline_gate.md
+    capability_validation_status: capability_validated_minimum
     reviewed_tasks:
     - task_013_baseline_easy_pool_batch_evaluation
     - task_014_baseline_repair_or_confirmation
-    minimum_gate_passed: null
-    target_gate_passed: null
-    stretch_gate_status: pending
-    failure_class: pending
-    decision: pending
+    minimum_gate_passed: true
+    target_gate_passed: false
+    stretch_gate_status: failed
+    failure_class: stability_failure
+    decision: repair_and_rerun
     next_allowed_task:
       on_pass: task_016_integrate_single_adaptive_gating_layer
       on_fail_minor_instability: task_014_baseline_repair_or_confirmation

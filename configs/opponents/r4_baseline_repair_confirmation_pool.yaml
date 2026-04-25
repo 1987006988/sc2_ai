@@ -1,0 +1,12 @@
+opponents:
+  - id: builtin_easy_terran
+    type: computer
+    race: terran
+    difficulty: easy
+    tags:
+      - builtin
+      - r4
+      - repair_confirmation
+      - terran
+      - easy
+    enabled: true

@@ -255,7 +255,7 @@ def test_gateway_build_skip_reason_waits_for_configured_conditions():
             build_order,
             pending_gateway_count=1,
         )
-        == "gateway_already_pending"
+        == "gateway_target_count_reached"
     )
     assert (
         gateway_build_skip_reason(
@@ -263,7 +263,7 @@ def test_gateway_build_skip_reason_waits_for_configured_conditions():
             build_order,
             existing_gateway_count=1,
         )
-        == "gateway_already_exists"
+        == "gateway_target_count_reached"
     )
     assert (
         gateway_build_skip_reason(
@@ -271,6 +271,29 @@ def test_gateway_build_skip_reason_waits_for_configured_conditions():
             build_order,
         )
         is None
+    )
+
+    two_gateway_plan = BuildOrderConfig(
+        gateway_min_probe_count=16,
+        gateway_min_game_time=90.0,
+        gateway_target_count=2,
+    )
+    assert (
+        gateway_build_skip_reason(
+            GameState(game_loop=0, own_workers_count=16, minerals=200, game_time=100.0),
+            two_gateway_plan,
+            existing_gateway_count=1,
+        )
+        is None
+    )
+    assert (
+        gateway_build_skip_reason(
+            GameState(game_loop=0, own_workers_count=16, minerals=200, game_time=100.0),
+            two_gateway_plan,
+            existing_gateway_count=1,
+            pending_gateway_count=1,
+        )
+        == "gateway_target_count_reached"
     )
 
 
@@ -300,6 +323,7 @@ def test_build_gateway_build_payload_has_stable_shape():
         "own_workers_count": 16,
         "gateway_min_probe_count": 16,
         "gateway_min_game_time": 90.0,
+        "gateway_target_count": 1,
         "pending_gateway_count": 0,
         "existing_gateway_count": 0,
     }

@@ -22,6 +22,7 @@ def test_load_default_config():
     assert config.build_order.pylon_supply_buffer == 2
     assert config.build_order.gateway_min_probe_count == 16
     assert config.build_order.gateway_min_game_time == 90.0
+    assert config.build_order.gateway_target_count == 1
     assert config.build_order.assimilator_enabled is True
     assert config.build_order.cybernetics_core_enabled is True
     assert config.build_order.zealot_production_priority == 10
@@ -63,6 +64,7 @@ def test_build_order_config_defaults_keep_existing_configs_compatible():
     assert config.build_order.pylon_supply_buffer == 2
     assert config.build_order.gateway_min_probe_count == 16
     assert config.build_order.gateway_min_game_time == 90.0
+    assert config.build_order.gateway_target_count == 1
     assert config.build_order.assimilator_enabled is True
     assert config.build_order.cybernetics_core_enabled is True
     assert config.build_order.zealot_production_priority == 10
@@ -80,3 +82,9 @@ def test_phase_b_revalidation_gameplay_config_uses_long_runtime_window():
     assert config.runtime.max_game_loop > load_bot_config(Path("configs/bot/debug.yaml")).runtime.max_game_loop
     assert config.runtime.worker_production is True
     assert config.runtime.supply_sustain is True
+
+
+def test_baseline_playable_config_allows_two_gateway_production_capacity():
+    config = load_bot_config(Path("configs/bot/baseline_playable.yaml"))
+
+    assert config.build_order.gateway_target_count == 2

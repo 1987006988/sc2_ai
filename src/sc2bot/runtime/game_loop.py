@@ -390,10 +390,10 @@ def gateway_build_skip_reason(
 ) -> str | None:
     """Return a structured skip reason, or None when Gateway should be attempted."""
 
-    if existing_gateway_count > 0:
-        return "gateway_already_exists"
-    if pending_gateway_count > 0:
-        return "gateway_already_pending"
+    target_gateway_count = max(1, int(build_order.gateway_target_count))
+    total_gateway_count = existing_gateway_count + pending_gateway_count
+    if total_gateway_count >= target_gateway_count:
+        return "gateway_target_count_reached"
     if state.own_workers_count <= 0:
         return "no_worker_available"
     if state.minerals < GATEWAY_MINERALS:
@@ -424,6 +424,7 @@ def build_gateway_build_payload(
         "own_workers_count": state.own_workers_count,
         "gateway_min_probe_count": build_order.gateway_min_probe_count,
         "gateway_min_game_time": build_order.gateway_min_game_time,
+        "gateway_target_count": build_order.gateway_target_count,
         "pending_gateway_count": pending_gateway_count,
         "existing_gateway_count": existing_gateway_count,
     }

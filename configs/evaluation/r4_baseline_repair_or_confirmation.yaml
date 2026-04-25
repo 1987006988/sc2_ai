@@ -1,0 +1,13 @@
+evaluation:
+  name: r4_baseline_repair_or_confirmation
+  launch_mode: real_launch
+  bot_config: configs/bot/baseline_playable.yaml
+  run_class: baseline_playable
+  validation_class: gameplay_batch
+  maps_config: configs/maps/r4_baseline_easy_pool_maps.yaml
+  opponents_config: configs/opponents/r4_baseline_repair_confirmation_pool.yaml
+  repeats: 2
+  output_dir: data/logs/evaluation/r4_baseline_repair_or_confirmation
+  run_id: r4_baseline_repair_or_confirmation_20260425
+  isolate_runs: true
+  fail_on_crash: false

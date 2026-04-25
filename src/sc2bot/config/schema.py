@@ -50,6 +50,7 @@ class BuildOrderConfig:
     pylon_supply_buffer: int = 2
     gateway_min_probe_count: int = 16
     gateway_min_game_time: float = 90.0
+    gateway_target_count: int = 1
     assimilator_enabled: bool = True
     cybernetics_core_enabled: bool = True
     zealot_production_priority: int = 10
