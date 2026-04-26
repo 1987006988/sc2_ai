@@ -1,0 +1,39 @@
+{
+  "enemy_opening_class": {
+    "fast_expand": 0,
+    "pressure_open": 1,
+    "tech_open": 2
+  },
+  "enemy_tech_path": {
+    "low_tech": 0,
+    "production_path": 1,
+    "tech_path_present": 2,
+    "upgrade_path": 3
+  },
+  "macro_action_label": {
+    "add_production": 0,
+    "add_tech": 1,
+    "defensive_hold": 2,
+    "delay_move_out": 3,
+    "expand_now": 4,
+    "increase_production_tempo": 5,
+    "move_out_window_open": 6
+  },
+  "production_tempo_label": {
+    "low": 0,
+    "medium": 1
+  },
+  "future_winner": {
+    "loss": 0,
+    "win": 1
+  },
+  "future_game_length_bucket": {
+    "long": 0,
+    "medium": 1,
+    "short": 2
+  },
+  "future_pressure_proxy": {
+    "high_pressure": 0,
+    "low_pressure": 1
+  }
+}

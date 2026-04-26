@@ -1,0 +1,8 @@
+version: 1
+task: r7_task_005_run_selected_strong_bot_and_collect_seed_data
+status: placeholder_until_runtime_audit
+selected_candidate: distar_zvz_agent_platform
+notes:
+  - This file reserves the runtime audit entrypoint for later use.
+  - No local DI-star match was launched in this turn.
+  - Seed-data acceptance for task_005 came from the provided replay corpus.

@@ -1,0 +1,50 @@
+{
+  "result": "Result.Tie",
+  "game_time": 419.775,
+  "mode": "defend",
+  "own_townhalls_count": 3,
+  "enemy_townhalls_count": 1,
+  "own_army_count": 39,
+  "enemy_army_count": 0,
+  "own_army_value": 2700.0,
+  "enemy_army_value": 0.0,
+  "drone_count": 46,
+  "scouting_information": [
+    "ENEMY_TWO_BASE"
+  ],
+  "advisor_stats": {
+    "advisor/applied_count": 1159,
+    "advisor/selected_macro_action_counts": {
+      "defensive_hold": 1159
+    },
+    "advisor/mode_override_counts": {
+      "defend": 1159
+    },
+    "advisor/priority_injection_counts": {},
+    "advisor/proxy_scout_target_max": 6,
+    "advisor/last_response": {
+      "selected_macro_action": "defensive_hold",
+      "continue_scouting": false,
+      "defensive_posture": true,
+      "force_attack_mode": false,
+      "production_tempo_delta": 0,
+      "force_add_tech": false,
+      "proxy_scout_target_count": 4,
+      "confidence": 0.55,
+      "rush_risk": 0.7,
+      "tech_risk": 0.2,
+      "prediction_mode": "rule_macro_advisor",
+      "signals": [
+        "macro_action:defensive_hold"
+      ],
+      "macro_action_scores": {
+        "add_production": 0.2,
+        "add_tech": 0.2,
+        "increase_production_tempo": 0.2,
+        "defensive_hold": 0.8,
+        "move_out_window_open": 0.2,
+        "delay_move_out": 0.2
+      }
+    }
+  }
+}

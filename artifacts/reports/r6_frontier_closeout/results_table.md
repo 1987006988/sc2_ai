@@ -1,0 +1,8 @@
+# R6 One-Page Results Table
+
+| Setting | Slice | Comparator | Treatment | Result | Key behavior delta | Primary evidence path | Claim status | Notes |
+|---|---|---|---|---|---|---|---|---|
+| Offline holdout | hidden-state bundle | runtime-aligned rule-based / static prior | learned temporal belief | learned `1.000` vs rule-based `0.825` vs static `0.500` | learned temporal model outperforms non-learning baselines | `research/r6_temporal_belief/eval/results/r6_temporal_model_v0.json` | accepted | v0 benchmark stretch not claimed |
+| Internal paired | Easy Zerg | frozen baseline / frozen R5 comparator | learned treatment | baseline `2/3`, comparator `2/3`, learned `2/3` | learned adaptive gates fire more often than baseline | `data/logs/evaluation/r6_internal_paired/easy/r6_internal_paired_easy_repair5_20260426/summary.json` | accepted | non-inferior slice |
+| Internal paired | Medium Zerg | frozen baseline / frozen R5 comparator | learned treatment | baseline `1/3`, comparator `0/3`, learned `1/3` | learned adaptive gates remain active without internal drift | `data/logs/evaluation/r6_internal_paired/medium/r6_internal_paired_medium_repair5_20260426/summary.json` | accepted | positive over comparator |
+| External | AI Arena-compatible local bot-vs-bot vs frozen comparator house bot | frozen baseline / frozen R5 comparator | learned treatment | baseline `Tie`, comparator `Victory`, learned `Victory` | learned treatment shows `adaptive_gate_applied = 1578` vs baseline `0` | `data/logs/evaluation/r6_external_eval/r6_external_house_bots_repair2_20260426/summary.json` | accepted | equivalent external slice only |

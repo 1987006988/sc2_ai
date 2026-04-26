@@ -1,0 +1,131 @@
+{
+  "model_id": "scratch_ensemble_v0",
+  "selection_rule": "use scratch_no_action_ruleaug for hidden_state and macro_action groups; use scratch_full_ruleaug for future_proxy group",
+  "components": {
+    "hidden_macro_arm": "artifacts/models/r7_world_model/scratch_no_action_ruleaug.pt",
+    "future_arm": "artifacts/models/r7_world_model/scratch_full_ruleaug.pt"
+  },
+  "claim_boundary": "scratch_only_ensemble_no_warmstart_no_external_pretrained_model",
+  "splits": {
+    "val": {
+      "tasks": {
+        "enemy_opening_class": {
+          "accuracy": 0.7,
+          "balanced_accuracy": 0.619048,
+          "macro_f1": 0.488889,
+          "ece": 0.262141,
+          "mean_confidence": 0.96214
+        },
+        "enemy_tech_path": {
+          "accuracy": 0.8,
+          "balanced_accuracy": 0.7,
+          "macro_f1": 0.664286,
+          "ece": 0.193538,
+          "mean_confidence": 0.993538
+        },
+        "macro_action_label": {
+          "accuracy": 0.5,
+          "balanced_accuracy": 0.516667,
+          "macro_f1": 0.402778,
+          "ece": 0.499399,
+          "mean_confidence": 0.999399
+        },
+        "production_tempo_label": {
+          "accuracy": 0.9,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.473684,
+          "ece": 0.099997,
+          "mean_confidence": 0.999997
+        },
+        "future_winner": {
+          "accuracy": 0.4,
+          "balanced_accuracy": 0.4,
+          "macro_f1": 0.4,
+          "ece": 0.567306,
+          "mean_confidence": 0.967306
+        },
+        "future_game_length_bucket": {
+          "accuracy": 0.4,
+          "balanced_accuracy": 0.333333,
+          "macro_f1": 0.266667,
+          "ece": 0.530053,
+          "mean_confidence": 0.930053
+        },
+        "future_pressure_proxy": {
+          "accuracy": 0.6,
+          "balanced_accuracy": 0.5625,
+          "macro_f1": 0.52381,
+          "ece": 0.353556,
+          "mean_confidence": 0.953556
+        }
+      },
+      "group_balanced_accuracy": {
+        "hidden_state": 0.659524,
+        "macro_action": 0.508333,
+        "future_proxy": 0.431944
+      },
+      "aggregate_balanced_accuracy": 0.533267,
+      "mean_ece": 0.357999
+    },
+    "test": {
+      "tasks": {
+        "enemy_opening_class": {
+          "accuracy": 0.7,
+          "balanced_accuracy": 0.694444,
+          "macro_f1": 0.711111,
+          "ece": 0.270547,
+          "mean_confidence": 0.970547
+        },
+        "enemy_tech_path": {
+          "accuracy": 0.9,
+          "balanced_accuracy": 0.916667,
+          "macro_f1": 0.714286,
+          "ece": 0.098988,
+          "mean_confidence": 0.998988
+        },
+        "macro_action_label": {
+          "accuracy": 0.5,
+          "balanced_accuracy": 0.36,
+          "macro_f1": 0.222222,
+          "ece": 0.448503,
+          "mean_confidence": 0.948503
+        },
+        "production_tempo_label": {
+          "accuracy": 0.8,
+          "balanced_accuracy": 0.444444,
+          "macro_f1": 0.444444,
+          "ece": 0.19978,
+          "mean_confidence": 0.99978
+        },
+        "future_winner": {
+          "accuracy": 0.4,
+          "balanced_accuracy": 0.4,
+          "macro_f1": 0.375,
+          "ece": 0.609673,
+          "mean_confidence": 0.982774
+        },
+        "future_game_length_bucket": {
+          "accuracy": 0.6,
+          "balanced_accuracy": 0.6,
+          "macro_f1": 0.25,
+          "ece": 0.377641,
+          "mean_confidence": 0.977641
+        },
+        "future_pressure_proxy": {
+          "accuracy": 0.5,
+          "balanced_accuracy": 0.5,
+          "macro_f1": 0.450549,
+          "ece": 0.487886,
+          "mean_confidence": 0.987886
+        }
+      },
+      "group_balanced_accuracy": {
+        "hidden_state": 0.805555,
+        "macro_action": 0.402222,
+        "future_proxy": 0.5
+      },
+      "aggregate_balanced_accuracy": 0.569259,
+      "mean_ece": 0.356145
+    }
+  }
+}

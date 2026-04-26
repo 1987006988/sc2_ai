@@ -1,0 +1,92 @@
+{
+  "run_id": "r7_external_worker_rush_repair1",
+  "substrate": "sludge_revived_current_patch_house_bot",
+  "external_opponent": "worker_rush_example_bot",
+  "environment_class": "downloaded_bot_repo_external_example_slice",
+  "map": "KairosJunctionLE",
+  "game_time_limit": 420,
+  "step_time_limit": 2.0,
+  "results": {
+    "baseline": {
+      "result": "Result.Victory",
+      "run_error": {
+        "error_type": "SystemExit",
+        "error_message": "2"
+      },
+      "replay_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/baseline/match.SC2Replay",
+      "match_result_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/baseline/match_result.json",
+      "telemetry_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/baseline/advisor_stats.json",
+      "game_time": 352.078125,
+      "mode": "attack",
+      "own_townhalls_count": 2,
+      "enemy_townhalls_count": 1,
+      "own_army_count": 20,
+      "enemy_army_count": 0,
+      "own_army_value": 650.0,
+      "enemy_army_value": 0.0,
+      "drone_count": 25,
+      "advisor_stats": {}
+    },
+    "world": {
+      "result": "Result.Victory",
+      "run_error": {
+        "error_type": "SystemExit",
+        "error_message": "2"
+      },
+      "replay_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/world/match.SC2Replay",
+      "match_result_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/world/match_result.json",
+      "telemetry_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/world/advisor_stats.json",
+      "game_time": 364.403125,
+      "mode": "attack",
+      "own_townhalls_count": 2,
+      "enemy_townhalls_count": 1,
+      "own_army_count": 26,
+      "enemy_army_count": 0,
+      "own_army_value": 1100.0,
+      "enemy_army_value": 0.0,
+      "drone_count": 26,
+      "advisor_stats": {
+        "advisor/applied_count": 1006,
+        "advisor/selected_macro_action_counts": {
+          "add_tech": 694,
+          "defensive_hold": 231,
+          "increase_production_tempo": 81
+        },
+        "advisor/mode_override_counts": {
+          "defend": 231
+        },
+        "advisor/priority_injection_counts": {
+          "army": 81
+        },
+        "advisor/proxy_scout_target_max": 6,
+        "advisor/last_response": {
+          "selected_macro_action": "increase_production_tempo",
+          "continue_scouting": false,
+          "defensive_posture": false,
+          "force_attack_mode": false,
+          "production_tempo_delta": 2,
+          "force_add_tech": false,
+          "proxy_scout_target_count": 4,
+          "confidence": 0.460273,
+          "rush_risk": 0.68,
+          "tech_risk": 0.64,
+          "prediction_mode": "learned_world_model_advisor",
+          "signals": [
+            "opening:pressure_open",
+            "tech:upgrade_path",
+            "tempo:medium",
+            "selected_action:increase_production_tempo"
+          ],
+          "macro_action_scores": {
+            "add_production": 0.000712,
+            "add_tech": 0.080009,
+            "increase_production_tempo": 0.460273,
+            "defensive_hold": 0.319987,
+            "move_out_window_open": -0.118129,
+            "delay_move_out": 0.205745
+          }
+        }
+      }
+    }
+  }
+}

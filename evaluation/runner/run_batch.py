@@ -90,6 +90,11 @@ def main() -> int:
                             opponent_race=opponent.get("race", "terran"),
                             opponent_difficulty=opponent.get("difficulty", "easy"),
                             opponent_tags=tuple(opponent.get("tags", ())),
+                            opponent_bot_config=opponent.get("bot_config"),
+                            opponent_bot_config_id=opponent.get("bot_config_id"),
+                            opponent_bot_config_tags=tuple(
+                                opponent.get("bot_config_tags", ())
+                            ),
                             output_dir=str(output_dir),
                             launch_mode=launch_mode,
                             run_class=bot_config["run_class"],

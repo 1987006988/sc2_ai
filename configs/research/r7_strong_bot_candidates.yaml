@@ -1,0 +1,177 @@
+version: 1
+updated: 2026-04-27
+discovery_scope: r7_task_002_identify_and_rank_strong_bot_candidates
+preferred_candidates:
+  substrate: sludge_revived_current_patch_house_bot
+  teacher_source: distar_zvz_agent_platform
+  teacher_data: sc2egset_esports_dataset
+  comparator_pool: ai_arena_downloadable_house_bots_pool
+candidates:
+  - candidate_id: sludge_revived_current_patch_house_bot
+    source_name: sludge-revived
+    source_type: open_source_ai_arena_house_bot
+    source_url_or_reference: https://github.com/aiarena/sludge-revived
+    license: MIT
+    license_status: audited_permissive_for_research
+    intended_role:
+      - substrate
+      - comparator
+    game_version: sc2_patch_5_0_13_documented
+    race: zerg
+    framework: python_sc2_house_bot
+    local_run_status: acquired_static_entrypoint_verified_runtime_pending
+    replay_available: yes_via_local_play_and_repository_entrypoints
+    logs_available: expected_via_python_sc2_runtime
+    action_trace_available: partial_via_source_level_integration
+    intervention_possible: high
+    strength_evidence:
+      - repository README states support for python 3.11 and SC2 patch 5.0.13
+      - repository README states continued housebot usage on the AI Arena ladder
+      - repository README states the original bot played at estimated high diamond low masters level
+    data_volume_estimate: low_to_medium
+    data_availability:
+      - full source repository with run.py and run_locally.py
+      - AI Arena housebot profile page linked from repository
+      - local-play-bootstrap offers a ladder-compatible local environment family
+    primary_risks:
+      - local runtime on this machine is not yet validated
+      - strength evidence is partly historical and must be rechecked locally
+      - teacher-data volume is much smaller than DI-star or SC2EGSet
+    rank_tier: A1
+    rank_reason: best current-patch substrate replacement candidate with permissive license, visible local run entrypoints, and high intervention feasibility
+    decision: preferred_online_substrate_replacement_candidate
+
+  - candidate_id: distar_zvz_agent_platform
+    source_name: DI-star
+    source_type: open_source_bot_platform
+    source_url_or_reference: https://github.com/opendilab/DI-star
+    license: Apache-2.0
+    license_status: audited_permissive_for_research
+    intended_role:
+      - substrate
+      - teacher
+      - comparator
+    game_version: sc2_4_10_0_documented
+    race: zerg_primary
+    framework: custom_distar_platform
+    local_run_status: documented_playable_demo_and_agent_modes
+    replay_available: yes
+    logs_available: yes
+    action_trace_available: partial_via_framework_and_runtime
+    intervention_possible: medium
+    strength_evidence:
+      - repository states grand-master agents
+      - repository includes pretrained SL and RL agents
+      - repository includes agent_vs_agent and agent_vs_bot modes
+    data_volume_estimate: medium_to_high
+    data_availability:
+      - repository includes data/replays references
+      - repository supports self-generated matches
+      - repository supports pretrained-agent local runs
+    primary_risks:
+      - stack complexity is high
+      - realtime inference likely prefers GPU
+      - documented focus is ZvZ and older SC2 version
+    rank_tier: A2
+    rank_reason: strongest teacher-first source still in scope, but no longer the preferred online substrate path on the current local SC2 stack
+    decision: retained_teacher_first_source_not_preferred_online_substrate
+
+  - candidate_id: sc2egset_esports_dataset
+    source_name: SC2EGSet
+    source_type: public_teacher_dataset
+    source_url_or_reference: https://zenodo.org/records/15073637
+    license: CC-BY-NC-4.0
+    license_status: audited_noncommercial_dataset_for_research
+    intended_role:
+      - teacher
+    game_version: multi_tournament_esports_corpus_since_2016
+    race: multi_race
+    framework: dataset_only
+    local_run_status: not_applicable_dataset_source
+    replay_available: processed_game_state_files
+    logs_available: dataset_manifest_style_metadata
+    action_trace_available: indirect_requires_label_extraction
+    intervention_possible: no
+    strength_evidence:
+      - Scientific Data descriptor reports 55 replaypacks and 17930 game-state files
+      - tournament-derived data provides stronger teacher distribution than the self-built baseline
+    data_volume_estimate: high
+    data_availability:
+      - zenodo dataset record
+      - scientific article
+      - huggingface mirror exists but license metadata conflicts with zenodo
+    primary_risks:
+      - noncommercial license limits downstream use
+      - no online substrate by itself
+      - macro-action labels must be derived rather than read directly
+      - mirror license metadata conflict requires using the Zenodo record as authority
+    rank_tier: A2
+    rank_reason: strongest auditable public teacher-data path even though it is not a substrate
+    decision: preferred_teacher_data_candidate
+
+  - candidate_id: ai_arena_downloadable_house_bots_pool
+    source_name: AI Arena Downloadable Bots and House Bots
+    source_type: bot_ecosystem_pool
+    source_url_or_reference: https://aiarena.net/wiki/bot-development/
+    license: per_bot_not_yet_audited
+    license_status: unresolved_per_bot_audit_required
+    intended_role:
+      - substrate
+      - comparator
+      - teacher
+    game_version: aiarena_ladder_compatible_environment
+    race: multi_race_pool
+    framework: mixed
+    local_run_status: plausible_via_local_play_bootstrap_but_not_yet_audited_per_bot
+    replay_available: yes_via_results_and_bot_pages
+    logs_available: environment_level_yes_bot_level_varies
+    action_trace_available: usually_no_direct_action_trace
+    intervention_possible: low_to_unknown
+    strength_evidence:
+      - AI Arena wiki documents downloadable bots and house bots
+      - local-play-bootstrap uses the same environment family as official ladder matches
+    data_volume_estimate: medium_to_high
+    data_availability:
+      - downloadable bot packages vary by author
+      - results and replay feeds exist
+      - local-play-bootstrap exists for external-style local runs
+    primary_risks:
+      - license must be checked per bot
+      - intervention feasibility is bot-specific
+      - downloaded performance cannot be confused with our contribution
+    rank_tier: B1
+    rank_reason: high-value ecosystem path but not selectable until per-bot audit completes
+    decision: discovery_pool_only_not_selectable_yet
+
+  - candidate_id: tstarbot_x_open_source_study
+    source_name: TStarBot-X / TLeague project page
+    source_type: published_strong_bot_project
+    source_url_or_reference: https://arxiv.org/abs/2011.13729
+    license: unresolved_from_current_primary_evidence
+    license_status: repository_path_claimed_but_direct_license_not_yet_audited
+    intended_role:
+      - substrate
+      - teacher
+      - comparator
+    game_version: historical_full_game_league_training_project
+    race: multi_role_project_details_from_paper
+    framework: tleague_based
+    local_run_status: not_yet_verified
+    replay_available: paper_claims_code_resources_and_parameters_are_public
+    logs_available: not_yet_verified
+    action_trace_available: not_yet_verified
+    intervention_possible: unknown
+    strength_evidence:
+      - paper describes competitive performance with expert humans
+      - paper claims public access to code, resources, and trained parameters
+    data_volume_estimate: unknown_pending_repo_audit
+    data_availability:
+      - paper-level claim exists
+      - direct audited repository and license path still missing from current evidence set
+    primary_risks:
+      - direct repo/license audit incomplete
+      - integration burden may be high
+      - current evidence is paper-first rather than repo-first
+    rank_tier: B2
+    rank_reason: high upside but insufficiently audited for immediate acquisition
+    decision: high_value_candidate_pending_direct_repo_and_license_audit

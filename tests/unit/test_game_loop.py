@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from sc2bot.config.schema import (
@@ -18,6 +19,7 @@ from sc2bot.runtime.game_loop import (
     active_alert_names_from_bot_ai,
     assimilator_build_skip_reason,
     build_adaptive_gate_applied_payload,
+    build_macro_advisor_applied_payload,
     build_army_presence_payload,
     build_combat_unit_lifecycle_payload,
     build_combat_unit_production_payload,
@@ -38,6 +40,7 @@ from sc2bot.runtime.game_loop import (
     legacy_own_army_count_from_bot_ai,
     normalize_available_ability_names,
     record_minimal_behavior_intervention,
+    safe_client_leave,
     select_combat_unit_for_production,
     should_leave_after_sustain_limit,
     units_created_count_from_bot_ai,
@@ -153,13 +156,50 @@ def test_build_adaptive_gate_applied_payload_has_stable_shape():
         "continue_scouting_gate_active": True,
         "defensive_posture_gate_active": False,
         "first_attack_timing_gate_active": True,
+        "bounded_production_tempo_gate_active": False,
         "first_attack_delay_seconds": 90.0,
         "first_attack_army_buffer": 2,
+        "production_tempo_gateway_delta": 0,
         "own_army_count": 3,
         "visible_enemy_units_count": 1,
         "game_loop": 1234,
         "game_time": 55.0,
         "belief_summary": {"information_gap_high": True},
+    }
+
+
+def test_build_macro_advisor_applied_payload_has_stable_shape():
+    response = StrategyResponse(
+        selected_response_tag="add_production",
+        strategy_switch_reason="macro_action_selected:add_production",
+        intervention_mode="macro_world_model_advisor",
+        selected_macro_action="add_production",
+        macro_action_scores={"add_production": 0.75},
+        bounded_production_tempo_gate_active=True,
+        production_tempo_gateway_delta=1,
+    )
+
+    payload = build_macro_advisor_applied_payload(
+        response,
+        GameState(game_loop=1234, game_time=55.0, own_army_count=3, visible_enemy_units_count=1),
+    )
+
+    assert payload == {
+        "selected_response_tag": "add_production",
+        "strategy_switch_reason": "macro_action_selected:add_production",
+        "selected_macro_action": "add_production",
+        "macro_action_scores": {"add_production": 0.75},
+        "continue_scouting_gate_active": False,
+        "defensive_posture_gate_active": False,
+        "first_attack_timing_gate_active": False,
+        "bounded_production_tempo_gate_active": True,
+        "first_attack_delay_seconds": 0.0,
+        "first_attack_army_buffer": 0,
+        "production_tempo_gateway_delta": 1,
+        "own_army_count": 3,
+        "visible_enemy_units_count": 1,
+        "game_loop": 1234,
+        "game_time": 55.0,
     }
 
 
@@ -278,6 +318,33 @@ def test_record_minimal_behavior_intervention_writes_dry_telemetry(tmp_path):
     assert event["payload"]["action"] == "scout_persistence"
     assert event["payload"]["outcome"] == "active"
     assert event["payload"]["selected_response_tag"] == "continue_scouting"
+
+
+def test_safe_client_leave_records_error_without_raising(tmp_path):
+    class _FailingClient:
+        async def leave(self):
+            raise RuntimeError("closing transport")
+
+    telemetry = EventLogger(tmp_path)
+
+    asyncio.run(
+        safe_client_leave(
+            _FailingClient(),
+            telemetry,
+            reason="max_game_time_reached",
+            iteration=2400,
+        )
+    )
+
+    events = [
+        json.loads(line)
+        for line in (tmp_path / "events.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    leave_error = next(event for event in events if event["event_type"] == "sc2_client_leave_error")
+
+    assert leave_error["payload"]["reason"] == "max_game_time_reached"
+    assert leave_error["payload"]["iteration"] == 2400
+    assert leave_error["payload"]["exception_type"] == "RuntimeError"
 
 
 def test_gateway_build_skip_reason_waits_for_configured_conditions():

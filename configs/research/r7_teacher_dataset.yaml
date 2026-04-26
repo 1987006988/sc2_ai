@@ -1,0 +1,7 @@
+version: 1
+dataset_id: r7_teacher_dataset_v0_proxy
+source_id: distar_zvz_agent_platform
+replay_dir: third_party/strong_bots/DI-star/data/replays
+output_dir: data/r7/teacher_dataset
+manifest_path: data/r7/teacher_dataset_manifest.json
+claim_boundary: teacher_proxy_dataset_from_command_events

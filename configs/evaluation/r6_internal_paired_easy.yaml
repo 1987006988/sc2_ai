@@ -1,0 +1,22 @@
+evaluation:
+  name: r6_internal_paired_easy
+  launch_mode: real_launch
+  run_class: frontier_internal_paired
+  validation_class: r6_internal_paired_eval
+  bot_configs:
+    - id: frozen_baseline
+      path: configs/bot/baseline_playable.yaml
+      tags: [arm_a, frozen_baseline]
+    - id: frozen_r5_comparator
+      path: configs/bot/adaptive_research.yaml
+      tags: [arm_b, frozen_r5_comparator]
+    - id: learned_treatment
+      path: configs/bot/r6_learned_belief.yaml
+      tags: [arm_c, learned_treatment]
+  maps_config: configs/maps/r6_internal_frontier_maps.yaml
+  opponents_config: configs/opponents/r6_internal_easy_zerg.yaml
+  repeats: 3
+  output_dir: data/logs/evaluation/r6_internal_paired/easy
+  run_id: r6_internal_paired_easy_repair5_20260426
+  isolate_runs: true
+  fail_on_crash: false

@@ -1,0 +1,609 @@
+version: 1
+document_status: active
+queue_role: r7_strong_bot_world_model_queue
+activation_rule: "R7 replaces R6 as the active frontier plan after explicit direction reset. R0-R5 remain accepted history and R6 remains historical bounded frontier evidence."
+active_next_task: r7_frontier_goal_reached
+source_of_truth:
+  - docs/foundation/04_research_direction/r7_strong_bot_world_model_decision.md
+  - docs/plans/active/R7_STRONG_BOT_WORLD_MODEL_MASTER_PLAN.md
+  - docs/experiments/r7_strong_bot_data_protocol.md
+  - docs/experiments/r7_world_model_evaluation_protocol.md
+superseded_queue: docs/plans/active/r6_frontier_task_queue.yaml
+frozen_core_queue: docs/plans/active/research_master_task_queue.yaml
+execution_rules:
+  checkpoint_every_n_tasks: 3
+  checkpoint_failure_blocks_progress: true
+  no_weak_bot_frontier_claims: true
+  strong_bot_license_must_be_audited: true
+  no_model_training_before_teacher_data_materialized: true
+  no_online_claim_without_external_validation: true
+  no_using_downloaded_bot_performance_as_own_contribution: true
+validation_levels:
+  L0: documentation_and_classification_only
+  L1: static_code_config_and_test_validation
+  L2: acquisition_contract_or_dataset_validation
+  L3: local_run_or_offline_benchmark_validation
+  L4: internal_batch_or_online_intervention_evaluation
+  L5: checkpoint_decision
+  L6: external_bot_ecosystem_validation
+phases:
+  - id: phase_r7_0_supersede_r6
+    name: R7 reset and history freeze
+    objective: stop R6 as the active frontier route, preserve accepted history, and activate the R7 strong-bot world-model line.
+    exit_checkpoint: r7_checkpoint_L_r6_supersession_gate
+    tasks:
+      - id: r7_task_001_supersede_r6_and_freeze_history
+        phase: phase_r7_0_supersede_r6
+        group: direction_reset
+        status: completed
+        quota_risk: low
+        expected_codex_window: single_session
+        validation_level_required: L1
+        actual_validation_level: L1
+        real_validation_status: not_applicable
+        capability_validation_status: not_applicable_direction_reset
+        requires: []
+        data_source:
+          - docs/context/current_status.md
+          - docs/handoffs/latest.md
+          - docs/plans/active/r6_frontier_task_queue.yaml
+          - docs/plans/active/research_master_task_queue.yaml
+          - artifacts/reports/checkpoints/checkpoint_F_adaptive_research_gate.md
+        goal: mark R7 as the active frontier direction and freeze prior accepted history without rewriting it.
+        scope:
+          - mark R6 superseded as active frontier
+          - create R7 direction files
+          - switch current_status to R7
+          - preserve R0-R5 and accepted R6 history
+        non_goals:
+          - no code changes
+          - no strong bot download
+          - no model training
+        files_likely_to_change:
+          - docs/foundation/04_research_direction/r7_strong_bot_world_model_decision.md
+          - docs/plans/active/R7_STRONG_BOT_WORLD_MODEL_MASTER_PLAN.md
+          - docs/plans/active/r7_strong_bot_world_model_task_queue.yaml
+          - docs/context/current_status.md
+          - docs/handoffs/latest.md
+          - README.md
+        verification:
+          - current_status names the R7 queue
+          - R6 is no longer the active frontier queue
+          - the frozen core queue is unchanged
+        done_criteria:
+          - R7 source of truth exists
+          - R6 supersession is explicit
+          - next active task is r7_task_002_identify_and_rank_strong_bot_candidates
+        minimum_gate:
+          claim: R7 active direction is established
+          pass_condition: R6 is marked superseded as the active frontier and the R7 source-of-truth files exist
+        target_gate:
+          claim: Codex can no longer accidentally continue R6
+          pass_condition: current_status and handoff point to the R7 queue and r7_task_002_identify_and_rank_strong_bot_candidates
+        stretch_gate:
+          claim: public docs reflect R7 accurately
+          pass_condition: README mentions R7 frontier mode without overstating results
+        stop_conditions:
+          - R6 and R7 both appear active
+          - core accepted results are modified or invalidated
+        rollback_notes:
+          - do not edit checkpoint_E or checkpoint_F conclusions
+          - preserve accepted R6 history even though it is no longer the active frontier queue
+        evidence_paths:
+          - docs/foundation/04_research_direction/r7_strong_bot_world_model_decision.md
+          - docs/plans/active/R7_STRONG_BOT_WORLD_MODEL_MASTER_PLAN.md
+          - docs/plans/active/r7_strong_bot_world_model_task_queue.yaml
+          - docs/context/current_status.md
+          - docs/handoffs/latest.md
+          - README.md
+        failure_class: none
+      - id: r7_task_002_identify_and_rank_strong_bot_candidates
+        phase: phase_r7_0_supersede_r6
+        group: candidate_discovery
+        status: completed
+        quota_risk: medium
+        expected_codex_window: single_session_to_multi_session
+        validation_level_required: L2
+        actual_validation_level: L2
+        real_validation_status: not_applicable
+        capability_validation_status: completed_candidate_registry
+        requires:
+          - r7_task_001_supersede_r6_and_freeze_history
+        data_source:
+          - AI Arena downloadable bots
+          - AI Arena house bots
+          - AI Arena results and replay feeds
+          - DI-star
+          - TStarBot-X
+          - awesome-sc2-ai
+          - SC2EGSet
+        goal: identify plausible strong-bot, teacher-data, and comparator candidates.
+        scope:
+          - create candidate registry
+          - record source, license, expected role, and data availability
+          - rank candidates by strength, data, license, and intervention feasibility
+        non_goals:
+          - no downloads
+          - no training
+          - no online claim
+        files_likely_to_change:
+          - configs/research/r7_strong_bot_candidates.yaml
+          - artifacts/reports/r7_strong_bot_acquisition/candidate_registry.md
+          - docs/handoffs/latest.md
+        verification:
+          - each candidate records source and intended role
+          - accepted candidates do not have unknown license state
+          - intervention and data feasibility are documented
+        done_criteria:
+          - at least three candidates are recorded or a blocker is documented
+          - at least one preferred candidate role is assigned
+        minimum_gate:
+          claim: candidate discovery is usable
+          pass_condition: at least one plausible substrate or teacher candidate is identified with source and license path
+        target_gate:
+          claim: candidate ranking can guide acquisition
+          pass_condition: candidates are ranked by strength, data availability, license, and intervention feasibility
+        stretch_gate:
+          claim: multiple paths are available
+          pass_condition: at least one substrate candidate and one teacher-data candidate are identified separately
+        stop_conditions:
+          - no candidate has auditable license
+          - no candidate can run or provide data
+        rollback_notes:
+          - do not download or vendor code until license is checked
+        evidence_paths:
+          - configs/research/r7_strong_bot_candidates.yaml
+          - artifacts/reports/r7_strong_bot_acquisition/candidate_registry.md
+        failure_class: none
+      - id: r7_checkpoint_L_r6_supersession_gate
+        phase: phase_r7_0_supersede_r6
+        group: checkpoint
+        status: completed
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_001_supersede_r6_and_freeze_history
+          - r7_task_002_identify_and_rank_strong_bot_candidates
+        reviewed_tasks:
+          - r7_task_001_supersede_r6_and_freeze_history
+          - r7_task_002_identify_and_rank_strong_bot_candidates
+        goal: decide whether R7 can proceed into strong bot acquisition and local audit.
+        evidence_paths:
+          - docs/context/current_status.md
+          - docs/handoffs/latest.md
+          - configs/research/r7_strong_bot_candidates.yaml
+          - artifacts/reports/r7_strong_bot_acquisition/candidate_registry.md
+          - artifacts/reports/checkpoints/r7_checkpoint_L_r6_supersession_gate.md
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: passed
+        failure_class: none
+        decision: accepted_continue
+        next_allowed_task:
+          on_pass: r7_task_004_acquire_and_license_audit_selected_strong_bot
+          on_fail_direction_conflict: r7_task_001_supersede_r6_and_freeze_history
+          on_fail_no_candidate: r7_task_002_identify_and_rank_strong_bot_candidates
+  - id: phase_r7_1_strong_bot_acquisition
+    name: Strong bot acquisition, license audit, and local run
+    objective: acquire and audit strong bot or teacher sources before model work.
+    exit_checkpoint: r7_checkpoint_M_strong_bot_gate
+    tasks:
+      - id: r7_task_004_acquire_and_license_audit_selected_strong_bot
+        phase: phase_r7_1_strong_bot_acquisition
+        group: acquisition
+        status: completed
+        quota_risk: high
+        expected_codex_window: multi_session
+        validation_level_required: L2
+        actual_validation_level: L2
+        real_validation_status: not_applicable
+        capability_validation_status: completed_selected_source_audit
+        requires:
+          - r7_checkpoint_L_r6_supersession_gate
+        data_source:
+          - configs/research/r7_strong_bot_candidates.yaml
+          - selected bot repositories or download pages
+        goal: download or register the selected strong source and complete license and usage audit.
+        evidence_paths:
+          - third_party/strong_bots/README.md
+          - configs/research/r7_selected_strong_bot.yaml
+          - artifacts/reports/r7_strong_bot_acquisition/report.md
+        failure_class: none
+      - id: r7_task_005_run_selected_strong_bot_and_collect_seed_data
+        phase: phase_r7_1_strong_bot_acquisition
+        group: local_run_and_seed_data
+        status: completed
+        quota_risk: high
+        expected_codex_window: external_setup_window
+        validation_level_required: L3
+        actual_validation_level: L3
+        real_validation_status: completed_valid_seed_replay_corpus
+        capability_validation_status: completed_teacher_seed_materialization
+        requires:
+          - r7_task_004_acquire_and_license_audit_selected_strong_bot
+        data_source:
+          - selected strong bot
+          - AI Arena local-play-bootstrap or equivalent
+          - selected maps or opponents
+        goal: produce the first valid seed run artifacts or replay corpus from the selected source.
+        evidence_paths:
+          - data/r7/strong_bot_seed/manifest.json
+          - artifacts/reports/r7_strong_bot_acquisition/local_run_report.md
+          - configs/evaluation/r7_strong_bot_seed_matches.yaml
+        failure_class: none
+      - id: r7_checkpoint_M_strong_bot_gate
+        phase: phase_r7_1_strong_bot_acquisition
+        group: checkpoint
+        status: completed
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_004_acquire_and_license_audit_selected_strong_bot
+          - r7_task_005_run_selected_strong_bot_and_collect_seed_data
+        reviewed_tasks:
+          - r7_task_004_acquire_and_license_audit_selected_strong_bot
+          - r7_task_005_run_selected_strong_bot_and_collect_seed_data
+        goal: decide whether the selected strong source is good enough to enter teacher-data materialization.
+        evidence_paths:
+          - third_party/strong_bots/README.md
+          - configs/research/r7_selected_strong_bot.yaml
+          - artifacts/reports/r7_strong_bot_acquisition/report.md
+          - artifacts/reports/r7_strong_bot_acquisition/local_run_report.md
+          - data/r7/strong_bot_seed/manifest.json
+          - artifacts/reports/checkpoints/r7_checkpoint_M_strong_bot_gate.md
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
+        next_allowed_task:
+          on_pass: r7_task_007_materialize_teacher_replay_dataset
+          on_fail_license: r7_task_004_acquire_and_license_audit_selected_strong_bot
+          on_fail_run: r7_task_005_run_selected_strong_bot_and_collect_seed_data
+          on_fail_candidate: r7_task_002_identify_and_rank_strong_bot_candidates
+  - id: phase_r7_2_teacher_data_materialization
+    name: Teacher data materialization and benchmark
+    objective: convert strong-bot or teacher data into a trainable benchmark.
+    exit_checkpoint: r7_checkpoint_N_teacher_data_gate
+    tasks:
+      - id: r7_task_007_materialize_teacher_replay_dataset
+        phase: phase_r7_2_teacher_data_materialization
+        group: teacher_data
+        status: completed
+        quota_risk: high
+        expected_codex_window: multi_session
+        validation_level_required: L2
+        actual_validation_level: L2
+        real_validation_status: completed_valid_teacher_dataset
+        capability_validation_status: completed_teacher_dataset_materialization
+        requires:
+          - r7_checkpoint_M_strong_bot_gate
+        data_source:
+          - selected strong bot replays/logs
+          - AI Arena result replays if permitted
+          - SC2EGSet or external esports data if used
+        goal: materialize teacher replay/log data with leakage-safe splits.
+        evidence_paths:
+          - data/r7/teacher_dataset/train.jsonl
+          - data/r7/teacher_dataset/val.jsonl
+          - data/r7/teacher_dataset/test.jsonl
+          - data/r7/teacher_dataset_manifest.json
+          - configs/research/r7_teacher_dataset.yaml
+          - research/r7_world_model/cards/dataset_card.md
+          - artifacts/reports/r7_teacher_data/report.md
+        failure_class: none
+      - id: r7_task_008_build_teacher_benchmark_and_baselines
+        phase: phase_r7_2_teacher_data_materialization
+        group: teacher_benchmark
+        status: completed
+        quota_risk: high
+        expected_codex_window: benchmark_window
+        validation_level_required: L3
+        actual_validation_level: L3
+        real_validation_status: completed_valid_teacher_benchmark
+        capability_validation_status: completed_valid_teacher_benchmark
+        requires:
+          - r7_task_007_materialize_teacher_replay_dataset
+        data_source:
+          - teacher dataset
+          - rule/static/shallow baselines
+        goal: build the teacher-data offline benchmark and baseline leaderboard.
+        evidence_paths:
+          - configs/research/r7_teacher_benchmark.yaml
+          - research/r7_world_model/eval/results/r7_teacher_benchmark_v0.json
+          - artifacts/reports/r7_teacher_benchmark/report.md
+        failure_class: none
+      - id: r7_checkpoint_N_teacher_data_gate
+        phase: phase_r7_2_teacher_data_materialization
+        group: checkpoint
+        status: completed
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_007_materialize_teacher_replay_dataset
+          - r7_task_008_build_teacher_benchmark_and_baselines
+        reviewed_tasks:
+          - r7_task_007_materialize_teacher_replay_dataset
+          - r7_task_008_build_teacher_benchmark_and_baselines
+        goal: decide whether strong teacher data and the offline benchmark are good enough for world-model training.
+        evidence_paths:
+          - data/r7/teacher_dataset/train.jsonl
+          - data/r7/teacher_dataset/val.jsonl
+          - data/r7/teacher_dataset/test.jsonl
+          - data/r7/teacher_dataset_manifest.json
+          - configs/research/r7_teacher_dataset.yaml
+          - configs/research/r7_teacher_benchmark.yaml
+          - research/r7_world_model/eval/results/r7_teacher_benchmark_v0.json
+          - artifacts/reports/r7_teacher_data/report.md
+          - artifacts/reports/r7_teacher_benchmark/report.md
+          - artifacts/reports/checkpoints/r7_checkpoint_N_teacher_data_gate.md
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
+        next_allowed_task:
+          on_pass: r7_task_010_train_counterfactual_macro_world_model
+          on_fail_dataset: r7_task_007_materialize_teacher_replay_dataset
+          on_fail_benchmark: r7_task_008_build_teacher_benchmark_and_baselines
+  - id: phase_r7_3_world_model_training
+    name: Counterfactual macro world model training
+    objective: train a scratch-first action-conditioned world model from strong teacher data.
+    exit_checkpoint: r7_checkpoint_O_world_model_gate
+    tasks:
+      - id: r7_task_010_train_counterfactual_macro_world_model
+        phase: phase_r7_3_world_model_training
+        group: model_training
+        status: completed
+        quota_risk: high
+        expected_codex_window: training_window
+        validation_level_required: L3
+        actual_validation_level: L3
+        real_validation_status: completed_valid_world_model_training
+        capability_validation_status: completed_scratch_world_model_training
+        requires:
+          - r7_checkpoint_N_teacher_data_gate
+        data_source:
+          - data/r7/teacher_dataset/train.jsonl
+          - data/r7/teacher_dataset/val.jsonl
+          - data/r7/teacher_dataset/test.jsonl
+          - research/r7_world_model/eval/results/r7_teacher_benchmark_v0.json
+          - configs/research/r7_train_world_model.yaml
+        goal: train the first scratch-first counterfactual macro world-model family on accepted teacher data.
+        evidence_paths:
+          - configs/research/r7_train_world_model.yaml
+          - research/r7_world_model/train/train_world_model.py
+          - research/r7_world_model/models/action_conditioned_world_model.py
+          - research/r7_world_model/datasets/torch_dataset.py
+          - research/r7_world_model/eval/world_model_metrics.py
+          - artifacts/models/r7_world_model/scratch_full.json
+          - artifacts/models/r7_world_model/scratch_no_action.json
+          - artifacts/models/r7_world_model/scratch_full_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_no_action_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_ensemble_v0.json
+          - research/r7_world_model/cards/model_card.md
+          - artifacts/reports/r7_world_model_training/report.md
+        failure_class: none
+      - id: r7_task_011_compare_scratch_warmstart_and_external_baselines
+        phase: phase_r7_3_world_model_training
+        group: model_ablation
+        status: completed
+        quota_risk: high
+        expected_codex_window: training_window
+        validation_level_required: L3
+        actual_validation_level: L3
+        real_validation_status: completed_valid_scratch_provenance_selection
+        capability_validation_status: completed_scratch_primary_selection
+        requires:
+          - r7_task_010_train_counterfactual_macro_world_model
+        data_source:
+          - artifacts/models/r7_world_model/scratch_full.json
+          - artifacts/models/r7_world_model/scratch_no_action.json
+          - artifacts/models/r7_world_model/scratch_full_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_no_action_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_ensemble_v0.json
+          - research/r7_world_model/eval/results/r7_teacher_benchmark_v0.json
+        goal: protect provenance and confirm that the accepted phase-3 result remains scratch-first.
+        evidence_paths:
+          - artifacts/models/r7_world_model/scratch_full.json
+          - artifacts/models/r7_world_model/scratch_no_action.json
+          - artifacts/models/r7_world_model/scratch_full_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_no_action_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_ensemble_v0.json
+          - artifacts/reports/r7_world_model_ablation/report.md
+          - research/r7_world_model/cards/model_card.md
+        failure_class: none
+      - id: r7_checkpoint_O_world_model_gate
+        phase: phase_r7_3_world_model_training
+        group: checkpoint
+        status: completed
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_010_train_counterfactual_macro_world_model
+          - r7_task_011_compare_scratch_warmstart_and_external_baselines
+        reviewed_tasks:
+          - r7_task_010_train_counterfactual_macro_world_model
+          - r7_task_011_compare_scratch_warmstart_and_external_baselines
+        goal: decide whether the accepted scratch-first world-model result is strong enough to enter online advisor integration.
+        evidence_paths:
+          - configs/research/r7_train_world_model.yaml
+          - research/r7_world_model/eval/results/r7_teacher_benchmark_v0.json
+          - artifacts/models/r7_world_model/scratch_full.json
+          - artifacts/models/r7_world_model/scratch_no_action.json
+          - artifacts/models/r7_world_model/scratch_full_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_no_action_ruleaug.json
+          - artifacts/models/r7_world_model/scratch_ensemble_v0.json
+          - research/r7_world_model/cards/model_card.md
+          - artifacts/reports/r7_world_model_training/report.md
+          - artifacts/reports/r7_world_model_ablation/report.md
+          - artifacts/reports/checkpoints/r7_checkpoint_O_world_model_gate.md
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
+        next_allowed_task:
+          on_pass: r7_task_013_integrate_world_model_macro_advisor
+          on_fail_training: r7_task_010_train_counterfactual_macro_world_model
+          on_fail_ablation: r7_task_011_compare_scratch_warmstart_and_external_baselines
+  - id: phase_r7_4_online_intervention
+    name: Strong-substrate online intervention
+    objective: integrate the world model through a bounded macro advisor and validate its online effect.
+    exit_checkpoint: r7_checkpoint_P_online_intervention_gate
+    tasks:
+      - id: r7_task_013_integrate_world_model_macro_advisor
+        phase: phase_r7_4_online_intervention
+        group: online_integration
+        status: completed
+        quota_risk: high
+        expected_codex_window: multi_session
+        validation_level_required: L2
+        actual_validation_level: L3
+        real_validation_status: completed_valid_replacement_substrate_advisor_integration
+        capability_validation_status: completed_online_advisor_wrapper
+        requires:
+          - r7_checkpoint_O_world_model_gate
+        evidence_paths:
+          - artifacts/reports/r7_online_integration/report.md
+          - artifacts/reports/r7_strong_bot_acquisition/report.md
+          - configs/research/r7_selected_strong_bot.yaml
+          - configs/evaluation/r7_online_internal.yaml
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/summary.json
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/world/match_result.json
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/world/advisor_stats.json
+        failure_class: none
+      - id: r7_task_014_run_online_strong_substrate_ablation
+        phase: phase_r7_4_online_intervention
+        group: online_eval
+        status: completed
+        quota_risk: high
+        expected_codex_window: batch_window
+        validation_level_required: L4
+        actual_validation_level: L4
+        real_validation_status: completed_valid_online_strong_substrate_slice
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_013_integrate_world_model_macro_advisor
+        evidence_paths:
+          - artifacts/reports/r7_online_integration/report.md
+          - configs/evaluation/r7_online_internal.yaml
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/summary.json
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/baseline/match_result.json
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/rule/match_result.json
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/world/match_result.json
+        failure_class: none
+      - id: r7_checkpoint_P_online_intervention_gate
+        phase: phase_r7_4_online_intervention
+        group: checkpoint
+        status: completed
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_013_integrate_world_model_macro_advisor
+          - r7_task_014_run_online_strong_substrate_ablation
+        evidence_paths:
+          - artifacts/reports/checkpoints/r7_checkpoint_P_online_intervention_gate.md
+          - artifacts/reports/r7_online_integration/report.md
+          - configs/evaluation/r7_online_internal.yaml
+          - configs/research/r7_selected_strong_bot.yaml
+          - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/summary.json
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
+        next_allowed_task:
+          on_pass: r7_task_016_run_external_bot_ecosystem_validation
+          on_fail_integration: r7_task_013_integrate_world_model_macro_advisor
+          on_fail_online_eval: r7_task_014_run_online_strong_substrate_ablation
+  - id: phase_r7_5_external_closeout
+    name: External validation and interview closeout
+    objective: validate the world-model advisor externally and produce the final evidence pack.
+    exit_checkpoint: r7_checkpoint_Q_frontier_claim_gate
+    tasks:
+      - id: r7_task_016_run_external_bot_ecosystem_validation
+        phase: phase_r7_5_external_closeout
+        group: external_validation
+        status: completed
+        quota_risk: high
+        expected_codex_window: external_eval_window
+        validation_level_required: L6
+        actual_validation_level: L6
+        real_validation_status: completed_valid_external_slice
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_checkpoint_P_online_intervention_gate
+        evidence_paths:
+          - configs/evaluation/r7_external_validation.yaml
+          - artifacts/reports/r7_external_validation/report.md
+          - data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/summary.json
+          - data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/baseline/match_result.json
+          - data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/world/match_result.json
+        failure_class: none
+      - id: r7_task_017_prepare_frontier_interview_evidence_pack
+        phase: phase_r7_5_external_closeout
+        group: interview_pack
+        status: completed
+        quota_risk: medium
+        expected_codex_window: single_session_to_multi_session
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: completed_valid_closeout_package
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_016_run_external_bot_ecosystem_validation
+        evidence_paths:
+          - docs/experiments/r7_interview_claims_and_deliverables.md
+          - artifacts/reports/r7_frontier_closeout/report.md
+          - artifacts/reports/r7_frontier_closeout/results_table.md
+          - artifacts/reports/r7_frontier_closeout/claim_boundary.md
+          - artifacts/reports/r7_frontier_closeout/replay_demo_index.md
+        failure_class: none
+      - id: r7_checkpoint_Q_frontier_claim_gate
+        phase: phase_r7_5_external_closeout
+        group: checkpoint
+        status: completed
+        quota_risk: low
+        expected_codex_window: review_window
+        validation_level_required: L5
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
+        requires:
+          - r7_task_016_run_external_bot_ecosystem_validation
+          - r7_task_017_prepare_frontier_interview_evidence_pack
+        evidence_paths:
+          - artifacts/reports/checkpoints/r7_checkpoint_Q_frontier_claim_gate.md
+          - artifacts/reports/r7_external_validation/report.md
+          - artifacts/reports/r7_frontier_closeout/report.md
+          - data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/summary.json
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
+        next_allowed_task:
+          on_pass: r7_frontier_goal_reached
+          on_fail_external: r7_task_016_run_external_bot_ecosystem_validation
+          on_fail_pack: r7_task_017_prepare_frontier_interview_evidence_pack

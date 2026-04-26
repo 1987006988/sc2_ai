@@ -13,7 +13,7 @@ accepted_start_state:
   core_project_status: project_core_goal_reached
   accepted_baseline_checkpoint: checkpoint_E_level1_baseline_gate
   accepted_adaptive_checkpoint: checkpoint_F_adaptive_research_gate
-active_next_task: r6_task_005_run_offline_hidden_state_benchmark
+active_next_task: r6_frontier_goal_reached
 execution_rules:
   checkpoint_every_n_tasks: 3
   checkpoint_failure_blocks_progress: true
@@ -233,13 +233,13 @@ phases:
       - id: r6_task_005_run_offline_hidden_state_benchmark
         phase: phase_r6_1_offline_benchmark
         group: offline_baseline_eval
-        status: blocked
+        status: completed
         quota_risk: medium
         expected_codex_window: benchmark_window
         validation_level_required: L3
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: blocked_missing_materialized_holdout_inputs
+        actual_validation_level: L3
+        real_validation_status: not_applicable
+        capability_validation_status: completed_valid_offline_benchmark
         requires:
           - r6_task_004_implement_hidden_state_labelers_and_baselines
         goal: 运行 first valid offline benchmark，并建立 baseline leaderboard。
@@ -247,17 +247,24 @@ phases:
           - research/r6_temporal_belief/data/source_manifest.yaml
           - research/r6_temporal_belief/data/dataset_manifest.json
           - research/r6_temporal_belief/eval/benchmark_config.json
+          - research/r6_temporal_belief/data/materialized/train.jsonl
+          - research/r6_temporal_belief/data/materialized/val.jsonl
+          - research/r6_temporal_belief/data/materialized/test.jsonl
+          - research/r6_temporal_belief/datasets/materialize_local_benchmark.py
+          - research/r6_temporal_belief/eval/run_offline_benchmark.py
+          - research/r6_temporal_belief/eval/results/r6_offline_benchmark_v0.json
           - artifacts/reports/r6_offline_benchmark/report.md
+        failure_class: none
       - id: r6_checkpoint_H_offline_benchmark_gate
         phase: phase_r6_1_offline_benchmark
         group: checkpoint
-        status: pending
+        status: completed
         quota_risk: low
         expected_codex_window: review_window
         validation_level_required: L5
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
         requires:
           - r6_task_004_implement_hidden_state_labelers_and_baselines
           - r6_task_005_run_offline_hidden_state_benchmark
@@ -265,12 +272,16 @@ phases:
           - r6_task_004_implement_hidden_state_labelers_and_baselines
           - r6_task_005_run_offline_hidden_state_benchmark
         goal: 决定 benchmark 是否有效并允许进入 learned model 训练阶段。
-        evidence_paths: []
-        minimum_gate_passed: null
-        target_gate_passed: null
-        stretch_gate_status: pending
-        failure_class: pending
-        decision: pending
+        evidence_paths:
+          - artifacts/reports/r6_offline_benchmark/task_004_static_validation.md
+          - artifacts/reports/r6_offline_benchmark/report.md
+          - research/r6_temporal_belief/eval/results/r6_offline_benchmark_v0.json
+          - artifacts/reports/checkpoints/r6_checkpoint_H_offline_benchmark_gate.md
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
         next_allowed_task:
           on_pass: r6_task_007_implement_temporal_belief_model_and_training_loop
           on_fail_benchmark: r6_task_004_implement_hidden_state_labelers_and_baselines
@@ -285,41 +296,56 @@ phases:
       - id: r6_task_007_implement_temporal_belief_model_and_training_loop
         phase: phase_r6_2_temporal_model_training
         group: model_impl
-        status: pending
+        status: completed
         quota_risk: high
         expected_codex_window: multi_session
         validation_level_required: L2
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L2
+        real_validation_status: not_applicable
+        capability_validation_status: completed_train_infer_loop
         requires:
           - r6_checkpoint_H_offline_benchmark_gate
         goal: 实现至少一种 learned temporal belief model 及训练/推理闭环。
-        evidence_paths: []
+        evidence_paths:
+          - src/sc2bot/opponent_model/feature_encoder.py
+          - src/sc2bot/opponent_model/temporal_belief_model.py
+          - src/sc2bot/opponent_model/temporal_belief_adapter.py
+          - src/sc2bot/opponent_model/inference_runtime.py
+          - research/r6_temporal_belief/train/train_temporal_model.py
+          - configs/research/r6_train_gru.yaml
+          - tests/r6/test_temporal_model_interface.py
+          - artifacts/reports/r6_learned_belief_training/task_007_static_validation.md
       - id: r6_task_008_train_and_evaluate_temporal_belief_model
         phase: phase_r6_2_temporal_model_training
         group: model_eval
-        status: pending
+        status: completed
         quota_risk: high
         expected_codex_window: training_window
         validation_level_required: L3
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L3
+        real_validation_status: completed_valid_offline_benchmark_eval
+        capability_validation_status: capability_validated_target
         requires:
           - r6_task_007_implement_temporal_belief_model_and_training_loop
         goal: 训练 learned model 并在 holdout benchmark 上和 baselines 对比。
-        evidence_paths: []
+        evidence_paths:
+          - configs/research/r6_train_gru.yaml
+          - research/r6_temporal_belief/train/train_temporal_model.py
+          - research/r6_temporal_belief/eval/results/r6_temporal_model_v0.json
+          - research/r6_temporal_belief/cards/model_card.md
+          - artifacts/models/r6_temporal_belief/temporal_gru_v0.pt
+          - artifacts/reports/r6_learned_belief_training/report.md
+        failure_class: none
       - id: r6_checkpoint_I_learned_belief_gate
         phase: phase_r6_2_temporal_model_training
         group: checkpoint
-        status: pending
+        status: completed
         quota_risk: low
         expected_codex_window: review_window
         validation_level_required: L5
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
         requires:
           - r6_task_007_implement_temporal_belief_model_and_training_loop
           - r6_task_008_train_and_evaluate_temporal_belief_model
@@ -327,12 +353,18 @@ phases:
           - r6_task_007_implement_temporal_belief_model_and_training_loop
           - r6_task_008_train_and_evaluate_temporal_belief_model
         goal: 决定 learned temporal belief 是否足以进入 online integration。
-        evidence_paths: []
-        minimum_gate_passed: null
-        target_gate_passed: null
-        stretch_gate_status: pending
-        failure_class: pending
-        decision: pending
+        evidence_paths:
+          - artifacts/reports/r6_learned_belief_training/task_007_static_validation.md
+          - artifacts/reports/r6_learned_belief_training/report.md
+          - research/r6_temporal_belief/eval/results/r6_temporal_model_v0.json
+          - research/r6_temporal_belief/cards/model_card.md
+          - artifacts/models/r6_temporal_belief/temporal_gru_v0.pt
+          - artifacts/reports/checkpoints/r6_checkpoint_I_learned_belief_gate.md
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
         next_allowed_task:
           on_pass: r6_task_010_integrate_temporal_belief_response_surface
           on_fail_model: r6_task_007_implement_temporal_belief_model_and_training_loop
@@ -347,41 +379,53 @@ phases:
       - id: r6_task_010_integrate_temporal_belief_response_surface
         phase: phase_r6_3_online_integration
         group: online_impl
-        status: pending
+        status: completed
         quota_risk: high
         expected_codex_window: multi_session
         validation_level_required: L2
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L2
+        real_validation_status: completed_online_integration_impl
+        capability_validation_status: completed_online_integration_impl
         requires:
           - r6_checkpoint_I_learned_belief_gate
         goal: 将 learned belief 接到 bounded response surface，而不是只输出 prediction tag。
-        evidence_paths: []
+        evidence_paths:
+          - configs/bot/r6_learned_belief.yaml
+          - configs/evaluation/r6_internal_paired_easy.yaml
+          - configs/evaluation/r6_internal_paired_medium.yaml
+          - src/sc2bot/opponent_model/temporal_runtime_model.py
+          - src/sc2bot/opponent_model/inference_runtime.py
+          - src/sc2bot/managers/strategy_manager.py
+          - src/sc2bot/runtime/dependency_container.py
+          - src/sc2bot/runtime/game_loop.py
+          - artifacts/reports/r6_internal_paired/task_010_static_validation.md
       - id: r6_task_011_run_internal_triple_arm_paired_evaluation
         phase: phase_r6_3_online_integration
         group: paired_eval
-        status: pending
+        status: completed
         quota_risk: high
         expected_codex_window: batch_window
         validation_level_required: L4
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L4
+        real_validation_status: completed_valid_internal_paired_eval
+        capability_validation_status: capability_validated_target
         requires:
           - r6_task_010_integrate_temporal_belief_response_surface
         goal: 运行 A/B/C 三臂 internal paired evaluation。
-        evidence_paths: []
+        evidence_paths:
+          - data/logs/evaluation/r6_internal_paired/easy/r6_internal_paired_easy_repair5_20260426/summary.json
+          - data/logs/evaluation/r6_internal_paired/medium/r6_internal_paired_medium_repair5_20260426/summary.json
+          - artifacts/reports/r6_internal_paired/report.md
       - id: r6_checkpoint_J_internal_frontier_gate
         phase: phase_r6_3_online_integration
         group: checkpoint
-        status: pending
+        status: completed
         quota_risk: low
         expected_codex_window: review_window
         validation_level_required: L5
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L5
+        real_validation_status: completed_checkpoint_review
+        capability_validation_status: capability_validated_target
         requires:
           - r6_task_010_integrate_temporal_belief_response_surface
           - r6_task_011_run_internal_triple_arm_paired_evaluation
@@ -389,12 +433,17 @@ phases:
           - r6_task_010_integrate_temporal_belief_response_surface
           - r6_task_011_run_internal_triple_arm_paired_evaluation
         goal: 决定 R6 是否具备进入 external validation 的资格。
-        evidence_paths: []
-        minimum_gate_passed: null
-        target_gate_passed: null
-        stretch_gate_status: pending
-        failure_class: pending
-        decision: pending
+        evidence_paths:
+          - artifacts/reports/r6_internal_paired/task_010_static_validation.md
+          - artifacts/reports/r6_internal_paired/report.md
+          - artifacts/reports/checkpoints/r6_checkpoint_J_internal_frontier_gate.md
+          - data/logs/evaluation/r6_internal_paired/easy/r6_internal_paired_easy_repair5_20260426/summary.json
+          - data/logs/evaluation/r6_internal_paired/medium/r6_internal_paired_medium_repair5_20260426/summary.json
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
         next_allowed_task:
           on_pass: r6_task_013_run_external_bot_ecosystem_evaluation
           on_fail_integration: r6_task_010_integrate_temporal_belief_response_surface
@@ -409,41 +458,56 @@ phases:
       - id: r6_task_013_run_external_bot_ecosystem_evaluation
         phase: phase_r6_4_external_validation_and_closeout
         group: external_eval
-        status: pending
+        status: completed
         quota_risk: high
         expected_codex_window: external_eval_window
         validation_level_required: L6
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L6
+        real_validation_status: completed_valid_external_bot_eval
+        capability_validation_status: capability_validated_target
         requires:
           - r6_checkpoint_J_internal_frontier_gate
         goal: 在外部 bot 生态中验证 learned treatment。
-        evidence_paths: []
+        evidence_paths:
+          - configs/evaluation/r6_external_house_bots.yaml
+          - configs/opponents/r6_external_house_bots.yaml
+          - configs/maps/r6_external_frontier_maps.yaml
+          - artifacts/reports/r6_external_eval/report.md
+          - data/logs/evaluation/r6_external_eval/r6_external_house_bots_repair2_20260426/summary.json
+          - data/logs/evaluation/r6_external_eval/r6_external_house_bots_repair2_20260426/reallaunch-cb7356ae/match_result.json
+          - data/logs/evaluation/r6_external_eval/r6_external_house_bots_repair2_20260426/reallaunch-be504631/match_result.json
+          - data/logs/evaluation/r6_external_eval/r6_external_house_bots_repair2_20260426/reallaunch-e450406f/match_result.json
       - id: r6_task_014_closeout_frontier_claim_and_interview_pack
         phase: phase_r6_4_external_validation_and_closeout
         group: closeout
-        status: pending
+        status: completed
         quota_risk: medium
         expected_codex_window: single_session_to_multi_session
         validation_level_required: L5
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: completed_closeout_package
         requires:
           - r6_task_013_run_external_bot_ecosystem_evaluation
         goal: 生成 frontier closeout 包和面试证据包。
-        evidence_paths: []
+        evidence_paths:
+          - artifacts/reports/r6_frontier_closeout/report.md
+          - artifacts/reports/r6_frontier_closeout/results_table.md
+          - artifacts/reports/r6_frontier_closeout/ablation_table.md
+          - artifacts/reports/r6_frontier_closeout/replay_demo_index.md
+          - artifacts/reports/r6_frontier_closeout/claim_boundary.md
+          - research/r6_temporal_belief/cards/model_card.md
+          - research/r6_temporal_belief/cards/dataset_card.md
       - id: r6_checkpoint_K_frontier_claim_gate
         phase: phase_r6_4_external_validation_and_closeout
         group: checkpoint
-        status: pending
+        status: completed
         quota_risk: low
         expected_codex_window: review_window
         validation_level_required: L5
-        actual_validation_level: none
-        real_validation_status: not_started
-        capability_validation_status: pending
+        actual_validation_level: L5
+        real_validation_status: not_applicable
+        capability_validation_status: capability_validated_target
         requires:
           - r6_task_013_run_external_bot_ecosystem_evaluation
           - r6_task_014_closeout_frontier_claim_and_interview_pack
@@ -451,12 +515,20 @@ phases:
           - r6_task_013_run_external_bot_ecosystem_evaluation
           - r6_task_014_closeout_frontier_claim_and_interview_pack
         goal: 决定 R6 是否形成可对外陈述的 frontier claim。
-        evidence_paths: []
-        minimum_gate_passed: null
-        target_gate_passed: null
-        stretch_gate_status: pending
-        failure_class: pending
-        decision: pending
+        evidence_paths:
+          - artifacts/reports/r6_external_eval/report.md
+          - artifacts/reports/r6_frontier_closeout/report.md
+          - artifacts/reports/r6_frontier_closeout/results_table.md
+          - artifacts/reports/r6_frontier_closeout/ablation_table.md
+          - artifacts/reports/r6_frontier_closeout/replay_demo_index.md
+          - artifacts/reports/r6_frontier_closeout/claim_boundary.md
+          - artifacts/reports/checkpoints/r6_checkpoint_K_frontier_claim_gate.md
+          - data/logs/evaluation/r6_external_eval/r6_external_house_bots_repair2_20260426/summary.json
+        minimum_gate_passed: true
+        target_gate_passed: true
+        stretch_gate_status: failed
+        failure_class: none
+        decision: accepted_continue
         next_allowed_task:
           on_pass: r6_frontier_goal_reached
           on_fail_external_eval: r6_task_013_run_external_bot_ecosystem_evaluation

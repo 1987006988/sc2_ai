@@ -1,0 +1,6 @@
+maps:
+  - id: incorporeal_aie_v4
+    name: IncorporealAIE_v4
+    file: IncorporealAIE_v4.SC2Map
+    tags: [r7, online_macro, narrow]
+    enabled: true

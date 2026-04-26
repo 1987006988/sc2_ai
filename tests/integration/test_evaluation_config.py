@@ -250,6 +250,75 @@ def test_run_match_real_launch_uses_real_game_path(tmp_path, monkeypatch):
     )
 
 
+def test_run_match_real_launch_bot_opponent_persists_metadata(tmp_path, monkeypatch):
+    from evaluation.runner import run_match as run_match_module
+    from sc2bot.runtime.sc2_installation import SC2Installation, SC2PreflightResult
+
+    install_root = tmp_path / "StarCraft II"
+    (install_root / "Maps").mkdir(parents=True)
+    (install_root / "Maps" / "IncorporealAIE_v4.SC2Map").write_text("stub", encoding="utf-8")
+    (install_root / "Versions").mkdir()
+    (install_root / "Support64").mkdir()
+    (install_root / "SC2Data").mkdir()
+    (install_root / "StarCraft II.exe").write_text("stub", encoding="utf-8")
+
+    installation = SC2Installation(
+        root=install_root,
+        versions_dir=install_root / "Versions",
+        support64_dir=install_root / "Support64",
+        sc2data_dir=install_root / "SC2Data",
+        executable=install_root / "StarCraft II.exe",
+    )
+
+    monkeypatch.setattr(
+        run_match_module,
+        "run_sc2_preflight",
+        lambda: SC2PreflightResult(
+            ok=True,
+            sc2path=str(install_root),
+            executable=str(installation.executable),
+            python_version="3.11.5",
+            message="ok",
+        ),
+    )
+    monkeypatch.setattr(
+        run_match_module,
+        "resolve_sc2_installation_from_env",
+        lambda: installation,
+    )
+    monkeypatch.setattr(
+        run_match_module,
+        "_run_python_sc2_local_game",
+        lambda request, app, installation, replay_path: "Result.Victory",
+    )
+
+    result = run_match(
+        MatchRequest(
+            bot_config="configs/bot/debug.yaml",
+            bot_config_id="debug",
+            map_id="incorporeal_aie_v4",
+            map_name="IncorporealAIE_v4",
+            map_file="IncorporealAIE_v4.SC2Map",
+            opponent_id="external_frozen_r5_comparator",
+            opponent_type="bot",
+            opponent_bot_config="configs/bot/adaptive_research.yaml",
+            opponent_bot_config_id="frozen_r5_comparator_house_bot",
+            opponent_bot_config_tags=("external", "house_bot"),
+            output_dir=str(tmp_path),
+            launch_mode="real_launch",
+        )
+    )
+
+    assert result["status"] == "completed"
+    assert result["opponent_type"] == "bot"
+    match_dir = next(tmp_path.glob("reallaunch-*"))
+    payload = json.loads((match_dir / "match_result.json").read_text(encoding="utf-8"))
+    assert payload["opponent_type"] == "bot"
+    assert payload["opponent_bot_config"] == "configs/bot/adaptive_research.yaml"
+    assert payload["opponent_bot_config_id"] == "frozen_r5_comparator_house_bot"
+    assert payload["opponent_bot_config_tags"] == ["external", "house_bot"]
+
+
 def test_run_match_real_launch_missing_map_persists_reason(tmp_path, monkeypatch):
     from evaluation.runner import run_match as run_match_module
     from sc2bot.runtime.sc2_installation import SC2Installation, SC2PreflightResult

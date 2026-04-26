@@ -1,0 +1,31 @@
+evaluation:
+  name: r7_external_validation
+  validation_class: r7_external_validation
+  run_class: r7_external_worker_rush_repair1
+  substrate: sludge_revived_current_patch_house_bot
+  source_entrypoint: third_party/strong_bots/sludge-revived/r7_run_eval.py
+  windows_runtime_copy: /mnt/e/software-work/strong_bots/sludge-revived
+  windows_python: E:\dev\python\python3.11.5\python.exe
+  world_model_runtime_export: artifacts/models/r7_world_model/scratch_ensemble_v0_runtime.json
+  accepted_run:
+    run_id: r7_external_worker_rush_repair1
+    output_dir: data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1
+    map: KairosJunctionLE
+    opponent_kind: example_bot
+    opponent_bot: worker_rush
+    game_time_limit: 420
+    step_time_limit: 2.0
+  arms:
+    - id: arm_a_raw_strong_substrate
+      arm: baseline
+      bot_class: bot.r7.bots.R7BaselineBot
+      advisor_mode: none
+    - id: arm_c_learned_world_model_advisor
+      arm: world
+      bot_class: bot.r7.bots.R7WorldAdvisorBot
+      advisor_mode: learned_world_model_advisor
+  excluded_invalid_probes:
+    - external_warpgate_probe
+  notes:
+    - accepted_external_slice_uses_downloaded_external_example_bot_not_built_in_ai
+    - run_error_systemexit_2_is_tolerated_because_replay_result_and_telemetry_are_all_present

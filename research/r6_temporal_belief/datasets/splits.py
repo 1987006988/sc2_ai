@@ -47,6 +47,8 @@ def validate_dataset_manifest(dataset_manifest: dict[str, Any], source_manifest:
     for split_name in ("train", "val", "test"):
         if split_name not in splits:
             errors.append(f"missing split section: {split_name}")
+        elif splits[split_name].get("status") == "materialized" and "path" not in splits[split_name]:
+            errors.append(f"materialized split missing path: {split_name}")
     if "local_accepted_replay_artifacts_into_holdout_benchmark" not in dataset_manifest.get(
         "forbidden_mixes", []
     ):

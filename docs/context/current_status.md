@@ -2,18 +2,20 @@
 
 ## Execution Sync Status
 
-As of 2026-04-26, the active execution state is:
+As of 2026-04-27, the active execution state is:
 
-- active queue:
-  - `docs/plans/active/r6_frontier_task_queue.yaml`
+- active frontier queue:
+  - `docs/plans/active/r7_strong_bot_world_model_task_queue.yaml`
+- frozen core queue:
+  - `docs/plans/active/research_master_task_queue.yaml`
 - latest handoff:
   - `docs/handoffs/latest.md`
 - current active next task:
-  - `r6_task_005_run_offline_hidden_state_benchmark`
+  - `r7_frontier_goal_reached`
 
-Latest checkpoint state:
+Latest R7 checkpoint state:
 
-- `r6_checkpoint_G_control_dataset_gate`
+- `r7_checkpoint_Q_frontier_claim_gate`
   - `minimum_gate_passed = true`
   - `target_gate_passed = true`
   - `decision = accepted_continue`
@@ -21,281 +23,58 @@ Latest checkpoint state:
 
 Latest completed task state:
 
-- `r6_task_004_implement_hidden_state_labelers_and_baselines`
-  - hidden-state label extraction module exists
-  - replay-sample reader exists
-  - rule-based / static prior / shallow temporal baselines exist
-  - offline metric bundle and benchmark contract config exist
-  - fixture subset validation passed
+- `r7_task_017_prepare_frontier_interview_evidence_pack`
+  - `status = completed`
+  - `actual_validation_level = L5`
+  - `capability_validation_status = capability_validated_target`
 
-Current blocked task state:
+Frozen core milestone state:
 
-- `r6_task_005_run_offline_hidden_state_benchmark`
-  - blocked on missing materialized holdout replay inputs
-  - local accepted replay artifacts remain domain-anchor-only and cannot be used
-    as accepted holdout benchmark evidence
+- `checkpoint_E_level1_baseline_gate`
+  - `target_gate_passed = true`
+- `checkpoint_F_adaptive_research_gate`
+  - `target_gate_passed = true`
+- core queue status:
+  - `active_next_task = project_core_goal_reached`
 
-Repository sync check:
+Historical frontier state:
 
-- local `HEAD` and `origin/main` were verified as aligned during the latest
-  sync audit;
-- the active queue, latest handoff, and latest checkpoint report must be kept
-  in sync together when pushing future updates;
-- later pushes must not update only a report or only a handoff while leaving
-  the queue in an older state.
+- R6 completed as a bounded frontier result through
+  `r6_checkpoint_K_frontier_claim_gate`
+- R6 is no longer the active frontier queue
+- R6 remains historical evidence and must not be rewritten to fit R7
 
-## Research Control Files
+## Active R7 Source of Truth
 
-The first-round GPT Pro core control files were imported from `docs/pro.txt` on
-2026-04-24. The second-round execution-recipe files were imported from
-`docs/pro2.txt` on 2026-04-24. Together they now form the complete active
-research control layer:
-
-- `docs/foundation/04_research_direction/research_direction_decision.md`
-- `docs/foundation/04_research_direction/retain_rewrite_drop_matrix.md`
-- `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
-- `docs/plans/active/research_master_task_queue.yaml`
-- `docs/experiments/real_match_validation_protocol.md`
-- `docs/plans/active/phase_playable_core_rebuild.md`
-- `docs/plans/active/phase_adaptive_response_research.md`
-- `docs/experiments/checkpoint_acceptance_spec.md`
-- `docs/agents/codex_execution_rules_research_mode.md`
-- `docs/templates/task_recipe_template.md`
-- `docs/experiments/failure_repair_playbook.md`
-
-Import status:
-
-- first_round_imported: complete
-- second_round_imported: complete
-- partial_imported: none
-
-Current source-of-truth status:
-
-- upgraded from candidate draft set to complete control layer;
-- old active-plan files remain in the repository as historical background only;
-- old phase queues and manual triggers are no longer execution authority;
-- the next allowed execution entrypoint is
-  `docs/plans/active/research_master_task_queue.yaml`.
-
-Control-layer cleanup status:
-
-- the new control layer has been fully imported and cleaned up;
-- old plans have been explicitly downgraded to historical reference;
-- the repository may now begin from the new master queue;
-- this round added no new gameplay capability and only clarified governance.
-
-Legacy/historical plan separation is indexed in:
-
-- `docs/plans/legacy_index.md`
-
-## Phase
-
-Phase 1D and Phase 1E foundation work is complete. Phase 1F demo packaging and standalone Phase L0 execution planning are paused.
-
-The accepted core route remains the research control layer centered on
-`docs/plans/active/research_master_task_queue.yaml`, and it remains historical
-completion record after `project_core_goal_reached`.
-
-Current accepted milestone state:
-
-- Level 1 playable baseline is accepted through
-  `checkpoint_E_level1_baseline_gate`
-- one adaptive research contribution is accepted through
-  `checkpoint_F_adaptive_research_gate`
-- the accepted adaptive result is bounded to one matched Easy Zerg slice and is
-  not yet a broader-pool extension claim
-
-Current extension state:
-
-- R6 frontier mode is active
-- R6 source-of-truth is now:
-  - `docs/foundation/04_research_direction/r6_temporal_opponent_belief_frontier_decision.md`
-  - `docs/plans/active/R6_FRONTIER_MASTER_EXECUTION_PLAN.md`
-  - `docs/plans/active/phase_r6_temporal_opponent_belief_frontier.md`
-  - `docs/plans/active/r6_frontier_task_queue.yaml`
-  - `docs/experiments/r6_frontier_evaluation_protocol.md`
-  - `docs/experiments/r6_claims_and_interview_deliverables.md`
-- the frozen predecessor queue remains:
-  - `docs/plans/active/research_master_task_queue.yaml`
-- current R6 next task:
-  - `r6_task_005_run_offline_hidden_state_benchmark`
-
-## Mainline
-
-The bot is still a minimal survival baseline, not a strategy bot. It now:
-
-- builds enriched live `GameState` snapshots from python-sc2;
-- records enriched `ScoutingObservation` telemetry for opponent-model inputs;
-- dispatches one worker scout to create real enemy observations;
-- trains workers when safe and affordable;
-- sustains Protoss supply with minimal pylon placement;
-- exits by structured runtime limits.
-
-## Evaluation
-
-Smoke evaluation now runs a minimal local dry-run loop and persists:
-
-- match result;
-- replay metadata placeholder;
-- telemetry path;
-- evaluation summary.
-
-The project also supports SC2PATH-based runtime preflight and a real local-match validation branch. On this machine, the repository can now:
-
-- resolve `SC2PATH`;
-- validate real installed maps under `D:\games\StarCraft II\Maps`;
-- launch a real local SC2 match through python-sc2;
-- save a replay, telemetry, match result, and replay metadata.
-- keep the real local match bot loop alive until a minimal sustained runtime window instead of exiting after the first probe step.
-- run a small real built-in opponent batch and summarize per-match status, duration, replay path, and opponent metadata.
-- run null vs rule-based opponent-model ablation and generate JSON/Markdown reports.
-- validate `opponent_prediction` telemetry in real SC2 local matches for both
-  null and rule_based modes.
-- run null vs rule_based prediction-only vs minimal_behavior intervention
-  comparison on real local SC2 matches and generate Phase 1E JSON/Markdown
-  reports.
-
-## Research
-
-Research directories are isolated and contain no production dependencies.
+- `docs/foundation/04_research_direction/r7_strong_bot_world_model_decision.md`
+- `docs/plans/active/R7_STRONG_BOT_WORLD_MODEL_MASTER_PLAN.md`
+- `docs/plans/active/r7_strong_bot_world_model_task_queue.yaml`
+- `docs/experiments/r7_strong_bot_data_protocol.md`
+- `docs/experiments/r7_world_model_evaluation_protocol.md`
+- `docs/experiments/r7_interview_claims_and_deliverables.md`
 
 ## Current Priority
 
-- keep the research control layer as the only execution authority;
-- keep the predecessor core queue frozen as accepted history;
-- use `docs/plans/active/r6_frontier_task_queue.yaml` as the active extension queue;
-- keep queue / handoff / checkpoint report synchronized when pushing updates;
-- treat old Phase A / Phase B / Phase B-R plans and queues as historical
-  context, not as current task sources;
-- treat the core project goal as reached at the current planned scope;
-- treat all further work as extension work beyond the accepted core goal, not as
-  unfinished baseline/adaptive core validation;
-- do not begin benchmark, model training, online integration, or external eval
-  before `r6_checkpoint_G_control_dataset_gate` passes;
-- `r6_checkpoint_G_control_dataset_gate` now passed, so benchmark/label
-  implementation may begin, but `r6_task_005` is currently blocked until
-  benchmark-ready holdout inputs are materialized; later online/external stages
-  remain blocked by later R6 checkpoints.
+1. keep the frozen core queue unchanged;
+2. do not reactivate R6 as the frontier queue;
+3. R7 has reached its bounded frontier goal under the current plan;
+4. any next work must be a new extension plan rather than silent continuation.
 
-## Decisions Landed
+## Claim Boundary
 
-- Phase-1 engineering base target: bare python-sc2.
-- Ares-sc2 is deferred and not required for phase-1 start.
-- Opponent-modeling prototype protocol is established in `research/opponent_modeling/`.
-- SC2 root path is expected from `SC2PATH`; local machine example: `D:\games\StarCraft II`.
-- Real SC2 process launch validation now works at the executable-launch level.
-- AI Arena 2025PS2 maps are installed in `D:\games\StarCraft II\Maps`.
-- A real local SC2 match probe now runs through python-sc2 and saves a replay.
-- The real local bot loop now exits on a sustained `game_loop` limit rather than a one-iteration probe limit.
-- WSL can invoke Windows PowerShell and Windows Python to launch the Windows SC2 install for real local-match validation.
-- Phase 1C real validation produced non-empty enemy observations from live scouting.
-- The local built-in opponent pool now includes Terran Easy, Terran Medium, Zerg Easy, and Protoss Easy.
-- Phase 1D ablation v0 runs null vs rule_based configs across a small fixed opponent pool.
-- Rule-based opponent model v0 is prediction-only and records risk signals without changing gameplay.
-- Feature extraction and report generation now produce `artifacts/reports/phase1d_ablation_opponent_model/summary.json` and `report.md`.
-- The corrected Phase 1D queue now distinguishes L1 synthetic tests, L2 dry
-  telemetry, and L3 real telemetry; task 6b produced real `opponent_prediction`
-  telemetry under `data/logs/evaluation/phase1d_task6b_probe/reallaunch-f4b16b51/`.
-- Phase 1D closeout validated:
-  - null real match: `data/logs/evaluation/phase1d_task11a_null_match/reallaunch-b111cf67/`;
-  - rule_based real match: `data/logs/evaluation/phase1d_task11b_rule_based_match/reallaunch-edba8ac0/`;
-  - 2x2 real ablation batch: `data/logs/evaluation/phase1d_ablation_opponent_model/`;
-  - report artifacts: `artifacts/reports/phase1d_ablation_opponent_model/`.
-- Phase 1E minimal strategy intervention validated:
-  - tag-only real probe:
-    `data/logs/evaluation/phase1e_task5_tag_only_probe/reallaunch-350f1ad9/`;
-  - minimal_behavior real probe:
-    `data/logs/evaluation/phase1e_task7_minimal_behavior_probe/reallaunch-0997c3b4/`;
-  - 1 map x 2 opponents x 3 configs real ablation:
-    `data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/`;
-  - report artifacts:
-    `artifacts/reports/phase1e_strategy_intervention/summary.json` and
-    `artifacts/reports/phase1e_strategy_intervention/report.md`.
-- Project roadmap recalibrated on 2026-04-21:
-  - Phase 1D/1E are foundation milestones for runtime, telemetry, prediction,
-    strategy-response telemetry, reporting, and L3 validation;
-  - they are not final demo milestones and do not prove ladder readiness;
-  - Phase 1F demo packaging is paused until a ladder-ready playable core exists;
-  - the active roadmap is Ladder-Ready Adaptive SC2 Bot Roadmap, starting with
-    Phase L0 Ladder Readiness.
-- Project roadmap recalibrated again on 2026-04-22:
-  - the active goal is now Ladder-Competitive Adaptive SC2 Bot Plan;
-  - ladder readiness is a foundation, not the project ceiling;
-  - each smallest Codex task should fit one Plus 5-hour quota window, but the
-    whole project is not limited to one window;
-  - target levels now run from Level 0 real match data foundation through Level
-    5 learning-augmented research modules;
-  - interview showcase target is at least Level 3 opponent-adaptive behavior,
-    preferably Level 4 opponent-pool evaluation.
-- Phase A closed out on 2026-04-22 as infrastructure/data foundation:
-  - A1 infrastructure gate report:
-    `artifacts/reports/phase_a_ladder_infra_dataset/a1_infrastructure_gate/summary.json`;
-  - merged Baseline Dataset V0 manifest:
-    `data/logs/evaluation/phase_a_baseline_v0/dataset_manifest.json`;
-  - baseline quality report:
-    `artifacts/reports/phase_a_ladder_infra_dataset/baseline_dataset_v0_quality/summary.json`;
-  - scalable collection config levels:
-    `configs/evaluation/phase_a_collection_levels.yaml`;
-  - Baseline V0 contains 24 real match attempts across 2 maps, 3 races, and
-    Easy/Medium built-in opponents, with result/replay/telemetry present for
-    all matches.
-- Phase B task queue completed on 2026-04-22 with real evidence but did not
-  reach Level 1 playable baseline:
-  - Phase B report:
-    `artifacts/reports/phase_b_playable_competitive_core/report.md`;
-  - Phase B summary:
-    `artifacts/reports/phase_b_playable_competitive_core/summary.json`;
-  - small real eval source run:
-    `data/logs/evaluation/phase_b_small_eval/phase_b_small_eval_20260422/`;
-  - 8 real matches completed with result/replay/telemetry artifacts;
-  - Gateway build success count was 8;
-  - combat-unit production success count was 0;
-  - no telemetry event reported `own_army_count > 0`;
-  - attack order count was 0;
-  - all 8 matches ended as `Result.Defeat`.
-- Phase B evidence audit on 2026-04-22:
-  - audit report:
-    `artifacts/reports/phase_b_playable_competitive_core/evidence_audit.md`;
-  - all audited probes and small-eval matches ended around
-    `game_time=116.07`;
-  - cutoff source was bot self-exit in `src/sc2bot/runtime/game_loop.py`,
-    controlled by `configs/bot/debug.yaml` with
-    `runtime.max_game_loop: 2600`;
-  - this is `insufficient_duration` for Gateway-ready, Cyber Core,
-    combat-unit production, real army orders, and friendly combat validation;
-  - task completion and diagnostic evidence are now explicitly separated from
-    gameplay capability validation;
-  - Phase B is not accepted as a playable competitive core and should not enter
-    Phase C until follow-up L3 probes rerun after the duration-window fix.
-- Phase B-R revalidation planning created on 2026-04-22:
-  - plan:
-    `docs/plans/active/phase_b_revalidation_playable_core.md`;
-  - task queue:
-    `docs/plans/active/phase_b_revalidation_task_queue.yaml`;
-  - manual trigger:
-    `docs/plans/active/phase_b_revalidation_manual_trigger.md`;
-  - checkpoints are mandatory every three tasks;
-  - each capability task has minimum, target, and stretch gates;
-  - Phase C remains blocked until Phase B-R final checkpoint accepts the
-    original playable-core objective.
+What is accepted:
 
-## Blockers
+1. the core project goal was reached in R0-R5;
+2. R6 produced a bounded frontier result inside the repository;
+3. R7 teacher-data and offline world-model gates passed through `checkpoint_O`;
+4. R7 online strong-substrate intervention passed through `checkpoint_P`;
+5. R7 external validation and closeout passed through `checkpoint_Q`;
+6. the accepted online substrate is `sludge_revived_current_patch_house_bot`;
+7. the accepted external slice is the bounded `worker_rush_example_bot` slice.
 
-- The bot still does not have a real build order, combat plan, expansion logic, gas/tech progression, or production-informed behavior.
-- Current opponent observations depend on a single worker scout and are enough for input-stream validation, not robust scouting.
-- Current Phase 1D ablation is prediction-only; it validates the experiment
-  chain but does not demonstrate improved gameplay or win rate.
-- Current Phase 1E intervention is intentionally thin; it validates response-tag
-  and minimal behavior telemetry, not strategic quality or win-rate improvement.
-- Phase A validates local ladder-like infrastructure and dataset collection,
-  but not ladder competitiveness.
-- Phase B established real small-eval reporting and Gateway command telemetry,
-  but not a playable competitive core.
-- Phase B capability validation is blocked by insufficient real-match duration:
-  current probes end at about 116.07 game seconds due `runtime.max_game_loop:
-  2600`, before Cyber Core, combat-unit production, attack/defend, and friendly
-  combat can be fairly validated.
-- No real combat-unit production succeeded in the Phase B small eval.
-- No baseline win against built-in Easy/Medium has been established.
-- Baseline V0 all ended with `max_game_time_reached`; this is expected for the
-  current survival scaffold but does not demonstrate strength.
+What is not yet true:
+
+1. no broad external generalization claim;
+2. no AI Arena leaderboard claim;
+3. no tournament or ladder competitiveness claim;
+4. no full non-proxy counterfactual supervision claim.

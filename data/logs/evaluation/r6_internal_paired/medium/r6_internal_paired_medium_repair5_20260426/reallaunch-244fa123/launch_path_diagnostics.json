@@ -1,0 +1,17 @@
+{
+  "default_executable": "D:\\games\\StarCraft II\\Versions\\Base95841\\SC2_x64.exe",
+  "default_executable_exists": true,
+  "default_cwd": "D:\\games\\StarCraft II\\Support64",
+  "default_cwd_exists": true,
+  "candidate_executables": [
+    {
+      "base_version": 95841,
+      "executable": "D:\\games\\StarCraft II\\Versions\\Base95841\\SC2_x64.exe"
+    }
+  ],
+  "selected_executable": "D:\\games\\StarCraft II\\Versions\\Base95841\\SC2_x64.exe",
+  "selected_executable_exists": true,
+  "selected_base_version": null,
+  "patched_python_sc2_paths": false,
+  "selected_cwd": "D:\\games\\StarCraft II\\Support64"
+}

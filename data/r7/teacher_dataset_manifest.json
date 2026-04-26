@@ -1,0 +1,70 @@
+{
+  "dataset_id": "r7_teacher_dataset_v0_proxy",
+  "status": "valid",
+  "source_id": "distar_zvz_agent_platform",
+  "replay_dir": "third_party/strong_bots/DI-star/data/replays",
+  "replay_count": 16,
+  "split_counts": {
+    "train": 12,
+    "val": 10,
+    "test": 10
+  },
+  "replay_assignments": {
+    "replay_4.10.0.SC2Replay": "train",
+    "replay_4.10.2.SC2Replay": "val",
+    "replay_4.10.3.SC2Replay": "val",
+    "replay_4.10.4.SC2Replay": "test",
+    "replay_4.11.3.SC2Replay": "test",
+    "replay_4.11.4.SC2Replay": "test",
+    "replay_4.12.0.SC2Replay": "val",
+    "replay_4.12.1.SC2Replay": "val",
+    "replay_5.0.1.SC2Replay": "val",
+    "replay_5.0.2.SC2Replay": "test",
+    "replay_5.0.3.SC2Replay": "test",
+    "replay_5.0.4.SC2Replay": "train",
+    "replay_5.0.5.SC2Replay": "train",
+    "replay_5.0.6.SC2Replay": "train",
+    "replay_5.0.7.SC2Replay": "train",
+    "replay_5.0.8.SC2Replay": "train"
+  },
+  "label_summary": {
+    "enemy_opening_class": {
+      "pressure_open": 19,
+      "tech_open": 6,
+      "fast_expand": 7
+    },
+    "enemy_tech_path": {
+      "tech_path_present": 15,
+      "upgrade_path": 4,
+      "low_tech": 11,
+      "production_path": 2
+    },
+    "macro_action_label": {
+      "expand_now": 9,
+      "add_production": 3,
+      "defensive_hold": 12,
+      "add_tech": 4,
+      "increase_production_tempo": 1,
+      "delay_move_out": 2,
+      "move_out_window_open": 1
+    },
+    "production_tempo_label": {
+      "low": 28,
+      "medium": 4
+    },
+    "future_winner": {
+      "loss": 16,
+      "win": 16
+    },
+    "future_game_length_bucket": {
+      "long": 4,
+      "short": 22,
+      "medium": 6
+    },
+    "future_pressure_proxy": {
+      "low_pressure": 14,
+      "high_pressure": 18
+    }
+  },
+  "claim_boundary": "teacher_proxy_dataset_derived_from_command_events_not_full_counterfactual_ground_truth"
+}

@@ -2,11 +2,36 @@
   "version": 1,
   "manifest_role": "r6_dataset_manifest",
   "updated_at": "2026-04-26",
-  "dataset_id": "r6_temporal_belief_dataset_v0_contract_only",
-  "status": "contract_frozen_not_populated",
+  "dataset_id": "r6_temporal_belief_dataset_v1_local_historical_holdout",
+  "status": "materialized_local_historical_holdout",
   "source_manifest_path": "research/r6_temporal_belief/data/source_manifest.yaml",
   "split_policy_id": "r6_split_policy_v0",
   "sources": [
+    {
+      "source_id": "local_phase_a_chunk_1_historical_corpus",
+      "ingestion_status": "available_local",
+      "usage_boundary": "offline_primary"
+    },
+    {
+      "source_id": "local_phase_a_chunk_2_historical_corpus",
+      "ingestion_status": "available_local",
+      "usage_boundary": "offline_primary"
+    },
+    {
+      "source_id": "local_phase_a_chunk_3_historical_corpus",
+      "ingestion_status": "available_local",
+      "usage_boundary": "offline_validation"
+    },
+    {
+      "source_id": "local_phase1d_ablation_historical_corpus",
+      "ingestion_status": "available_local",
+      "usage_boundary": "offline_holdout"
+    },
+    {
+      "source_id": "local_phase1e_ablation_historical_corpus",
+      "ingestion_status": "available_local",
+      "usage_boundary": "offline_holdout"
+    },
     {
       "source_id": "public_replay_corpora_primary",
       "ingestion_status": "planned_not_ingested",
@@ -30,26 +55,37 @@
   ],
   "splits": {
     "train": {
-      "status": "not_materialized",
+      "status": "materialized",
       "allowed_source_types": [
+        "local_historical_replay_corpus",
         "public_replay_corpus",
         "public_benchmark_dataset"
-      ]
+      ],
+      "path": "research/r6_temporal_belief/data/materialized/train.jsonl"
     },
     "val": {
-      "status": "not_materialized",
+      "status": "materialized",
       "allowed_source_types": [
+        "local_historical_replay_corpus",
         "public_replay_corpus",
         "public_benchmark_dataset"
-      ]
+      ],
+      "path": "research/r6_temporal_belief/data/materialized/val.jsonl"
     },
     "test": {
-      "status": "not_materialized",
+      "status": "materialized",
       "allowed_source_types": [
+        "local_historical_replay_corpus",
         "public_replay_corpus",
         "public_benchmark_dataset"
-      ]
+      ],
+      "path": "research/r6_temporal_belief/data/materialized/test.jsonl"
     }
+  },
+  "materialized_split_counts": {
+    "train": 16,
+    "val": 8,
+    "test": 14
   },
   "forbidden_mixes": [
     "local_accepted_replay_artifacts_into_holdout_benchmark",

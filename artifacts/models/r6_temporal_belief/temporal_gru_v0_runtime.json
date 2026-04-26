@@ -1,0 +1,10 @@
+{
+  "model_name": "temporal_gru_v0",
+  "deployment_mode": "compiled_runtime_fallback",
+  "derived_from_checkpoint": "artifacts/models/r6_temporal_belief/temporal_gru_v0.pt",
+  "training_results_reference": "research/r6_temporal_belief/eval/results/r6_temporal_model_v0.json",
+  "notes": [
+    "runtime export for environments without torch",
+    "single-feature learned temporal belief deployment artifact"
+  ]
+}

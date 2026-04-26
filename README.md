@@ -1,156 +1,55 @@
 # sc2-ai
 
-Layered hybrid full-game StarCraft II bot project using bare `python-sc2`
-(`burnysc2`) as the current engineering base.
+Layered hybrid full-game StarCraft II bot project.
 
 ## Goal
 
-The long-term goal is a single-race Protoss bot that can run repeated
-ladder-like bot-vs-bot matches, collect real match evidence, and use opponent
-modeling / hidden-state inference as a research feature.
+The accepted core project goal has already been reached:
 
-The current mainline objective is narrower and stricter:
+1. a Level 1 playable baseline was accepted;
+2. one adaptive research contribution was accepted on top of that baseline.
 
-1. first reach an accepted playable baseline;
-2. then validate a single adaptive research feature on top of that baseline.
+The active frontier goal is now R7:
 
-This project is not trying to be an AlphaStar clone, a pure SMAC project, or an
-LLM real-time controller.
+build a strong-bot-anchored counterfactual macro world model rather than keep
+stacking belief gates on the weak self-built baseline.
 
-## Current Control Layer
+## Current State
 
-The active control layer is now established. The current execution authority is:
+What is true now:
 
-- `docs/plans/active/MASTER_RESEARCH_EXECUTION_PLAN.md`
+1. `checkpoint_E_level1_baseline_gate` passed;
+2. `checkpoint_F_adaptive_research_gate` passed;
+3. the frozen core queue ends at `project_core_goal_reached`;
+4. R6 completed as a bounded historical frontier result;
+5. R7 is now the active frontier queue.
+
+What is not true now:
+
+1. no strong bot has been acquired or audited yet for R7;
+2. no R7 teacher dataset has been materialized yet;
+3. no R7 world model has been trained yet;
+4. no R7 online or external claim exists yet.
+
+## Active Control Layers
+
+Frozen accepted core history:
+
 - `docs/plans/active/research_master_task_queue.yaml`
-- `docs/experiments/real_match_validation_protocol.md`
-- `docs/experiments/checkpoint_acceptance_spec.md`
-- `docs/plans/active/phase_playable_core_rebuild.md`
-- `docs/plans/active/phase_adaptive_response_research.md`
-- `docs/agents/codex_execution_rules_research_mode.md`
-- `docs/templates/task_recipe_template.md`
-- `docs/experiments/failure_repair_playbook.md`
 
-The current mainline sequence is:
+Active frontier extension:
 
-1. playable core rebuild
-2. adaptive response research
-
-Old Phase A / Phase B / Phase B-R plans, queues, and manual triggers are
-retained only as historical or diagnostic reference. They no longer directly
-drive execution.
-
-## Current Status
-
-What is true right now:
-
-- real SC2 local-match launching, artifact persistence, dataset manifests, and
-  reporting infrastructure have been validated;
-- the new research control layer has been imported and cleaned up;
-- old plans have been downgraded to historical reference;
-- a Level 1 playable baseline has now been accepted through
-  `checkpoint_E_level1_baseline_gate`;
-- the current active next task is
-  `task_016_integrate_single_adaptive_gating_layer`.
-
-What is not true yet:
-
-- there is no validated adaptive research contribution yet;
-- there is no accepted paired adaptive evaluation result yet;
-- the repository does not prove ladder competitiveness.
-
-## Real-Match-First Rules
-
-- Unit tests prove code logic only.
-- Dry-runs prove orchestration only.
-- Real matches are required to prove gameplay behavior.
-- Multi-match batches are required to discuss stability.
-- Reports must distinguish synthetic, dry-run, and real-match evidence.
-- `completed` does not mean `validated`.
-- `diagnostic` does not mean `capability`.
-- Checkpoint failure blocks progression.
-
-## Repository Layout
-
-- `src/sc2bot/`: production bot runtime, managers, config, telemetry, and
-  stable interfaces.
-- `evaluation/`: match runners, batch orchestration, metrics, and reports.
-- `configs/`: bot, map, opponent, evaluation, and collection configs.
-- `research/`: isolated prototypes and research notes; not imported by
-  `src/sc2bot/`.
-- `docs/`: project memory, plans, handoffs, findings, and command references.
-- `tests/`: unit and integration tests.
-
-Read `AGENTS.md` before making changes.
-
-## Requirements
-
-- Windows StarCraft II installation.
-- `SC2PATH` pointing at the StarCraft II root, for example:
-
-```powershell
-$env:SC2PATH = "D:\games\StarCraft II"
-```
-
-- Python environment with project dependencies installed, including
-  `burnysc2==7.2.1`.
-- Local maps installed under the SC2 `Maps` directory.
-
-## Run Tests
-
-From the repository root:
-
-```bash
-python -m pytest tests
-```
-
-Focused unit tests can be run with:
-
-```bash
-python -m pytest tests/unit
-```
-
-## Run A Real Local Match
-
-Real SC2 matches are launched from WSL through Windows PowerShell/Python on this
-machine. A typical pattern is:
-
-```bash
-powershell.exe -NoProfile -Command "$repo='\\wsl.localhost\segment-anything-2\home\taotao\sc2-ai'; Set-Location $repo; $env:PYTHONPATH='src;.'; $env:SC2PATH='D:\games\StarCraft II'; python evaluation/runner/run_match.py --config configs/evaluation/smoke.yaml --launch-mode real_launch"
-```
-
-Exact commands and validated variants are tracked in:
-
-- `docs/commands/common_commands.md`
-- `docs/commands/verification_matrix.md`
-- `docs/handoffs/latest.md`
-
-Generated logs, replays, checkpoints, and raw/intermediate data are
-intentionally ignored by git.
-
-## Historical References
-
-Legacy planning materials are indexed in:
-
-- `docs/plans/legacy_index.md`
-
-They are still useful for historical reasoning and diagnostic provenance, but
-they are no longer execution authority.
-
-## What This Repository Does Not Prove Yet
-
-- It does not prove ladder competitiveness.
-- It does not prove broad stable win rate across larger Easy or Medium pools
-  beyond the accepted Level 1 baseline gate.
-- It does not prove gameplay quality improvement.
-- It does not prove opponent modeling improves match outcomes.
-- It does not yet prove an accepted adaptive research effect on top of the
-  baseline.
+- `docs/foundation/04_research_direction/r7_strong_bot_world_model_decision.md`
+- `docs/plans/active/R7_STRONG_BOT_WORLD_MODEL_MASTER_PLAN.md`
+- `docs/plans/active/r7_strong_bot_world_model_task_queue.yaml`
+- `docs/experiments/r7_strong_bot_data_protocol.md`
+- `docs/experiments/r7_world_model_evaluation_protocol.md`
 
 ## Next Step
 
 If execution resumes, it should start from:
 
-- `docs/plans/active/research_master_task_queue.yaml`
+- `r7_task_002_identify_and_rank_strong_bot_candidates`
 
-Do not resume from old Phase A / Phase B / Phase B-R queues.
+Do not resume the R6 queue as active work.
+Do not reopen the frozen core queue.

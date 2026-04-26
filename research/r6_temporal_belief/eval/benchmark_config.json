@@ -14,5 +14,5 @@
     "static_prior",
     "shallow_temporal"
   ],
-  "validation_scope": "fixture_subset_only_until_real_holdout_is_materialized"
+  "validation_scope": "materialized_local_historical_holdout_v0"
 }

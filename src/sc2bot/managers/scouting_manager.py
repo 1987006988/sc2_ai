@@ -73,6 +73,15 @@ class ScoutingManager:
         self._enemy_combat_units_seen: set[str] = set()
 
     def update(self, state: GameState) -> ScoutingObservation:
+        current_enemy_units = tuple(sorted(state.visible_enemy_units))
+        current_enemy_structures = tuple(sorted(state.visible_enemy_structures))
+        current_enemy_combat_units = tuple(
+            sorted(
+                unit
+                for unit in state.visible_enemy_units
+                if unit.lower().replace("_", "") in _COMBAT_UNIT_HINTS
+            )
+        )
         enemy_seen_now = bool(
             state.visible_enemy_units_count or state.visible_enemy_structures_count
         )
@@ -80,13 +89,9 @@ class ScoutingManager:
             if self._first_enemy_seen_time is None:
                 self._first_enemy_seen_time = state.game_time
             self._last_enemy_seen_time = state.game_time
-        self._enemy_units_seen.update(state.visible_enemy_units)
-        self._enemy_structures_seen.update(state.visible_enemy_structures)
-        self._enemy_combat_units_seen.update(
-            unit
-            for unit in state.visible_enemy_units
-            if unit.lower().replace("_", "") in _COMBAT_UNIT_HINTS
-        )
+        self._enemy_units_seen.update(current_enemy_units)
+        self._enemy_structures_seen.update(current_enemy_structures)
+        self._enemy_combat_units_seen.update(current_enemy_combat_units)
         possible_tech_signal = any(
             structure.lower().replace("_", "") in _TECH_STRUCTURE_HINTS
             for structure in self._enemy_structures_seen
@@ -105,6 +110,9 @@ class ScoutingManager:
         observation = ScoutingObservation(
             game_loop=state.game_loop,
             game_time=state.game_time,
+            current_enemy_units=current_enemy_units,
+            current_enemy_structures=current_enemy_structures,
+            current_enemy_combat_units=current_enemy_combat_units,
             enemy_units_seen=tuple(sorted(self._enemy_units_seen)),
             enemy_structures_seen=tuple(sorted(self._enemy_structures_seen)),
             enemy_expansions_seen=enemy_expansions_seen,

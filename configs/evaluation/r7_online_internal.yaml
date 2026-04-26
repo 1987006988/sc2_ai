@@ -1,0 +1,34 @@
+evaluation:
+  name: r7_online_internal
+  validation_class: r7_online_intervention
+  run_class: r7_online_repair1_420
+  substrate: sludge_revived_current_patch_house_bot
+  source_entrypoint: third_party/strong_bots/sludge-revived/r7_run_eval.py
+  windows_runtime_copy: /mnt/e/software-work/strong_bots/sludge-revived
+  windows_python: E:\dev\python\python3.11.5\python.exe
+  world_model_runtime_export: artifacts/models/r7_world_model/scratch_ensemble_v0_runtime.json
+  accepted_run:
+    run_id: r7_online_repair1_20260427
+    output_dir: data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427
+    map: KairosJunctionLE
+    opponent_race: Terran
+    difficulty: Medium
+    ai_build: Timing
+    game_time_limit: 420
+    step_time_limit: 2.0
+  arms:
+    - id: arm_a_raw_strong_substrate
+      arm: baseline
+      bot_class: bot.r7.bots.R7BaselineBot
+      advisor_mode: none
+    - id: arm_b_rule_macro_advisor
+      arm: rule
+      bot_class: bot.r7.bots.R7RuleAdvisorBot
+      advisor_mode: rule_macro_advisor
+    - id: arm_c_learned_world_model_advisor
+      arm: world
+      bot_class: bot.r7.bots.R7WorldAdvisorBot
+      advisor_mode: learned_world_model_advisor
+  notes:
+    - accepted_r7_phase4_evidence_uses_sludge_revived_not_the_historical_protoss_carrier
+    - old_teacher_anchored_r7_online_probe_artifacts_remain_diagnostic_only

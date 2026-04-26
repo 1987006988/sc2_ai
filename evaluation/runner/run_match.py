@@ -45,6 +45,9 @@ class MatchRequest:
     opponent_race: str = "terran"
     opponent_difficulty: str = "easy"
     opponent_tags: tuple[str, ...] = ()
+    opponent_bot_config: str | None = None
+    opponent_bot_config_id: str | None = None
+    opponent_bot_config_tags: tuple[str, ...] = ()
     output_dir: str = "data/logs/evaluation"
     launch_mode: str = "dry_run"
     run_class: str = "unspecified"
@@ -126,9 +129,13 @@ def _result_payload(
         "bot_config_tags": list(request.bot_config_tags),
         "map_id": result.map_id,
         "opponent_id": result.opponent_id,
+        "opponent_type": request.opponent_type,
         "opponent_race": request.opponent_race,
         "opponent_difficulty": request.opponent_difficulty,
         "opponent_tags": list(request.opponent_tags),
+        "opponent_bot_config": request.opponent_bot_config,
+        "opponent_bot_config_id": request.opponent_bot_config_id,
+        "opponent_bot_config_tags": list(request.opponent_bot_config_tags),
         "telemetry_path": result.telemetry_path,
         "replay_metadata_path": result.replay_metadata_path,
         "replay_path": replay_path,
@@ -266,6 +273,21 @@ def _build_bot_app(request: MatchRequest, telemetry_dir: Path) -> BotApp:
     return BotApp.from_bot_config(bot_config)
 
 
+def _build_opponent_bot_app(request: MatchRequest, telemetry_dir: Path) -> BotApp:
+    if not request.opponent_bot_config:
+        raise ValueError("Bot opponent launch requires opponent_bot_config.")
+    bot_config = load_bot_config(request.opponent_bot_config)
+    bot_config = replace(
+        bot_config,
+        telemetry=TelemetryConfig(
+            enabled=True,
+            output_dir=str(telemetry_dir),
+            verbose=bot_config.telemetry.verbose,
+        ),
+    )
+    return BotApp.from_bot_config(bot_config)
+
+
 def _run_python_sc2_local_game(
     request: MatchRequest,
     app: BotApp,
@@ -291,17 +313,39 @@ def _run_python_sc2_local_game(
             app.config.bot.name,
             app.config.runtime,
             app.config.build_order,
+            allow_client_leave=request.opponent_type != "bot",
         ),
         name=app.config.bot.name,
     )
-    if request.opponent_type != "computer":
-        raise ValueError(
-            f"Unsupported opponent type for phase-1 local match: {request.opponent_type}"
+    if request.opponent_type == "computer":
+        opponent_player = Computer(
+            _race_from_str(request.opponent_race),
+            _difficulty_from_str(request.opponent_difficulty),
         )
-    opponent_player = Computer(
-        _race_from_str(request.opponent_race),
-        _difficulty_from_str(request.opponent_difficulty),
-    )
+    elif request.opponent_type == "bot":
+        opponent_app = _build_opponent_bot_app(
+            request,
+            replay_path.parent / "opponent_telemetry",
+        )
+        opponent_app.initialize()
+        opponent_name = opponent_app.config.bot.name
+        if opponent_name == app.config.bot.name:
+            opponent_name = f"{opponent_name}-opponent"
+        opponent_player = Bot(
+            _race_from_str(opponent_app.config.bot.race),
+            build_python_sc2_local_bot(
+                opponent_app.container,
+                opponent_app.config.bot.name,
+                opponent_app.config.runtime,
+                opponent_app.config.build_order,
+                allow_client_leave=False,
+            ),
+            name=opponent_name,
+        )
+    else:
+        raise ValueError(
+            f"Unsupported opponent type for local match launch: {request.opponent_type}"
+        )
     result = run_game(
         maps.get(map_name),
         [bot_player, opponent_player],
@@ -591,4 +635,5 @@ def run_match(request: MatchRequest) -> dict[str, str]:
         "validation_class": request.validation_class,
         "map_id": result.map_id,
         "opponent_id": result.opponent_id,
+        "opponent_type": request.opponent_type,
     }

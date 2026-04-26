@@ -1,0 +1,67 @@
+control:
+  config_role: r7_world_model_advisor
+  validation_class: r7_online_intervention
+  run_class: r7_online_learned_world_model_arm
+  capability_claim_allowed: false
+  notes:
+    - arm_c_learned_world_model_advisor
+    - scratch_only_runtime_export
+    - teacher_anchored_executable_carrier
+
+bot:
+  name: sc2-ai-r7-world-model-advisor
+  race: protoss
+  strategy: r7_teacher_anchored_macro_advisor
+
+managers:
+  macro: true
+  scouting: true
+  strategy: true
+  tactical: true
+  micro: false
+
+opponent_model:
+  mode: learned_world_model_advisor
+  intervention_mode: macro_world_model_advisor
+  model_checkpoint_path: artifacts/models/r7_world_model/scratch_ensemble_v0_runtime.json
+  model_device: cpu
+  rush_risk_threshold: 0.6
+  tech_risk_threshold: 0.6
+  low_information_confidence_threshold: 0.25
+  low_information_game_time_threshold: 90.0
+  scout_continuation_game_time_limit: 210.0
+  first_attack_delay_seconds: 45.0
+  first_attack_advance_seconds: 30.0
+  first_attack_army_buffer: 1
+  production_tempo_gateway_delta: 1
+  tech_path_stalker_priority: 5
+
+runtime:
+  max_game_loop: 9600
+  max_steps:
+  worker_production: true
+  worker_gather: true
+  worker_scout: true
+  supply_sustain: true
+  supply_sustain_threshold: 2
+  supply_structure_name: pylon
+  army_defense: true
+
+build_order:
+  target_probe_count: 22
+  pylon_supply_buffer: 2
+  gateway_min_probe_count: 16
+  gateway_min_game_time: 90.0
+  gateway_target_count: 3
+  assimilator_enabled: true
+  cybernetics_core_enabled: true
+  zealot_production_priority: 10
+  stalker_production_priority: 20
+  attack_army_supply_threshold: 8
+  attack_game_time_threshold: 360.0
+  defend_radius: 30.0
+
+telemetry:
+  enabled: true
+  output_dir: data/logs/telemetry
+  verbose: true

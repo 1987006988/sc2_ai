@@ -1,0 +1,22 @@
+version: 1
+config_role: r6_temporal_belief_training
+model:
+  architecture: gru
+  hidden_dim: 32
+train:
+  epochs: 120
+  learning_rate: 0.01
+data:
+  train_path: research/r6_temporal_belief/data/materialized/train.jsonl
+  val_path: research/r6_temporal_belief/data/materialized/val.jsonl
+  test_path: research/r6_temporal_belief/data/materialized/test.jsonl
+eval:
+  primary_task_bundle:
+    - opening_class
+    - hidden_tech_path
+    - hidden_army_bucket
+    - future_contact_risk
+    - next_macro_threat_indicator
+artifacts:
+  checkpoint_path: artifacts/models/r6_temporal_belief/temporal_gru_v0.pt
+  results_path: research/r6_temporal_belief/eval/results/r6_temporal_model_v0.json

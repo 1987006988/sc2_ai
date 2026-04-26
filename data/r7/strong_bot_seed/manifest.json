@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "generated_for_task": "r7_task_005_run_selected_strong_bot_and_collect_seed_data",
+  "generated_on": "2026-04-27",
+  "source_candidate_id": "distar_zvz_agent_platform",
+  "source_path": "third_party/strong_bots/DI-star/data/replays",
+  "source_commit": "12b1c69350ad41e17895c602a66a52d98dd58452",
+  "collection_mode": "provided_replay_corpus",
+  "runtime_match_executed": false,
+  "runtime_match_reason": "task completed with materialized provided replay corpus; direct local bot run deferred to later runtime-focused work",
+  "replay_count": 16,
+  "replays": [
+    {"name": "replay_4.10.0.SC2Replay", "size_bytes": 75889},
+    {"name": "replay_4.10.2.SC2Replay", "size_bytes": 96663},
+    {"name": "replay_4.10.3.SC2Replay", "size_bytes": 39590},
+    {"name": "replay_4.10.4.SC2Replay", "size_bytes": 34640},
+    {"name": "replay_4.11.3.SC2Replay", "size_bytes": 35730},
+    {"name": "replay_4.11.4.SC2Replay", "size_bytes": 37310},
+    {"name": "replay_4.12.0.SC2Replay", "size_bytes": 78256},
+    {"name": "replay_4.12.1.SC2Replay", "size_bytes": 59308},
+    {"name": "replay_5.0.1.SC2Replay", "size_bytes": 48506},
+    {"name": "replay_5.0.2.SC2Replay", "size_bytes": 38725},
+    {"name": "replay_5.0.3.SC2Replay", "size_bytes": 39375},
+    {"name": "replay_5.0.4.SC2Replay", "size_bytes": 65694},
+    {"name": "replay_5.0.5.SC2Replay", "size_bytes": 196487},
+    {"name": "replay_5.0.6.SC2Replay", "size_bytes": 89045},
+    {"name": "replay_5.0.7.SC2Replay", "size_bytes": 73870},
+    {"name": "replay_5.0.8.SC2Replay", "size_bytes": 36826}
+  ]
+}

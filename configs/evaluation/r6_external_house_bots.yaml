@@ -1,0 +1,22 @@
+evaluation:
+  name: r6_external_house_bots
+  launch_mode: real_launch
+  run_class: frontier_external_eval
+  validation_class: r6_external_eval
+  bot_configs:
+    - id: frozen_baseline
+      path: configs/bot/baseline_playable.yaml
+      tags: [arm_a, frozen_baseline]
+    - id: frozen_r5_comparator
+      path: configs/bot/adaptive_research.yaml
+      tags: [arm_b, frozen_r5_comparator]
+    - id: learned_treatment
+      path: configs/bot/r6_learned_belief.yaml
+      tags: [arm_c, learned_treatment]
+  maps_config: configs/maps/r6_external_frontier_maps.yaml
+  opponents_config: configs/opponents/r6_external_house_bots.yaml
+  repeats: 1
+  output_dir: data/logs/evaluation/r6_external_eval
+  run_id: r6_external_house_bots_repair2_20260426
+  isolate_runs: true
+  fail_on_crash: false

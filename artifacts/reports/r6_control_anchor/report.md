@@ -101,6 +101,8 @@ The first R6 dataset-contract unit is now frozen:
 The contract explicitly separates:
 
 - future public replay / benchmark sources for train/val/test
+- local historical replay corpora for benchmark bootstrapping under explicit
+  provenance and split roles
 - local accepted replay artifacts for domain-anchor-only use
 - internal online eval artifacts as forbidden holdout inputs
 

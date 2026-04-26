@@ -1,5 +1,6 @@
 """Minimal rule-based opponent model placeholder."""
 
+from sc2bot.domain.game_state import GameState
 from sc2bot.domain.observations import ScoutingObservation
 from sc2bot.opponent_model.interface import OpponentPrediction
 
@@ -31,7 +32,12 @@ class RuleBasedOpponentModel:
 
     model_name = "rule_based"
 
-    def predict(self, observation: ScoutingObservation) -> OpponentPrediction:
+    def predict(
+        self,
+        observation: ScoutingObservation,
+        state: GameState | None = None,
+    ) -> OpponentPrediction:
+        _ = state
         structures = {item.lower().replace("_", "") for item in observation.enemy_structures_seen}
         combat_units = set(observation.seen_enemy_combat_units)
         signals: list[str] = []

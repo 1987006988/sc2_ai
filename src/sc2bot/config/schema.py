@@ -25,13 +25,19 @@ class ManagersConfig:
 class OpponentModelConfig:
     mode: str = "null"
     intervention_mode: str = "none"
+    model_checkpoint_path: str = ""
+    model_device: str = "cpu"
+    temporal_history_window: int = 8
     rush_risk_threshold: float = 0.5
     tech_risk_threshold: float = 0.5
     low_information_confidence_threshold: float = 0.25
     low_information_game_time_threshold: float = 90.0
     scout_continuation_game_time_limit: float = 210.0
     first_attack_delay_seconds: float = 90.0
+    first_attack_advance_seconds: float = 45.0
     first_attack_army_buffer: int = 2
+    production_tempo_gateway_delta: int = 0
+    tech_path_stalker_priority: int = 5
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,16 @@
+{
+  "result": "Result.Tie",
+  "game_time": 419.775,
+  "mode": "attack",
+  "own_townhalls_count": 3,
+  "enemy_townhalls_count": 0,
+  "own_army_count": 29,
+  "enemy_army_count": 0,
+  "own_army_value": 2600.0,
+  "enemy_army_value": 0.0,
+  "drone_count": 44,
+  "scouting_information": [
+    "ENEMY_ONE_BASE"
+  ],
+  "advisor_stats": {}
+}

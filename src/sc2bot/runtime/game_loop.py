@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 
 from sc2bot.config.schema import BuildOrderConfig, RuntimeConfig
@@ -42,7 +42,7 @@ class GameLoop:
 
     def process_state(self, state: GameState) -> StrategyResponse:
         observations = self.container.scouting.update(state)
-        prediction = self.container.opponent_model.predict(observations)
+        prediction = self.container.opponent_model.predict(observations, state)
         decision = self.container.strategy.decide(state, prediction)
         strategy_response = self.container.strategy.select_response(
             state,
@@ -87,11 +87,20 @@ class GameLoop:
                 strategy_response.continue_scouting_gate_active,
                 strategy_response.defensive_posture_gate_active,
                 strategy_response.first_attack_timing_gate_active,
+                strategy_response.bounded_production_tempo_gate_active,
             )
         ):
             self.container.telemetry.record(
                 "adaptive_gate_applied",
                 build_adaptive_gate_applied_payload(strategy_response, state),
+            )
+        if (
+            strategy_response.intervention_mode == "macro_world_model_advisor"
+            and strategy_response.selected_macro_action != "none"
+        ):
+            self.container.telemetry.record(
+                "macro_advisor_applied",
+                build_macro_advisor_applied_payload(strategy_response, state),
             )
         response_key = (
             strategy_response.selected_response_tag,
@@ -142,6 +151,27 @@ def build_game_state_from_bot_ai(bot_ai: "BotAI") -> GameState:
         supply_used=int(getattr(bot_ai, "supply_used", 0)),
         supply_cap=int(getattr(bot_ai, "supply_cap", 0)),
     )
+
+
+async def safe_client_leave(
+    client: Any,
+    telemetry: Any,
+    *,
+    reason: str,
+    iteration: int,
+) -> None:
+    try:
+        await client.leave()
+    except Exception as exc:
+        telemetry.record(
+            "sc2_client_leave_error",
+            {
+                "reason": reason,
+                "iteration": iteration,
+                "error": str(exc),
+                "exception_type": type(exc).__name__,
+            },
+        )
 
 
 def _unit_type_name(unit: Any) -> str:
@@ -848,8 +878,10 @@ def build_adaptive_gate_applied_payload(
         "continue_scouting_gate_active": response.continue_scouting_gate_active,
         "defensive_posture_gate_active": response.defensive_posture_gate_active,
         "first_attack_timing_gate_active": response.first_attack_timing_gate_active,
+        "bounded_production_tempo_gate_active": response.bounded_production_tempo_gate_active,
         "first_attack_delay_seconds": response.first_attack_delay_seconds,
         "first_attack_army_buffer": response.first_attack_army_buffer,
+        "production_tempo_gateway_delta": response.production_tempo_gateway_delta,
         "own_army_count": state.own_army_count,
         "visible_enemy_units_count": state.visible_enemy_units_count,
         "game_loop": state.game_loop,
@@ -858,11 +890,63 @@ def build_adaptive_gate_applied_payload(
     }
 
 
+def build_macro_advisor_applied_payload(
+    response: StrategyResponse,
+    state: GameState,
+) -> dict[str, object]:
+    return {
+        "selected_response_tag": response.selected_response_tag,
+        "strategy_switch_reason": response.strategy_switch_reason,
+        "selected_macro_action": response.selected_macro_action,
+        "macro_action_scores": response.macro_action_scores,
+        "continue_scouting_gate_active": response.continue_scouting_gate_active,
+        "defensive_posture_gate_active": response.defensive_posture_gate_active,
+        "first_attack_timing_gate_active": response.first_attack_timing_gate_active,
+        "bounded_production_tempo_gate_active": response.bounded_production_tempo_gate_active,
+        "first_attack_delay_seconds": response.first_attack_delay_seconds,
+        "first_attack_army_buffer": response.first_attack_army_buffer,
+        "production_tempo_gateway_delta": response.production_tempo_gateway_delta,
+        "own_army_count": state.own_army_count,
+        "visible_enemy_units_count": state.visible_enemy_units_count,
+        "game_loop": state.game_loop,
+        "game_time": state.game_time,
+    }
+
+
+def _effective_build_order_from_strategy_response(
+    build_order: BuildOrderConfig,
+    response: StrategyResponse,
+) -> BuildOrderConfig:
+    """Return a bounded build-order view for the current strategy response."""
+
+    effective_build_order = build_order
+    if response.bounded_production_tempo_gate_active:
+        effective_build_order = replace(
+            effective_build_order,
+            gateway_target_count=max(
+                effective_build_order.gateway_target_count,
+                effective_build_order.gateway_target_count
+                + response.production_tempo_gateway_delta,
+            ),
+        )
+    if response.selected_response_tag == "add_tech":
+        effective_build_order = replace(
+            effective_build_order,
+            stalker_production_priority=min(
+                effective_build_order.stalker_production_priority,
+                max(0, effective_build_order.zealot_production_priority - 1),
+            ),
+        )
+    return effective_build_order
+
+
 def build_python_sc2_local_bot(
     container: DependencyContainer,
     bot_name: str,
     runtime: RuntimeConfig | None = None,
     build_order: BuildOrderConfig | None = None,
+    *,
+    allow_client_leave: bool = True,
 ) -> Any:
     """Build a minimal python-sc2 BotAI for sustained local match validation."""
 
@@ -879,6 +963,7 @@ def build_python_sc2_local_bot(
         _previous_observed_army_tags: set[int] = set()
         _army_unit_first_observed_loops: dict[int, int] = {}
         _confirmed_alive_army_tags: set[int] = set()
+        _exit_requested: bool = False
 
         async def on_unit_created(self, unit: Any) -> None:
             unit_name = _unit_type_name(unit)
@@ -918,6 +1003,8 @@ def build_python_sc2_local_bot(
 
         async def on_step(self, iteration: int) -> None:
             try:
+                if self._exit_requested:
+                    return
                 state = build_game_state_from_bot_ai(self)
                 self._record_army_presence_transition(state)
                 strategy_response = game_loop.process_state(state)
@@ -937,14 +1024,27 @@ def build_python_sc2_local_bot(
                             "max_steps": runtime_config.max_steps,
                         },
                     )
-                    await self.client.leave()
+                    self._exit_requested = True
+                    if allow_client_leave:
+                        await safe_client_leave(
+                            self.client,
+                            container.telemetry,
+                            reason=exit_reason,
+                            iteration=iteration,
+                        )
+                    return
             except Exception as exc:
                 container.runtime_exit_reason = "gameplay_error"
                 container.telemetry.record(
                     "gameplay_error",
                     {"iteration": iteration, "error": str(exc)},
                 )
-                await self.client.leave()
+                await safe_client_leave(
+                    self.client,
+                    container.telemetry,
+                    reason="gameplay_error",
+                    iteration=iteration,
+                )
 
         def _record_army_presence_transition(self, state: GameState) -> None:
             legacy_army_count = legacy_own_army_count_from_bot_ai(self)
@@ -999,16 +1099,19 @@ def build_python_sc2_local_bot(
             tactical_plan: TacticalPlan,
             state: GameState,
         ) -> None:
+            effective_build_order = _effective_build_order_from_strategy_response(
+                build_order_config, strategy_response
+            )
             if runtime_config.worker_gather:
                 await self._safe_worker_gather()
             if runtime_config.worker_scout:
                 await self._safe_worker_scout(strategy_response)
             if runtime_config.supply_sustain:
                 await self._safe_supply_sustain()
-            await self._safe_gateway_build()
-            await self._safe_assimilator_build()
-            await self._safe_cybernetics_core_build()
-            await self._safe_combat_unit_production()
+            await self._safe_gateway_build(effective_build_order)
+            await self._safe_assimilator_build(effective_build_order)
+            await self._safe_cybernetics_core_build(effective_build_order)
+            await self._safe_combat_unit_production(effective_build_order)
             if runtime_config.worker_production:
                 await self._safe_worker_production()
             if runtime_config.army_defense:
@@ -1129,14 +1232,14 @@ def build_python_sc2_local_bot(
                 ),
             )
 
-        async def _safe_gateway_build(self) -> None:
+        async def _safe_gateway_build(self, effective_build_order: BuildOrderConfig) -> None:
             gateway_type = UnitTypeId.GATEWAY
             pending_count = int(self.already_pending(gateway_type))
             existing_count = int(self.structures(gateway_type).amount)
             state = build_game_state_from_bot_ai(self)
             skip_reason = gateway_build_skip_reason(
                 state,
-                build_order_config,
+                effective_build_order,
                 pending_gateway_count=pending_count,
                 existing_gateway_count=existing_count,
             )
@@ -1145,6 +1248,7 @@ def build_python_sc2_local_bot(
                     "skipped",
                     skip_reason,
                     state,
+                    effective_build_order,
                     pending_gateway_count=pending_count,
                     existing_gateway_count=existing_count,
                 )
@@ -1154,6 +1258,7 @@ def build_python_sc2_local_bot(
                     "skipped",
                     "no_townhall_available",
                     state,
+                    effective_build_order,
                     pending_gateway_count=pending_count,
                     existing_gateway_count=existing_count,
                 )
@@ -1163,6 +1268,7 @@ def build_python_sc2_local_bot(
                     "skipped",
                     "no_ready_townhall_available",
                     state,
+                    effective_build_order,
                     pending_gateway_count=pending_count,
                     existing_gateway_count=existing_count,
                 )
@@ -1175,6 +1281,7 @@ def build_python_sc2_local_bot(
                 "attempt",
                 "gateway_conditions_met",
                 state,
+                effective_build_order,
                 pending_gateway_count=pending_count,
                 existing_gateway_count=existing_count,
             )
@@ -1191,6 +1298,7 @@ def build_python_sc2_local_bot(
                     "failed",
                     f"build_exception:{exc}",
                     state,
+                    effective_build_order,
                     pending_gateway_count=pending_count,
                     existing_gateway_count=existing_count,
                 )
@@ -1200,6 +1308,7 @@ def build_python_sc2_local_bot(
                     "success",
                     "build_command_issued",
                     state,
+                    effective_build_order,
                     pending_gateway_count=pending_count,
                     existing_gateway_count=existing_count,
                 )
@@ -1208,6 +1317,7 @@ def build_python_sc2_local_bot(
                     "failed",
                     "placement_not_found",
                     state,
+                    effective_build_order,
                     pending_gateway_count=pending_count,
                     existing_gateway_count=existing_count,
                 )
@@ -1217,6 +1327,7 @@ def build_python_sc2_local_bot(
             outcome: str,
             reason: str,
             state: GameState,
+            effective_build_order: BuildOrderConfig,
             *,
             pending_gateway_count: int,
             existing_gateway_count: int,
@@ -1226,13 +1337,13 @@ def build_python_sc2_local_bot(
                 build_gateway_build_payload(
                     reason,
                     state,
-                    build_order_config,
+                    effective_build_order,
                     pending_gateway_count=pending_gateway_count,
                     existing_gateway_count=existing_gateway_count,
                 ),
             )
 
-        async def _safe_assimilator_build(self) -> None:
+        async def _safe_assimilator_build(self, effective_build_order: BuildOrderConfig) -> None:
             assimilator_type = UnitTypeId.ASSIMILATOR
             gateway_type = UnitTypeId.GATEWAY
             pending_count = int(self.already_pending(assimilator_type))
@@ -1241,7 +1352,7 @@ def build_python_sc2_local_bot(
             state = build_game_state_from_bot_ai(self)
             skip_reason = assimilator_build_skip_reason(
                 state,
-                build_order_config,
+                effective_build_order,
                 gateway_ready_count=gateway_ready_count,
                 pending_assimilator_count=pending_count,
                 existing_assimilator_count=existing_count,
@@ -1323,7 +1434,7 @@ def build_python_sc2_local_bot(
                     existing_count=existing_count,
                 )
 
-        async def _safe_cybernetics_core_build(self) -> None:
+        async def _safe_cybernetics_core_build(self, effective_build_order: BuildOrderConfig) -> None:
             cybernetics_core_type = UnitTypeId.CYBERNETICSCORE
             gateway_type = UnitTypeId.GATEWAY
             pending_count = int(self.already_pending(cybernetics_core_type))
@@ -1332,7 +1443,7 @@ def build_python_sc2_local_bot(
             state = build_game_state_from_bot_ai(self)
             skip_reason = cybernetics_core_build_skip_reason(
                 state,
-                build_order_config,
+                effective_build_order,
                 gateway_ready_count=gateway_ready_count,
                 pending_cybernetics_core_count=pending_count,
                 existing_cybernetics_core_count=existing_count,
@@ -1435,7 +1546,10 @@ def build_python_sc2_local_bot(
                 ),
             )
 
-        async def _safe_combat_unit_production(self) -> None:
+        async def _safe_combat_unit_production(
+            self,
+            effective_build_order: BuildOrderConfig,
+        ) -> None:
             gateway_type = UnitTypeId.GATEWAY
             cybernetics_core_type = UnitTypeId.CYBERNETICSCORE
             gateway_ready_count = int(self.structures(gateway_type).ready.amount)
@@ -1447,7 +1561,7 @@ def build_python_sc2_local_bot(
             state = build_game_state_from_bot_ai(self)
             unit_name, skip_reason = select_combat_unit_for_production(
                 state,
-                build_order_config,
+                effective_build_order,
                 gateway_ready_count=gateway_ready_count,
                 cybernetics_core_ready_count=cybernetics_core_ready_count,
             )

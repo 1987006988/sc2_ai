@@ -1,107 +1,63 @@
-# Handoff: r6_task_004_completed_task_005_blocked
+# Handoff: r7_checkpoint_Q_frontier_claim_gate
 
-Date: 2026-04-26
-
-## Executed Work
-
-- `r6_task_004_implement_hidden_state_labelers_and_baselines`
-- `r6_task_005_run_offline_hidden_state_benchmark`
+Date: 2026-04-27
 
 ## Status
 
-- `r6_task_004`: `completed`
-- `r6_task_005`: `blocked`
+- `r7_task_016`: `completed`
+- `r7_task_017`: `completed`
+- `r7_checkpoint_Q`: `completed`
 
-## Validation
+## Accepted External Result
 
-- `r6_task_004` validation level achieved: `L2`
-- `r6_task_004` data source: `offline pipeline implementation + fixture subset tests`
-- `r6_task_004` capability validation status: `completed_offline_pipeline_impl`
-- `r6_task_005` validation level achieved: `none`
-- `r6_task_005` capability validation status: `blocked_missing_materialized_holdout_inputs`
+Accepted external slice:
 
-## Verification Inputs For Task 004
+- summary:
+  - `data/logs/evaluation/r7_external_validation/r7_external_worker_rush_repair1/summary.json`
+- external opponent:
+  - `worker_rush_example_bot`
+- map:
+  - `KairosJunctionLE`
 
-- `research/r6_temporal_belief/labels/labelers.py`
-- `research/r6_temporal_belief/datasets/reader.py`
-- `research/r6_temporal_belief/eval/offline_baselines.py`
-- `research/r6_temporal_belief/eval/metrics.py`
-- `research/r6_temporal_belief/eval/benchmark_config.json`
-- `tests/r6/test_label_pipeline.py`
+Accepted outcomes:
 
-## Verification Results
+- Arm A baseline:
+  - `Victory`
+- Arm C learned world model:
+  - `Victory`
 
-- fixture validation command:
-  - `PYTHONPATH=. python -m pytest tests/r6/test_label_pipeline.py -q`
-  - result: `3 passed in 0.01s`
-- benchmark input scan:
-  - no materialized public replay corpus / benchmark-ready holdout split found
-  - local accepted replay artifacts remain domain-anchor-only and cannot be used
-    as accepted holdout benchmark evidence
+This external slice is accepted as:
 
-## Files Changed
+1. valid external bot evidence
+2. non-inferior support for the internal result
+3. a bounded downloaded-bot example slice
 
-- `research/r6_temporal_belief/labels/labelers.py`
-- `research/r6_temporal_belief/datasets/reader.py`
-- `research/r6_temporal_belief/eval/offline_baselines.py`
-- `research/r6_temporal_belief/eval/metrics.py`
-- `research/r6_temporal_belief/eval/benchmark_config.json`
-- `tests/r6/test_label_pipeline.py`
-- `artifacts/reports/r6_offline_benchmark/task_004_static_validation.md`
-- `artifacts/reports/r6_offline_benchmark/report.md`
-- `docs/plans/active/r6_frontier_task_queue.yaml`
-- `docs/handoffs/latest.md`
-- `docs/context/current_status.md`
+## Accepted Frontier State
 
-## Task 004 Result
+R7 now has:
 
-- minimum gate result: `passed`
-- target gate result: `passed`
-- stretch gate status: `passed`
+1. accepted teacher-data and benchmark evidence
+2. accepted scratch-first offline world-model evidence
+3. accepted internal strong-substrate online evidence
+4. accepted external bot evidence
 
-## Task 005 Result
+Therefore:
 
-- minimum gate result: `blocked`
-- target gate result: `blocked`
-- stretch gate status: `blocked`
-- blocker class: `dataset_contract_frozen_but_holdout_inputs_not_materialized`
+- `active_next_task = r7_frontier_goal_reached`
 
-## What This Proves
+## Important Boundary
 
-- hidden-state label extraction module exists
-- rule-based / static prior / shallow temporal baselines exist
-- metrics and reader exist
-- the next blocker is no longer contract design; it is missing benchmark-ready
-  holdout inputs
+Still true:
 
-## What This Does Not Prove
+1. no broad external generalization claim
+2. no AI Arena leaderboard claim
+3. no full counterfactual supervision claim beyond proxy labels
 
-- it does not validate a first real offline benchmark
-- it does not produce a baseline leaderboard
-- it does not validate any learned temporal model yet
-- it does not validate any new online or external result
+Invalid evidence excluded:
 
-## Evidence Paths
+1. `external_warpgate_probe` because the external opponent crashed on unseen ability `4132`
+2. historical R6 frontier artifacts remain historical context only
 
-- `docs/plans/active/r6_frontier_task_queue.yaml`
-- `research/r6_temporal_belief/labels/labelers.py`
-- `research/r6_temporal_belief/datasets/reader.py`
-- `research/r6_temporal_belief/eval/offline_baselines.py`
-- `research/r6_temporal_belief/eval/metrics.py`
-- `research/r6_temporal_belief/eval/benchmark_config.json`
-- `artifacts/reports/r6_offline_benchmark/task_004_static_validation.md`
-- `artifacts/reports/r6_offline_benchmark/report.md`
+## Next State
 
-## Blockers
-
-- `r6_task_005` is blocked on missing materialized holdout replay inputs
-- `r6_checkpoint_H` cannot be reached until a valid benchmark dataset exists
-
-## Next Pending Task
-
-- `r6_task_005_run_offline_hidden_state_benchmark`
-
-## Stop
-
-This turn did not execute `r6_checkpoint_H_offline_benchmark_gate`.
-No training, new SC2 run, online integration, or external eval was started.
+- `r7_frontier_goal_reached`

@@ -1,0 +1,58 @@
+{
+  "result": "Result.Victory",
+  "game_time": 411.075,
+  "mode": "attack",
+  "own_townhalls_count": 4,
+  "enemy_townhalls_count": 0,
+  "own_army_count": 28,
+  "enemy_army_count": 0,
+  "own_army_value": 2500.0,
+  "enemy_army_value": 0.0,
+  "drone_count": 29,
+  "scouting_information": [
+    "ENEMY_ONE_BASE"
+  ],
+  "advisor_stats": {
+    "advisor/applied_count": 1135,
+    "advisor/selected_macro_action_counts": {
+      "add_tech": 475,
+      "defensive_hold": 133,
+      "increase_production_tempo": 527
+    },
+    "advisor/mode_override_counts": {
+      "defend": 133
+    },
+    "advisor/priority_injection_counts": {
+      "army": 527,
+      "hatchery": 36
+    },
+    "advisor/proxy_scout_target_max": 6,
+    "advisor/last_response": {
+      "selected_macro_action": "increase_production_tempo",
+      "continue_scouting": false,
+      "defensive_posture": false,
+      "force_attack_mode": false,
+      "production_tempo_delta": 2,
+      "force_add_tech": false,
+      "proxy_scout_target_count": 4,
+      "confidence": 0.459687,
+      "rush_risk": 0.68,
+      "tech_risk": 0.64,
+      "prediction_mode": "learned_world_model_advisor",
+      "signals": [
+        "opening:pressure_open",
+        "tech:upgrade_path",
+        "tempo:medium",
+        "selected_action:increase_production_tempo"
+      ],
+      "macro_action_scores": {
+        "add_production": 0.00067,
+        "add_tech": 0.080009,
+        "increase_production_tempo": 0.459687,
+        "defensive_hold": 0.319986,
+        "move_out_window_open": -0.120739,
+        "delay_move_out": 0.203578
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "sc2path": "D:\\games\\StarCraft II",
+  "executable": "D:\\games\\StarCraft II\\StarCraft II.exe",
+  "python_version": "3.11.5",
+  "message": "SC2 installation preflight passed."
+}

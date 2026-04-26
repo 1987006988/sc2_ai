@@ -1,0 +1,12 @@
+{
+  "arm": "baseline",
+  "map": "KairosJunctionLE",
+  "opponent_race": "Terran",
+  "difficulty": "Medium",
+  "ai_build": "Timing",
+  "game_time_limit": 420,
+  "step_time_limit": 2.0,
+  "result": "Result.Tie",
+  "replay_path": "E:\\software-work\\strong_bots\\sludge-revived\\r7_eval_outputs\\repair1_420\\baseline\\match.SC2Replay",
+  "telemetry_path": "E:\\software-work\\strong_bots\\sludge-revived\\r7_eval_outputs\\repair1_420\\baseline\\advisor_stats.json"
+}

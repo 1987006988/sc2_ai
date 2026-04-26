@@ -1,0 +1,10 @@
+opponents:
+  - id: external_frozen_r5_comparator_house_bot
+    type: bot
+    race: protoss
+    difficulty: bot
+    tags: [external_slice, aiarena_compatible, house_bot_equivalent, frozen_r5_comparator]
+    bot_config: configs/bot/adaptive_research.yaml
+    bot_config_id: frozen_r5_comparator_house_bot
+    bot_config_tags: [external_opponent, frozen_r5_comparator]
+    enabled: true

@@ -28,8 +28,12 @@ class StrategyResponse:
     continue_scouting_gate_active: bool = False
     defensive_posture_gate_active: bool = False
     first_attack_timing_gate_active: bool = False
+    bounded_production_tempo_gate_active: bool = False
     first_attack_delay_seconds: float = 0.0
     first_attack_army_buffer: int = 0
+    production_tempo_gateway_delta: int = 0
+    selected_macro_action: str = "none"
+    macro_action_scores: dict[str, float] = field(default_factory=dict)
     belief_summary: dict[str, object] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, object]:
@@ -49,8 +53,12 @@ class StrategyResponse:
             "continue_scouting_gate_active": self.continue_scouting_gate_active,
             "defensive_posture_gate_active": self.defensive_posture_gate_active,
             "first_attack_timing_gate_active": self.first_attack_timing_gate_active,
+            "bounded_production_tempo_gate_active": self.bounded_production_tempo_gate_active,
             "first_attack_delay_seconds": self.first_attack_delay_seconds,
             "first_attack_army_buffer": self.first_attack_army_buffer,
+            "production_tempo_gateway_delta": self.production_tempo_gateway_delta,
+            "selected_macro_action": self.selected_macro_action,
+            "macro_action_scores": self.macro_action_scores,
             "belief_summary": self.belief_summary,
         }
 

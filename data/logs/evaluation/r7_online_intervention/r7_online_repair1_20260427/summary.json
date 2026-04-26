@@ -1,0 +1,136 @@
+{
+  "run_id": "r7_online_repair1_20260427",
+  "substrate": "sludge_revived_current_patch_house_bot",
+  "map": "KairosJunctionLE",
+  "opponent_race": "Terran",
+  "difficulty": "Medium",
+  "ai_build": "Timing",
+  "game_time_limit": 420,
+  "step_time_limit": 2.0,
+  "results": {
+    "baseline": {
+      "result": "Result.Tie",
+      "replay_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/baseline/match.SC2Replay",
+      "match_result_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/baseline/match_result.json",
+      "telemetry_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/baseline/advisor_stats.json",
+      "game_time": 419.775,
+      "mode": "attack",
+      "own_townhalls_count": 3,
+      "enemy_townhalls_count": 0,
+      "own_army_count": 29,
+      "enemy_army_count": 0,
+      "own_army_value": 2600.0,
+      "enemy_army_value": 0.0,
+      "drone_count": 44,
+      "advisor_stats": {}
+    },
+    "rule": {
+      "result": "Result.Tie",
+      "replay_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/rule/match.SC2Replay",
+      "match_result_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/rule/match_result.json",
+      "telemetry_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/rule/advisor_stats.json",
+      "game_time": 419.775,
+      "mode": "defend",
+      "own_townhalls_count": 3,
+      "enemy_townhalls_count": 1,
+      "own_army_count": 39,
+      "enemy_army_count": 0,
+      "own_army_value": 2700.0,
+      "enemy_army_value": 0.0,
+      "drone_count": 46,
+      "advisor_stats": {
+        "advisor/applied_count": 1159,
+        "advisor/selected_macro_action_counts": {
+          "defensive_hold": 1159
+        },
+        "advisor/mode_override_counts": {
+          "defend": 1159
+        },
+        "advisor/priority_injection_counts": {},
+        "advisor/proxy_scout_target_max": 6,
+        "advisor/last_response": {
+          "selected_macro_action": "defensive_hold",
+          "continue_scouting": false,
+          "defensive_posture": true,
+          "force_attack_mode": false,
+          "production_tempo_delta": 0,
+          "force_add_tech": false,
+          "proxy_scout_target_count": 4,
+          "confidence": 0.55,
+          "rush_risk": 0.7,
+          "tech_risk": 0.2,
+          "prediction_mode": "rule_macro_advisor",
+          "signals": [
+            "macro_action:defensive_hold"
+          ],
+          "macro_action_scores": {
+            "add_production": 0.2,
+            "add_tech": 0.2,
+            "increase_production_tempo": 0.2,
+            "defensive_hold": 0.8,
+            "move_out_window_open": 0.2,
+            "delay_move_out": 0.2
+          }
+        }
+      }
+    },
+    "world": {
+      "result": "Result.Victory",
+      "replay_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/world/match.SC2Replay",
+      "match_result_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/world/match_result.json",
+      "telemetry_path": "/home/taotao/sc2-ai/data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/world/advisor_stats.json",
+      "game_time": 411.075,
+      "mode": "attack",
+      "own_townhalls_count": 4,
+      "enemy_townhalls_count": 0,
+      "own_army_count": 28,
+      "enemy_army_count": 0,
+      "own_army_value": 2500.0,
+      "enemy_army_value": 0.0,
+      "drone_count": 29,
+      "advisor_stats": {
+        "advisor/applied_count": 1135,
+        "advisor/selected_macro_action_counts": {
+          "add_tech": 475,
+          "defensive_hold": 133,
+          "increase_production_tempo": 527
+        },
+        "advisor/mode_override_counts": {
+          "defend": 133
+        },
+        "advisor/priority_injection_counts": {
+          "army": 527,
+          "hatchery": 36
+        },
+        "advisor/proxy_scout_target_max": 6,
+        "advisor/last_response": {
+          "selected_macro_action": "increase_production_tempo",
+          "continue_scouting": false,
+          "defensive_posture": false,
+          "force_attack_mode": false,
+          "production_tempo_delta": 2,
+          "force_add_tech": false,
+          "proxy_scout_target_count": 4,
+          "confidence": 0.459687,
+          "rush_risk": 0.68,
+          "tech_risk": 0.64,
+          "prediction_mode": "learned_world_model_advisor",
+          "signals": [
+            "opening:pressure_open",
+            "tech:upgrade_path",
+            "tempo:medium",
+            "selected_action:increase_production_tempo"
+          ],
+          "macro_action_scores": {
+            "add_production": 0.00067,
+            "add_tech": 0.080009,
+            "increase_production_tempo": 0.459687,
+            "defensive_hold": 0.319986,
+            "move_out_window_open": -0.120739,
+            "delay_move_out": 0.203578
+          }
+        }
+      }
+    }
+  }
+}

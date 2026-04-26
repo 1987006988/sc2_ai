@@ -2,6 +2,76 @@ version: 1
 manifest_role: r6_source_manifest
 updated_at: "2026-04-26"
 sources:
+  - source_id: local_phase_a_chunk_1_historical_corpus
+    source_type: local_historical_replay_corpus
+    status: available_local
+    summary_path: data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_1/dataset_manifest.json
+    provenance_required: true
+    intended_use:
+      - offline_train
+      - offline_holdout
+    allowed_in_holdout_benchmark: true
+    allowed_in_online_eval: false
+    preferred_split: train
+    notes:
+      - historical real-match corpus predating accepted R4/R5 anchors
+      - may be used for offline benchmark only
+  - source_id: local_phase_a_chunk_2_historical_corpus
+    source_type: local_historical_replay_corpus
+    status: available_local
+    summary_path: data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_2/dataset_manifest.json
+    provenance_required: true
+    intended_use:
+      - offline_train
+      - offline_holdout
+    allowed_in_holdout_benchmark: true
+    allowed_in_online_eval: false
+    preferred_split: train
+    notes:
+      - historical real-match corpus predating accepted R4/R5 anchors
+      - may be used for offline benchmark only
+  - source_id: local_phase_a_chunk_3_historical_corpus
+    source_type: local_historical_replay_corpus
+    status: available_local
+    summary_path: data/logs/evaluation/phase_a_baseline_v0/phase_a_baseline_v0_chunk_3/dataset_manifest.json
+    provenance_required: true
+    intended_use:
+      - offline_val
+      - offline_holdout
+    allowed_in_holdout_benchmark: true
+    allowed_in_online_eval: false
+    preferred_split: val
+    notes:
+      - historical real-match corpus predating accepted R4/R5 anchors
+      - may be used for offline benchmark only
+  - source_id: local_phase1d_ablation_historical_corpus
+    source_type: local_historical_replay_corpus
+    status: available_local
+    summary_path: data/logs/evaluation/phase1d_ablation_opponent_model/summary.json
+    provenance_required: true
+    intended_use:
+      - offline_test
+      - offline_holdout
+    allowed_in_holdout_benchmark: true
+    allowed_in_online_eval: false
+    preferred_split: test
+    notes:
+      - historical opponent-model ablation corpus
+      - separated from accepted R4/R5 anchors
+  - source_id: local_phase1e_ablation_historical_corpus
+    source_type: local_historical_replay_corpus
+    status: available_local
+    summary_path: data/logs/evaluation/phase1e_strategy_intervention_ablation/20260421T145911Z/summary.json
+    provenance_required: true
+    intended_use:
+      - offline_test
+      - offline_holdout
+    allowed_in_holdout_benchmark: true
+    allowed_in_online_eval: false
+    preferred_split: test
+    notes:
+      - historical strategy-intervention ablation corpus
+      - separated from accepted R4/R5 anchors
   - source_id: public_replay_corpora_primary
     source_type: public_replay_corpus
     status: planned_not_ingested

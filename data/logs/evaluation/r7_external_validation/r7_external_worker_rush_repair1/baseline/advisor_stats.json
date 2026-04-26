@@ -1,0 +1,16 @@
+{
+  "result": "Result.Victory",
+  "game_time": 352.078125,
+  "mode": "attack",
+  "own_townhalls_count": 2,
+  "enemy_townhalls_count": 1,
+  "own_army_count": 20,
+  "enemy_army_count": 0,
+  "own_army_value": 650.0,
+  "enemy_army_value": 0.0,
+  "drone_count": 25,
+  "scouting_information": [
+    "ENEMY_ONE_BASE"
+  ],
+  "advisor_stats": {}
+}

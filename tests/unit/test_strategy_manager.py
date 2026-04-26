@@ -20,6 +20,7 @@ def test_strategy_response_default_is_safe_noop():
     assert response.continue_scouting_gate_active is False
     assert response.defensive_posture_gate_active is False
     assert response.first_attack_timing_gate_active is False
+    assert response.selected_macro_action == "none"
     assert response.belief_summary == {}
 
 
@@ -55,8 +56,12 @@ def test_strategy_response_serializes_for_telemetry():
         "continue_scouting_gate_active": False,
         "defensive_posture_gate_active": False,
         "first_attack_timing_gate_active": False,
+        "bounded_production_tempo_gate_active": False,
         "first_attack_delay_seconds": 0.0,
         "first_attack_army_buffer": 0,
+        "production_tempo_gateway_delta": 0,
+        "selected_macro_action": "none",
+        "macro_action_scores": {},
         "belief_summary": {},
     }
 
@@ -230,3 +235,102 @@ def test_strategy_manager_adaptive_gating_sets_multiple_real_gate_flags():
     assert response.first_attack_delay_seconds == 75.0
     assert response.first_attack_army_buffer == 3
     assert response.belief_summary["defensive_bias_active"] is True
+
+
+def test_learned_belief_information_gap_does_not_latch_after_contact():
+    belief = build_belief_state(
+        state=GameState(game_loop=1200, game_time=120.0, own_army_count=2),
+        observation=ScoutingObservation(
+            game_loop=1200,
+            game_time=120.0,
+            enemy_units_seen=("zergling",),
+            seen_enemy_combat_units=("zergling",),
+            first_enemy_seen_time=80.0,
+            last_enemy_seen_time=120.0,
+            observation_confidence=0.4,
+        ),
+        prediction=OpponentPrediction(
+            model_name="temporal_gru_v0",
+            prediction_mode="learned_temporal_belief",
+            rush_risk=0.1,
+            tech_risk=0.2,
+            confidence=0.2,
+        ),
+        config=OpponentModelConfig(mode="learned_temporal_belief", intervention_mode="adaptive_gating"),
+    )
+
+    assert belief.enemy_contact_known is True
+    assert belief.information_gap_high is False
+    assert belief.first_attack_timing_bias == "none"
+
+
+def test_learned_production_tempo_gate_requires_direct_threat_not_information_gap_only():
+    response = StrategyManager().select_response(
+        GameState(
+            game_loop=2200,
+            game_time=120.0,
+            own_army_count=3,
+            known_enemy_start_location=(90.0, 90.0),
+        ),
+        ScoutingObservation.empty(2200),
+        OpponentPrediction(
+            model_name="temporal_gru_v0",
+            prediction_mode="learned_temporal_belief",
+            rush_risk=0.1,
+            tech_risk=0.2,
+            confidence=0.2,
+        ),
+        OpponentModelConfig(
+            mode="learned_temporal_belief",
+            intervention_mode="adaptive_gating",
+            rush_risk_threshold=0.65,
+            tech_risk_threshold=0.5,
+            production_tempo_gateway_delta=1,
+        ),
+    )
+
+    assert response.continue_scouting_gate_active is True
+    assert response.first_attack_timing_gate_active is True
+    assert response.bounded_production_tempo_gate_active is False
+    assert response.production_tempo_gateway_delta == 0
+
+
+def test_learned_production_tempo_gate_requires_fresh_scout_evidence_for_tech_trigger():
+    response = StrategyManager().select_response(
+        GameState(
+            game_loop=5000,
+            game_time=220.0,
+            own_army_count=4,
+            known_enemy_start_location=(90.0, 90.0),
+        ),
+        ScoutingObservation(
+            game_loop=5000,
+            game_time=220.0,
+            enemy_units_seen=("roach",),
+            enemy_structures_seen=("roachwarren",),
+            seen_enemy_structures=("roachwarren",),
+            seen_enemy_combat_units=("roach",),
+            first_enemy_seen_time=80.0,
+            last_enemy_seen_time=120.0,
+            possible_tech_signal=True,
+            observation_confidence=0.6,
+        ),
+        OpponentPrediction(
+            model_name="temporal_gru_v0",
+            prediction_mode="learned_temporal_belief",
+            rush_risk=0.1,
+            tech_risk=0.7,
+            confidence=0.6,
+            signals=("hidden_tech_detected",),
+            recommended_response_tags=("watch_for_tech",),
+        ),
+        OpponentModelConfig(
+            mode="learned_temporal_belief",
+            intervention_mode="adaptive_gating",
+            tech_risk_threshold=0.5,
+            production_tempo_gateway_delta=1,
+        ),
+    )
+
+    assert response.bounded_production_tempo_gate_active is False
+    assert response.selected_response_tag == "none"

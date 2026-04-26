@@ -1,0 +1,67 @@
+version: 1
+updated: 2026-04-27
+teacher_source:
+  selected_under_task: r7_task_004_acquire_and_license_audit_selected_strong_bot
+  candidate_id: distar_zvz_agent_platform
+  source_name: DI-star
+  acquisition_method: git_clone
+  acquisition_path: third_party/strong_bots/DI-star
+  source_url: https://github.com/opendilab/DI-star
+  commit: 12b1c69350ad41e17895c602a66a52d98dd58452
+  license: Apache-2.0
+  license_status: audited_permissive_for_research
+  intended_role:
+    primary: teacher
+    secondary:
+      - substrate_candidate
+      - comparator_candidate
+  game_version_notes:
+    - repo README documents evaluation around SC2 4.10.0
+    - repo ships replay activation files for versions 4.10.0 through 5.0.8
+  runtime_notes:
+    - README documents agent_vs_agent and agent_vs_bot modes
+    - packaged Windows play flow is documented in docs/installation.md
+    - realtime runtime likely prefers GPU and old dependency stack
+  data_notes:
+    - repository includes 16 replay activation files under data/replays
+    - replay corpus is sufficient for seed teacher-source materialization
+  decision: retained_teacher_first_source
+
+replacement_online_substrate_candidate:
+  selected_under_task: r7_task_013_integrate_world_model_macro_advisor
+  candidate_id: sludge_revived_current_patch_house_bot
+  source_name: sludge-revived
+  acquisition_method: git_clone
+  acquisition_path: third_party/strong_bots/sludge-revived
+  source_url: https://github.com/aiarena/sludge-revived
+  commit: 9703a799456751d6bba1fdbaf0c799636dddb7af
+  license: MIT
+  license_status: audited_permissive_for_research
+  intended_role:
+    primary: substrate
+    secondary:
+      - comparator_candidate
+  game_version_notes:
+    - repository README states support for SC2 patch 5.0.13
+    - repository README states support for Python 3.11
+  runtime_notes:
+    - repository ships run.py and run_locally.py entrypoints
+    - repository includes Windows and Linux sc2pathlib binaries
+    - local runtime smoke completed on this machine using Windows Python 3.11.5
+    - local runtime used SC2 executable `D:\games\StarCraft II\Versions\Base95841\SC2_x64.exe`
+    - local replay artifact was saved as `E:\software-work\strong_bots\sludge-revived\r7_sludge_smoke.SC2Replay`
+    - accepted online advisor run used `r7_run_eval.py` with baseline, rule, and world arms
+  intervention_notes:
+    - source is Python and exposes bot.main.MyBot
+    - logic and service layers are visible and hookable in source
+    - advisor insertion looks materially easier than the DI-star runtime path
+  accepted_online_evidence:
+    - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/summary.json
+    - data/logs/evaluation/r7_online_intervention/r7_online_repair1_20260427/world/match.SC2Replay
+  decision: accepted_online_substrate_with_advisor_integration
+
+backup_candidates:
+  - candidate_id: sc2egset_esports_dataset
+    intended_role: teacher_dataset_backup_or_parallel_source
+  - candidate_id: ai_arena_downloadable_house_bots_pool
+    intended_role: additional_external_and_substrate_pool_after_per_bot_license_audit

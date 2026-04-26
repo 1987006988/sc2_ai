@@ -23,3 +23,10 @@ validation_command:
   - research/r6_temporal_belief/data/source_manifest.yaml
   - --dataset-manifest
   - research/r6_temporal_belief/data/dataset_manifest.json
+materialization_command:
+  - python
+  - research/r6_temporal_belief/datasets/materialize_local_benchmark.py
+  - --source-manifest
+  - research/r6_temporal_belief/data/source_manifest.yaml
+  - --output-dir
+  - research/r6_temporal_belief/data/materialized

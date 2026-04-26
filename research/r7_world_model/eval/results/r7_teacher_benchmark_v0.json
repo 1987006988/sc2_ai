@@ -1,0 +1,327 @@
+{
+  "benchmark_id": "r7_teacher_benchmark_v0_proxy",
+  "status": "valid",
+  "claim_boundary": "teacher_proxy_benchmark_from_replay_command_sequences",
+  "train_sample_count": 12,
+  "val_sample_count": 10,
+  "test_sample_count": 10,
+  "global_priors": {
+    "enemy_opening_class": "pressure_open",
+    "enemy_tech_path": "tech_path_present",
+    "macro_action_label": "expand_now",
+    "production_tempo_label": "low",
+    "future_winner": "loss",
+    "future_game_length_bucket": "short",
+    "future_pressure_proxy": "high_pressure"
+  },
+  "splits": {
+    "val": {
+      "leaderboard": [
+        {
+          "comparator": "shallow_temporal",
+          "aggregate_balanced_accuracy": 0.524008
+        },
+        {
+          "comparator": "rule_based",
+          "aggregate_balanced_accuracy": 0.511838
+        },
+        {
+          "comparator": "static_prior",
+          "aggregate_balanced_accuracy": 0.388889
+        }
+      ],
+      "comparators": {
+        "static_prior": {
+          "tasks": {
+            "enemy_opening_class": {
+              "accuracy": 0.7,
+              "balanced_accuracy": 0.333333,
+              "macro_f1": 0.27451
+            },
+            "enemy_tech_path": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.25,
+              "macro_f1": 0.166667
+            },
+            "macro_action_label": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.25,
+              "macro_f1": 0.166667
+            },
+            "production_tempo_label": {
+              "accuracy": 0.9,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.473684
+            },
+            "future_winner": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.333333
+            },
+            "future_game_length_bucket": {
+              "accuracy": 0.6,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.375
+            },
+            "future_pressure_proxy": {
+              "accuracy": 0.8,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.444444
+            }
+          },
+          "group_balanced_accuracy": {
+            "hidden_state": 0.291666,
+            "macro_action": 0.375,
+            "future_proxy": 0.5
+          },
+          "aggregate_balanced_accuracy": 0.388889
+        },
+        "rule_based": {
+          "tasks": {
+            "enemy_opening_class": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.357143,
+              "macro_f1": 0.371795
+            },
+            "enemy_tech_path": {
+              "accuracy": 0.8,
+              "balanced_accuracy": 0.7,
+              "macro_f1": 0.664286
+            },
+            "macro_action_label": {
+              "accuracy": 0.3,
+              "balanced_accuracy": 0.216667,
+              "macro_f1": 0.146032
+            },
+            "production_tempo_label": {
+              "accuracy": 0.9,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.473684
+            },
+            "future_winner": {
+              "accuracy": 0.8,
+              "balanced_accuracy": 0.8,
+              "macro_f1": 0.791667
+            },
+            "future_game_length_bucket": {
+              "accuracy": 0.4,
+              "balanced_accuracy": 0.333333,
+              "macro_f1": 0.190476
+            },
+            "future_pressure_proxy": {
+              "accuracy": 0.7,
+              "balanced_accuracy": 0.8125,
+              "macro_f1": 0.67033
+            }
+          },
+          "group_balanced_accuracy": {
+            "hidden_state": 0.528571,
+            "macro_action": 0.358333,
+            "future_proxy": 0.648611
+          },
+          "aggregate_balanced_accuracy": 0.511838
+        },
+        "shallow_temporal": {
+          "tasks": {
+            "enemy_opening_class": {
+              "accuracy": 0.7,
+              "balanced_accuracy": 0.619048,
+              "macro_f1": 0.452381
+            },
+            "enemy_tech_path": {
+              "accuracy": 0.6,
+              "balanced_accuracy": 0.333333,
+              "macro_f1": 0.333333
+            },
+            "macro_action_label": {
+              "accuracy": 0.2,
+              "balanced_accuracy": 0.3,
+              "macro_f1": 0.175
+            },
+            "production_tempo_label": {
+              "accuracy": 1.0,
+              "balanced_accuracy": 1.0,
+              "macro_f1": 1.0
+            },
+            "future_winner": {
+              "accuracy": 0.4,
+              "balanced_accuracy": 0.4,
+              "macro_f1": 0.4
+            },
+            "future_game_length_bucket": {
+              "accuracy": 0.4,
+              "balanced_accuracy": 0.375,
+              "macro_f1": 0.315152
+            },
+            "future_pressure_proxy": {
+              "accuracy": 0.6,
+              "balanced_accuracy": 0.5625,
+              "macro_f1": 0.52381
+            }
+          },
+          "group_balanced_accuracy": {
+            "hidden_state": 0.476191,
+            "macro_action": 0.65,
+            "future_proxy": 0.445833
+          },
+          "aggregate_balanced_accuracy": 0.524008
+        }
+      },
+      "sample_count": 10
+    },
+    "test": {
+      "leaderboard": [
+        {
+          "comparator": "rule_based",
+          "aggregate_balanced_accuracy": 0.563704
+        },
+        {
+          "comparator": "static_prior",
+          "aggregate_balanced_accuracy": 0.416667
+        },
+        {
+          "comparator": "shallow_temporal",
+          "aggregate_balanced_accuracy": 0.337778
+        }
+      ],
+      "comparators": {
+        "static_prior": {
+          "tasks": {
+            "enemy_opening_class": {
+              "accuracy": 0.4,
+              "balanced_accuracy": 0.333333,
+              "macro_f1": 0.190476
+            },
+            "enemy_tech_path": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.333333,
+              "macro_f1": 0.222222
+            },
+            "macro_action_label": {
+              "accuracy": 0.0,
+              "balanced_accuracy": 0.0,
+              "macro_f1": 0.0
+            },
+            "production_tempo_label": {
+              "accuracy": 0.9,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.473684
+            },
+            "future_winner": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.333333
+            },
+            "future_game_length_bucket": {
+              "accuracy": 1.0,
+              "balanced_accuracy": 1.0,
+              "macro_f1": 1.0
+            },
+            "future_pressure_proxy": {
+              "accuracy": 0.2,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.166667
+            }
+          },
+          "group_balanced_accuracy": {
+            "hidden_state": 0.333333,
+            "macro_action": 0.25,
+            "future_proxy": 0.666667
+          },
+          "aggregate_balanced_accuracy": 0.416667
+        },
+        "rule_based": {
+          "tasks": {
+            "enemy_opening_class": {
+              "accuracy": 0.6,
+              "balanced_accuracy": 0.611111,
+              "macro_f1": 0.611111
+            },
+            "enemy_tech_path": {
+              "accuracy": 0.9,
+              "balanced_accuracy": 0.916667,
+              "macro_f1": 0.714286
+            },
+            "macro_action_label": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.26,
+              "macro_f1": 0.171429
+            },
+            "production_tempo_label": {
+              "accuracy": 0.8,
+              "balanced_accuracy": 0.444444,
+              "macro_f1": 0.444444
+            },
+            "future_winner": {
+              "accuracy": 0.3,
+              "balanced_accuracy": 0.3,
+              "macro_f1": 0.292929
+            },
+            "future_game_length_bucket": {
+              "accuracy": 0.8,
+              "balanced_accuracy": 0.8,
+              "macro_f1": 0.444444
+            },
+            "future_pressure_proxy": {
+              "accuracy": 0.4,
+              "balanced_accuracy": 0.625,
+              "macro_f1": 0.4
+            }
+          },
+          "group_balanced_accuracy": {
+            "hidden_state": 0.763889,
+            "macro_action": 0.352222,
+            "future_proxy": 0.575
+          },
+          "aggregate_balanced_accuracy": 0.563704
+        },
+        "shallow_temporal": {
+          "tasks": {
+            "enemy_opening_class": {
+              "accuracy": 0.1,
+              "balanced_accuracy": 0.083333,
+              "macro_f1": 0.060606
+            },
+            "enemy_tech_path": {
+              "accuracy": 0.1,
+              "balanced_accuracy": 0.066667,
+              "macro_f1": 0.0625
+            },
+            "macro_action_label": {
+              "accuracy": 0.4,
+              "balanced_accuracy": 0.16,
+              "macro_f1": 0.111111
+            },
+            "production_tempo_label": {
+              "accuracy": 0.9,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.473684
+            },
+            "future_winner": {
+              "accuracy": 0.5,
+              "balanced_accuracy": 0.5,
+              "macro_f1": 0.494949
+            },
+            "future_game_length_bucket": {
+              "accuracy": 0.7,
+              "balanced_accuracy": 0.7,
+              "macro_f1": 0.27451
+            },
+            "future_pressure_proxy": {
+              "accuracy": 0.7,
+              "balanced_accuracy": 0.625,
+              "macro_f1": 0.6
+            }
+          },
+          "group_balanced_accuracy": {
+            "hidden_state": 0.075,
+            "macro_action": 0.33,
+            "future_proxy": 0.608333
+          },
+          "aggregate_balanced_accuracy": 0.337778
+        }
+      },
+      "sample_count": 10
+    }
+  }
+}

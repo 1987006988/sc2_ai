@@ -1,0 +1,455 @@
+{
+  "evaluation_name": "r6_external_house_bots",
+  "run_id": "r6_external_house_bots_repair2_20260426",
+  "output_root": "data\\logs\\evaluation\\r6_external_eval",
+  "output_dir": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426",
+  "historical": false,
+  "repeats": 1,
+  "launch_mode": "real_launch",
+  "run_class": "frontier_external_eval",
+  "validation_class": "r6_external_eval",
+  "config_reference": "configs\\evaluation\\r6_external_house_bots.yaml",
+  "config_snapshot": {
+    "evaluation": {
+      "name": "r6_external_house_bots",
+      "launch_mode": "real_launch",
+      "run_class": "frontier_external_eval",
+      "validation_class": "r6_external_eval",
+      "bot_configs": [
+        {
+          "id": "frozen_baseline",
+          "path": "configs/bot/baseline_playable.yaml",
+          "tags": [
+            "arm_a",
+            "frozen_baseline"
+          ]
+        },
+        {
+          "id": "frozen_r5_comparator",
+          "path": "configs/bot/adaptive_research.yaml",
+          "tags": [
+            "arm_b",
+            "frozen_r5_comparator"
+          ]
+        },
+        {
+          "id": "learned_treatment",
+          "path": "configs/bot/r6_learned_belief.yaml",
+          "tags": [
+            "arm_c",
+            "learned_treatment"
+          ]
+        }
+      ],
+      "maps_config": "configs/maps/r6_external_frontier_maps.yaml",
+      "opponents_config": "configs/opponents/r6_external_house_bots.yaml",
+      "repeats": 1,
+      "output_dir": "data/logs/evaluation/r6_external_eval",
+      "run_id": "r6_external_house_bots_repair2_20260426",
+      "isolate_runs": true,
+      "fail_on_crash": false
+    }
+  },
+  "bot_configs": [
+    {
+      "id": "frozen_baseline",
+      "path": "configs/bot/baseline_playable.yaml",
+      "tags": [
+        "arm_a",
+        "frozen_baseline"
+      ],
+      "run_class": "frontier_external_eval",
+      "validation_class": "r6_external_eval"
+    },
+    {
+      "id": "frozen_r5_comparator",
+      "path": "configs/bot/adaptive_research.yaml",
+      "tags": [
+        "arm_b",
+        "frozen_r5_comparator"
+      ],
+      "run_class": "frontier_external_eval",
+      "validation_class": "r6_external_eval"
+    },
+    {
+      "id": "learned_treatment",
+      "path": "configs/bot/r6_learned_belief.yaml",
+      "tags": [
+        "arm_c",
+        "learned_treatment"
+      ],
+      "run_class": "frontier_external_eval",
+      "validation_class": "r6_external_eval"
+    }
+  ],
+  "maps": [
+    {
+      "id": "incorporeal_aie_v4",
+      "name": "IncorporealAIE_v4",
+      "file": "IncorporealAIE_v4.SC2Map",
+      "enabled": true
+    }
+  ],
+  "opponents": [
+    {
+      "id": "external_frozen_r5_comparator_house_bot",
+      "type": "bot",
+      "race": "protoss",
+      "difficulty": "bot",
+      "tags": [
+        "external_slice",
+        "aiarena_compatible",
+        "house_bot_equivalent",
+        "frozen_r5_comparator"
+      ],
+      "bot_config": "configs/bot/adaptive_research.yaml",
+      "bot_config_id": "frozen_r5_comparator_house_bot",
+      "bot_config_tags": [
+        "external_opponent",
+        "frozen_r5_comparator"
+      ],
+      "enabled": true
+    }
+  ],
+  "matches": 3,
+  "results": [
+    {
+      "match_id": "reallaunch-be504631",
+      "status": "max_game_time_reached",
+      "result": "[<Result.Victory: 1>, <Result.Defeat: 2>]",
+      "mode": "real_launch",
+      "bot_name": "sc2-ai-adaptive-research",
+      "bot_config": "configs/bot/adaptive_research.yaml",
+      "bot_config_id": "frozen_r5_comparator",
+      "bot_config_tags": [
+        "arm_b",
+        "frozen_r5_comparator",
+        "repeat_1"
+      ],
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "external_frozen_r5_comparator_house_bot",
+      "opponent_type": "bot",
+      "opponent_race": "protoss",
+      "opponent_difficulty": "bot",
+      "opponent_tags": [
+        "external_slice",
+        "aiarena_compatible",
+        "house_bot_equivalent",
+        "frozen_r5_comparator"
+      ],
+      "opponent_bot_config": "configs/bot/adaptive_research.yaml",
+      "opponent_bot_config_id": "frozen_r5_comparator_house_bot",
+      "opponent_bot_config_tags": [
+        "external_opponent",
+        "frozen_r5_comparator"
+      ],
+      "telemetry_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-be504631\\telemetry\\events.jsonl",
+      "replay_metadata_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-be504631\\replay_metadata.json",
+      "replay_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-be504631\\match.SC2Replay",
+      "failure_reason": null,
+      "started_at": "2026-04-26T02:39:51.520275+00:00",
+      "completed_at": "2026-04-26T02:43:40.821021+00:00",
+      "duration_seconds": 229.300746,
+      "run_class": "frontier_external_eval",
+      "validation_class": "r6_external_eval",
+      "config_reference": "configs/bot/adaptive_research.yaml",
+      "config_snapshot": {
+        "control": {
+          "config_role": "adaptive_research",
+          "validation_class": "adaptive_research",
+          "run_class": "adaptive_treatment",
+          "capability_claim_allowed": true,
+          "notes": [
+            "derived_from_baseline_playable",
+            "treatment_config_for_future_paired_eval"
+          ]
+        },
+        "bot": {
+          "name": "sc2-ai-adaptive-research",
+          "race": "protoss",
+          "strategy": "phase_b_revalidation_playable_core"
+        },
+        "managers": {
+          "macro": true,
+          "scouting": true,
+          "strategy": true,
+          "tactical": true,
+          "micro": false
+        },
+        "opponent_model": {
+          "mode": "rule_based",
+          "intervention_mode": "adaptive_gating",
+          "rush_risk_threshold": 0.65,
+          "tech_risk_threshold": 0.5,
+          "low_information_confidence_threshold": 0.25,
+          "low_information_game_time_threshold": 90.0,
+          "scout_continuation_game_time_limit": 210.0,
+          "first_attack_delay_seconds": 45.0,
+          "first_attack_army_buffer": 1
+        },
+        "runtime": {
+          "max_game_loop": 9600,
+          "max_steps": null,
+          "worker_production": true,
+          "worker_gather": true,
+          "worker_scout": true,
+          "supply_sustain": true,
+          "supply_sustain_threshold": 2,
+          "supply_structure_name": "pylon",
+          "army_defense": true
+        },
+        "build_order": {
+          "target_probe_count": 22,
+          "pylon_supply_buffer": 2,
+          "gateway_min_probe_count": 16,
+          "gateway_min_game_time": 90.0,
+          "gateway_target_count": 3,
+          "assimilator_enabled": true,
+          "cybernetics_core_enabled": true,
+          "zealot_production_priority": 10,
+          "stalker_production_priority": 20,
+          "attack_army_supply_threshold": 8,
+          "attack_game_time_threshold": 360.0,
+          "defend_radius": 30.0
+        },
+        "telemetry": {
+          "enabled": true,
+          "output_dir": "data/logs/telemetry",
+          "verbose": true
+        }
+      },
+      "git_commit": null,
+      "opponent_model_mode": "rule_based",
+      "exit_reason": "max_game_time_reached",
+      "launch_message": "Real local match completed through python-sc2.",
+      "runtime_max_game_loop": 9600,
+      "requested_game_time_limit_seconds": 459
+    },
+    {
+      "match_id": "reallaunch-cb7356ae",
+      "status": "max_game_time_reached",
+      "result": "[<Result.Tie: 3>, <Result.Tie: 3>]",
+      "mode": "real_launch",
+      "bot_name": "sc2-ai-baseline-playable",
+      "bot_config": "configs/bot/baseline_playable.yaml",
+      "bot_config_id": "frozen_baseline",
+      "bot_config_tags": [
+        "arm_a",
+        "frozen_baseline",
+        "repeat_1"
+      ],
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "external_frozen_r5_comparator_house_bot",
+      "opponent_type": "bot",
+      "opponent_race": "protoss",
+      "opponent_difficulty": "bot",
+      "opponent_tags": [
+        "external_slice",
+        "aiarena_compatible",
+        "house_bot_equivalent",
+        "frozen_r5_comparator"
+      ],
+      "opponent_bot_config": "configs/bot/adaptive_research.yaml",
+      "opponent_bot_config_id": "frozen_r5_comparator_house_bot",
+      "opponent_bot_config_tags": [
+        "external_opponent",
+        "frozen_r5_comparator"
+      ],
+      "telemetry_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-cb7356ae\\telemetry\\events.jsonl",
+      "replay_metadata_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-cb7356ae\\replay_metadata.json",
+      "replay_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-cb7356ae\\match.SC2Replay",
+      "failure_reason": null,
+      "started_at": "2026-04-26T02:35:49.860603+00:00",
+      "completed_at": "2026-04-26T02:39:51.470185+00:00",
+      "duration_seconds": 241.609582,
+      "run_class": "frontier_external_eval",
+      "validation_class": "r6_external_eval",
+      "config_reference": "configs/bot/baseline_playable.yaml",
+      "config_snapshot": {
+        "control": {
+          "config_role": "baseline_playable",
+          "validation_class": "gameplay_capability",
+          "run_class": "baseline_playable",
+          "capability_claim_allowed": true,
+          "notes": [
+            "derived_from_phase_b_revalidation_gameplay",
+            "long_window_mainline_control_config"
+          ]
+        },
+        "bot": {
+          "name": "sc2-ai-baseline-playable",
+          "race": "protoss",
+          "strategy": "phase_b_revalidation_playable_core"
+        },
+        "managers": {
+          "macro": true,
+          "scouting": true,
+          "strategy": true,
+          "tactical": true,
+          "micro": false
+        },
+        "opponent_model": {
+          "mode": "rule_based",
+          "intervention_mode": "none",
+          "rush_risk_threshold": 0.5,
+          "tech_risk_threshold": 0.5,
+          "low_information_confidence_threshold": 0.25,
+          "low_information_game_time_threshold": 90.0
+        },
+        "runtime": {
+          "max_game_loop": 9600,
+          "max_steps": null,
+          "worker_production": true,
+          "worker_gather": true,
+          "worker_scout": true,
+          "supply_sustain": true,
+          "supply_sustain_threshold": 2,
+          "supply_structure_name": "pylon",
+          "army_defense": true
+        },
+        "build_order": {
+          "target_probe_count": 22,
+          "pylon_supply_buffer": 2,
+          "gateway_min_probe_count": 16,
+          "gateway_min_game_time": 90.0,
+          "gateway_target_count": 3,
+          "assimilator_enabled": true,
+          "cybernetics_core_enabled": true,
+          "zealot_production_priority": 10,
+          "stalker_production_priority": 20,
+          "attack_army_supply_threshold": 8,
+          "attack_game_time_threshold": 360.0,
+          "defend_radius": 30.0
+        },
+        "telemetry": {
+          "enabled": true,
+          "output_dir": "data/logs/telemetry",
+          "verbose": true
+        }
+      },
+      "git_commit": null,
+      "opponent_model_mode": "rule_based",
+      "exit_reason": "max_game_time_reached",
+      "launch_message": "Real local match completed through python-sc2.",
+      "runtime_max_game_loop": 9600,
+      "requested_game_time_limit_seconds": 459
+    },
+    {
+      "match_id": "reallaunch-e450406f",
+      "status": "completed",
+      "result": "[<Result.Victory: 1>, <Result.Defeat: 2>]",
+      "mode": "real_launch",
+      "bot_name": "sc2-ai-r6-learned-belief",
+      "bot_config": "configs/bot/r6_learned_belief.yaml",
+      "bot_config_id": "learned_treatment",
+      "bot_config_tags": [
+        "arm_c",
+        "learned_treatment",
+        "repeat_1"
+      ],
+      "map_id": "incorporeal_aie_v4",
+      "opponent_id": "external_frozen_r5_comparator_house_bot",
+      "opponent_type": "bot",
+      "opponent_race": "protoss",
+      "opponent_difficulty": "bot",
+      "opponent_tags": [
+        "external_slice",
+        "aiarena_compatible",
+        "house_bot_equivalent",
+        "frozen_r5_comparator"
+      ],
+      "opponent_bot_config": "configs/bot/adaptive_research.yaml",
+      "opponent_bot_config_id": "frozen_r5_comparator_house_bot",
+      "opponent_bot_config_tags": [
+        "external_opponent",
+        "frozen_r5_comparator"
+      ],
+      "telemetry_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-e450406f\\telemetry\\events.jsonl",
+      "replay_metadata_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-e450406f\\replay_metadata.json",
+      "replay_path": "data\\logs\\evaluation\\r6_external_eval\\r6_external_house_bots_repair2_20260426\\reallaunch-e450406f\\match.SC2Replay",
+      "failure_reason": null,
+      "started_at": "2026-04-26T02:43:40.865024+00:00",
+      "completed_at": "2026-04-26T02:47:06.764308+00:00",
+      "duration_seconds": 205.899284,
+      "run_class": "frontier_external_eval",
+      "validation_class": "r6_external_eval",
+      "config_reference": "configs/bot/r6_learned_belief.yaml",
+      "config_snapshot": {
+        "control": {
+          "config_role": "r6_learned_belief_treatment",
+          "validation_class": "r6_frontier_internal_eval",
+          "run_class": "frontier_treatment",
+          "capability_claim_allowed": false,
+          "notes": [
+            "derived_from_baseline_playable",
+            "frozen_baseline_core_preserved",
+            "learned_temporal_belief_single_feature_treatment"
+          ]
+        },
+        "bot": {
+          "name": "sc2-ai-r6-learned-belief",
+          "race": "protoss",
+          "strategy": "phase_b_revalidation_playable_core"
+        },
+        "managers": {
+          "macro": true,
+          "scouting": true,
+          "strategy": true,
+          "tactical": true,
+          "micro": false
+        },
+        "opponent_model": {
+          "mode": "learned_temporal_belief",
+          "intervention_mode": "adaptive_gating",
+          "model_checkpoint_path": "artifacts/models/r6_temporal_belief/temporal_gru_v0.pt",
+          "model_device": "cpu",
+          "temporal_history_window": 8,
+          "rush_risk_threshold": 0.65,
+          "tech_risk_threshold": 0.5,
+          "low_information_confidence_threshold": 0.25,
+          "low_information_game_time_threshold": 90.0,
+          "scout_continuation_game_time_limit": 210.0,
+          "first_attack_delay_seconds": 45.0,
+          "first_attack_army_buffer": 1,
+          "production_tempo_gateway_delta": 1
+        },
+        "runtime": {
+          "max_game_loop": 9600,
+          "max_steps": null,
+          "worker_production": true,
+          "worker_gather": true,
+          "worker_scout": true,
+          "supply_sustain": true,
+          "supply_sustain_threshold": 2,
+          "supply_structure_name": "pylon",
+          "army_defense": true
+        },
+        "build_order": {
+          "target_probe_count": 22,
+          "pylon_supply_buffer": 2,
+          "gateway_min_probe_count": 16,
+          "gateway_min_game_time": 90.0,
+          "gateway_target_count": 3,
+          "assimilator_enabled": true,
+          "cybernetics_core_enabled": true,
+          "zealot_production_priority": 10,
+          "stalker_production_priority": 20,
+          "attack_army_supply_threshold": 8,
+          "attack_game_time_threshold": 360.0,
+          "defend_radius": 30.0
+        },
+        "telemetry": {
+          "enabled": true,
+          "output_dir": "data/logs/telemetry",
+          "verbose": true
+        }
+      },
+      "git_commit": null,
+      "opponent_model_mode": "learned_temporal_belief",
+      "exit_reason": null,
+      "launch_message": "Real local match completed through python-sc2.",
+      "runtime_max_game_loop": 9600,
+      "requested_game_time_limit_seconds": 459
+    }
+  ]
+}

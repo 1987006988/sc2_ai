@@ -9,6 +9,9 @@ from dataclasses import dataclass, field
 class ScoutingObservation:
     game_loop: int
     game_time: float = 0.0
+    current_enemy_units: tuple[str, ...] = field(default_factory=tuple)
+    current_enemy_structures: tuple[str, ...] = field(default_factory=tuple)
+    current_enemy_combat_units: tuple[str, ...] = field(default_factory=tuple)
     enemy_units_seen: tuple[str, ...] = field(default_factory=tuple)
     enemy_structures_seen: tuple[str, ...] = field(default_factory=tuple)
     enemy_expansions_seen: int = 0
@@ -29,6 +32,9 @@ class ScoutingObservation:
         return {
             "game_loop": self.game_loop,
             "game_time": self.game_time,
+            "current_enemy_units": list(self.current_enemy_units),
+            "current_enemy_structures": list(self.current_enemy_structures),
+            "current_enemy_combat_units": list(self.current_enemy_combat_units),
             "enemy_units_seen": list(self.enemy_units_seen),
             "enemy_structures_seen": list(self.enemy_structures_seen),
             "enemy_expansions_seen": self.enemy_expansions_seen,

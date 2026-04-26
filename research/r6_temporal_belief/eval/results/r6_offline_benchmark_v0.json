@@ -1,0 +1,213 @@
+{
+  "benchmark_id": "r6_offline_hidden_state_benchmark_v0",
+  "status": "valid",
+  "train_sample_count": 16,
+  "val_sample_count": 8,
+  "test_sample_count": 14,
+  "train_static_priors": {
+    "opening_class": "production_opening",
+    "hidden_tech_path": "gas_tech",
+    "future_expansion_within_horizon": false,
+    "hidden_army_bucket": "low",
+    "future_contact_risk": true,
+    "next_macro_threat_indicator": "immediate_pressure"
+  },
+  "splits": {
+    "val": {
+      "split_name": "val",
+      "sample_count": 8,
+      "leaderboard": [
+        {
+          "comparator": "rule_based",
+          "mean_balanced_accuracy": 1.0
+        },
+        {
+          "comparator": "shallow_temporal",
+          "mean_balanced_accuracy": 1.0
+        },
+        {
+          "comparator": "static_prior",
+          "mean_balanced_accuracy": 0.666667
+        }
+      ],
+      "comparators": {
+        "rule_based": {
+          "opening_class": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_tech_path": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_expansion_within_horizon": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_army_bucket": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_contact_risk": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "next_macro_threat_indicator": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          }
+        },
+        "static_prior": {
+          "opening_class": {
+            "accuracy": 0.5,
+            "balanced_accuracy": 0.5
+          },
+          "hidden_tech_path": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_expansion_within_horizon": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_army_bucket": {
+            "accuracy": 0.75,
+            "balanced_accuracy": 0.5
+          },
+          "future_contact_risk": {
+            "accuracy": 0.75,
+            "balanced_accuracy": 0.5
+          },
+          "next_macro_threat_indicator": {
+            "accuracy": 0.75,
+            "balanced_accuracy": 0.5
+          }
+        },
+        "shallow_temporal": {
+          "opening_class": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_tech_path": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_expansion_within_horizon": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_army_bucket": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_contact_risk": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "next_macro_threat_indicator": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          }
+        }
+      }
+    },
+    "test": {
+      "split_name": "test",
+      "sample_count": 14,
+      "leaderboard": [
+        {
+          "comparator": "rule_based",
+          "mean_balanced_accuracy": 1.0
+        },
+        {
+          "comparator": "shallow_temporal",
+          "mean_balanced_accuracy": 1.0
+        },
+        {
+          "comparator": "static_prior",
+          "mean_balanced_accuracy": 0.583333
+        }
+      ],
+      "comparators": {
+        "rule_based": {
+          "opening_class": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_tech_path": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_expansion_within_horizon": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_army_bucket": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_contact_risk": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "next_macro_threat_indicator": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          }
+        },
+        "static_prior": {
+          "opening_class": {
+            "accuracy": 0.8571428571428571,
+            "balanced_accuracy": 0.5
+          },
+          "hidden_tech_path": {
+            "accuracy": 0.8571428571428571,
+            "balanced_accuracy": 0.5
+          },
+          "future_expansion_within_horizon": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_army_bucket": {
+            "accuracy": 0.6428571428571429,
+            "balanced_accuracy": 0.5
+          },
+          "future_contact_risk": {
+            "accuracy": 0.6428571428571429,
+            "balanced_accuracy": 0.5
+          },
+          "next_macro_threat_indicator": {
+            "accuracy": 0.6428571428571429,
+            "balanced_accuracy": 0.5
+          }
+        },
+        "shallow_temporal": {
+          "opening_class": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_tech_path": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_expansion_within_horizon": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "hidden_army_bucket": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "future_contact_risk": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          },
+          "next_macro_threat_indicator": {
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0
+          }
+        }
+      }
+    }
+  }
+}

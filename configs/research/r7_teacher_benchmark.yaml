@@ -1,0 +1,7 @@
+version: 1
+benchmark_id: r7_teacher_benchmark_v0_proxy
+train_path: data/r7/teacher_dataset/train.jsonl
+val_path: data/r7/teacher_dataset/val.jsonl
+test_path: data/r7/teacher_dataset/test.jsonl
+output_path: research/r7_world_model/eval/results/r7_teacher_benchmark_v0.json
+claim_boundary: teacher_proxy_benchmark_from_command_events

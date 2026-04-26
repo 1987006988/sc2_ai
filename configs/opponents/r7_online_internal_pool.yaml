@@ -1,0 +1,22 @@
+opponents:
+  - id: builtin_easy_zerg
+    type: computer
+    race: zerg
+    difficulty: easy
+    tags: [builtin, easy, zerg, internal_slice]
+    enabled: true
+  - id: builtin_medium_zerg
+    type: computer
+    race: zerg
+    difficulty: medium
+    tags: [builtin, medium, zerg, internal_slice]
+    enabled: true
+  - id: external_house_bot_equivalent
+    type: bot
+    race: protoss
+    difficulty: bot
+    tags: [external_style_slice, aiarena_compatible, house_bot_equivalent]
+    bot_config: configs/bot/adaptive_research.yaml
+    bot_config_id: external_r5_house_bot
+    bot_config_tags: [external_opponent, frozen_r5_comparator]
+    enabled: true

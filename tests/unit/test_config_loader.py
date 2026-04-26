@@ -113,3 +113,16 @@ def test_adaptive_research_core_matches_baseline_control_except_adaptive_layer()
     assert adaptive.bot.race == baseline.bot.race
     assert adaptive.opponent_model.mode == baseline.opponent_model.mode
     assert adaptive.opponent_model.intervention_mode == "adaptive_gating"
+
+
+def test_r7_macro_advisor_configs_keep_baseline_runtime_and_build_order():
+    baseline = load_bot_config(Path("configs/bot/baseline_playable.yaml"))
+    rule_advisor = load_bot_config(Path("configs/bot/r7_rule_macro_advisor.yaml"))
+    learned_advisor = load_bot_config(Path("configs/bot/r7_world_model_advisor.yaml"))
+
+    assert rule_advisor.runtime == baseline.runtime
+    assert learned_advisor.runtime == baseline.runtime
+    assert rule_advisor.build_order == baseline.build_order
+    assert learned_advisor.build_order == baseline.build_order
+    assert rule_advisor.opponent_model.mode == "rule_based_macro_advisor"
+    assert learned_advisor.opponent_model.mode == "learned_world_model_advisor"
